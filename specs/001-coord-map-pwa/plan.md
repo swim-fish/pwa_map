@@ -129,8 +129,9 @@ src/
 ├── storage/
 │   └── preferences.ts       # localStorage read/write with schema guard
 ├── pwa/
-│   ├── registerSW.ts        # Service worker registration
-│   └── manifest.ts          # Manifest generation helpers
+│   └── registerSW.ts        # Service worker registration
+│                            # (manifest declared inline in vite.config.ts
+│                            #  via VitePWA({ manifest }) — no separate file.)
 └── types/
     └── coord.ts             # Branded types: Lat, Lon, Easting, Northing, Zone
 

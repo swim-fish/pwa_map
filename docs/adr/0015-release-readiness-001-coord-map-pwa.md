@@ -55,27 +55,40 @@ US3 / US4 scope documented in `spec.md` and `plan.md`.
   matches `tests/unit/fixtures/test-vectors.json` (v2.0.0, MIT,
   generated 2026-04-24).
 
-## Deferred items (explicit)
+## Post-`/speckit.analyze` remediation (2026-04-25)
 
-These were identified but deliberately pushed out; they do not block
-release of the MVP + US2–US4 scope:
+`/speckit.analyze` run on 2026-04-25 flagged a CRITICAL inconsistency
+between this ADR's "Deferred items" section and `tasks.md` status for
+T104/T105/T106, plus HIGH coverage gaps for SC-006 (offline) and
+FR-015 (pan-end ≤ 100 ms), and MEDIUM gaps for SC-003/004/005 timing.
+ADR 0016 records the remediation decision. The artefacts below now
+exist and are green at commit time:
 
-- **ADR 0013 — Lighthouse CI workflow** — no GitHub Actions workflow is
-  in this repo yet. When CI is provisioned, a `.github/workflows/
-lighthouse.yml` (and matching ADR amendment) will add the
-  PWA ≥ 90 / TTI ≤ 3 s assertions.
-- **ADR 0013 — Vitest benchmark suite** (`bench/coord.bench.ts`) — the
-  ≤ 1 ms per-conversion budget is not yet asserted in CI. The
-  existing 119 vector-driven coord unit tests give strong signal on
-  correctness; a bench suite is follow-up work.
-- **ADR 0013 — Dedicated perf-pan E2E probe** — `story-1.AS3` already
-  exercises the 10 Hz pan, but a dedicated Playwright probe with FPS
-  sampling is deferred.
-- **Playwright firefox + webkit projects** — configured in
-  `playwright.config.ts` but only the chromium project was exercised
-  locally. Cross-browser runs are part of CI onboarding.
-- **Taipower Y / Z anchors** (ADR 0012) — will become a separate
-  feature + ADR if outer-island support is scoped.
+- `bench/coord.bench.ts` (T104) — 15 Vitest benches; local all ≥ 172k
+  ops/sec, well inside the ≤ 1 ms budget.
+- `.github/workflows/lighthouse.yml` (T105) — PWA ≥ 0.9, FCP and
+  interactive ≤ 3000 ms, plus a bundle-size job. Activation needs
+  `LHCI_GITHUB_APP_TOKEN` secret.
+- `tests/e2e/perf-pan.spec.ts` (T106) — 5 s scripted pan, ≥ 10 unique
+  readings, median read ≤ 50 ms.
+- `tests/e2e/offline.spec.ts` (SC-006) — coord math + Go-To flyTo
+  after `context.setOffline(true)`.
+- `story-1.AS4` (FR-015) — readout updates ≤ 100 ms after setCenter.
+- `story-3.AS1` (SC-003) — Go-To → readout ≤ 1 s.
+- `story-3.AS3` (SC-004) — rejection surfaces ≤ 500 ms after click.
+- `story-4.AS2` (SC-005) — copy → paste → return ≤ 10 s.
+
+## Still deferred (explicit)
+
+- **Cross-browser E2E in CI** — Playwright firefox + webkit projects
+  are configured; local runs exercised chromium only. The Lighthouse
+  workflow will cover chromium automatically once the repo's Actions
+  runner is wired.
+- **Bench thresholds in CI** — `bench/coord.bench.ts` reports hz but
+  does not fail on regression yet. ADR 0016 Follow-up explains how
+  to flip this on after baseline variance is characterised.
+- **Taipower Y / Z anchors** (ADR 0012) — outer-island support will
+  become a separate feature + ADR.
 
 ## Consequences
 

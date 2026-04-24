@@ -16,3 +16,9 @@ tests/unit/fixtures/test-vectors.json
 .specify/
 .claude/
 CLAUDE.md
+
+# Feature-spec prose — authored by /speckit.specify and edited inline;
+# the Prettier Markdown formatter wraps tables and line-breaks aggressively,
+# which corrupts code spans (e.g. ">= 0.9" turning into blockquote syntax).
+# We edit these files surgically via Edit; formatting churn is unwelcome.
+specs/

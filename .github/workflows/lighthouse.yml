@@ -1,0 +1,61 @@
+name: Lighthouse PWA
+
+# Lighthouse CI gate enforcing plan.md Performance Goals:
+#   - PWA score ≥ 90
+#   - First-paint ≤ 3 s over simulated fast-3G (SC-008)
+# Runs on every PR into main and any push to 001-coord-map-pwa.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [001-coord-map-pwa]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Install Chromium for Lighthouse
+        run: npx playwright install --with-deps chromium
+
+      - name: Serve + run Lighthouse CI
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        run: |
+          npm install -g @lhci/cli@0.14
+          lhci autorun \
+            --collect.startServerCommand="npm run preview" \
+            --collect.url="http://localhost:4173/" \
+            --collect.numberOfRuns=3 \
+            --assert.preset=lighthouse:recommended \
+            --assert.assertions.categories:pwa=">=0.9" \
+            --assert.assertions.first-contentful-paint="[error, {\"maxNumericValue\":3000,\"aggregationMethod\":\"median\"}]" \
+            --assert.assertions.interactive="[error, {\"maxNumericValue\":3000,\"aggregationMethod\":\"median\"}]" \
+            --upload.target=temporary-public-storage
+
+  bundle-size:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/check-bundle-size.js

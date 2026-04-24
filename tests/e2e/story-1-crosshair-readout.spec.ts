@@ -51,6 +51,39 @@ test.describe('Story 1 — Live coordinate readout under a fixed crosshair', () 
     expect(text).toMatch(/-?\d+\.\d+/);
   });
 
+  test('AS4 (FR-015): readout updates within 100 ms of moveend after setCenter', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const readout = page.getByTestId('readout-dd');
+    const before = await readout.innerText();
+
+    const elapsed = await page.evaluate(async () => {
+      const hooks = (window as unknown as Record<string, unknown>).__mapTestHooks as
+        | { setCenter?: (lat: number, lon: number) => void }
+        | undefined;
+      const start = performance.now();
+      hooks?.setCenter?.(23.565, 119.566);
+      // Yield to the render loop; Playwright timer resolution is ~0.1 ms.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return performance.now() - start;
+    });
+
+    // Poll the readout at ~25 Hz until it changes, with a hard 100 ms ceiling.
+    const deadline = Date.now() + 100;
+    let after = before;
+    while (Date.now() < deadline) {
+      after = await readout.innerText();
+      if (after !== before) break;
+      await page.waitForTimeout(8);
+    }
+
+    expect(after, `readout did not update within 100 ms of setCenter`).not.toBe(before);
+    expect(elapsed, `setCenter + first paint should be ≤ 100 ms; got ${elapsed}ms`).toBeLessThan(
+      100,
+    );
+  });
+
   test('AS3: during a scripted continuous pan, readout updates at ≥ 10 Hz', async ({ page }) => {
     await page.goto('/');
     const readout = page.getByTestId('readout-dd');

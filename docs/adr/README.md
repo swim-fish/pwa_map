@@ -29,6 +29,7 @@ drifting.
 | [0013](0013-performance-verification-pipeline.md)   | Performance verification pipeline                    | Accepted | —          |
 | [0014](0014-accessibility-baseline.md)              | Accessibility baseline                               | Accepted | —          |
 | [0015](0015-release-readiness-001-coord-map-pwa.md) | Release readiness — feature `001-coord-map-pwa`      | Accepted | —          |
+| [0016](0016-analyze-driven-verification-hardening.md) | Analyze-driven verification hardening              | Accepted | —          |
 
 ## Adding a new ADR
 

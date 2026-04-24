@@ -36,7 +36,10 @@ test.describe('Story 4 — Copy to clipboard', () => {
     void context;
   });
 
-  test('AS2: copying MGRS then pasting it into Go-To returns within 1 m', async ({ page }) => {
+  test('AS2 (SC-005): copying MGRS then pasting into Go-To returns within 10 s + 1 m', async ({
+    page,
+  }) => {
+    const t0 = Date.now();
     await seedPrefs(page);
     await page.goto('/');
     // Capture MGRS from readout
@@ -63,5 +66,10 @@ test.describe('Story 4 — Copy to clipboard', () => {
     await page.waitForTimeout(900);
     const ddBack = await page.getByTestId('readout-dd').innerText();
     expect(ddBack).toMatch(/25\.03\d+.*121\.56\d+/);
+    const elapsed = Date.now() - t0;
+    expect(
+      elapsed,
+      `copy → paste → return must complete within 10 s (SC-005); got ${elapsed}ms`,
+    ).toBeLessThan(10_000);
   });
 });

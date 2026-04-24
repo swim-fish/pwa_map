@@ -115,7 +115,7 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 ### Implementation for User Story 2
 
-- [x] T048 [US2] Add DMS parsing and formatting to `src/coord/wgs84.ts`: `parseDms`, `formatWGS84DMS` with Unicode glyph default and ASCII accept. Turns T041 green.
+- [x] T048 [US2] Added DMS formatting helpers (`formatWGS84DMS`, `wgs84DdToDms`) to `src/coord/wgs84.ts` with Unicode glyph default. NOTE: the `parseDms` sub-parser ultimately landed in `src/coord/parser.ts` (see ADR 0010) — its regex accepts Unicode (°′″) and ASCII (d'") glyphs and rejects the U+00BA ordinal indicator. Turns T041 green.
 - [x] T049 [US2] Implement `src/coord/zone.ts` — `pickZone(lon: number): Zone` applying the §9 rule. Turns T046 green.
 - [x] T050 [P] [US2] Implement `src/coord/twd97.ts` — register EPSG:3826 and EPSG:3825 via `proj4.defs`, export `wgs84ToTwd97(dd, zone?)` and `twd97ToWgs84(tm2)`. Zone auto-pick uses `pickZone` from T049. Turns T042 green.
 - [x] T051 [P] [US2] Implement `src/coord/twd67.ts` — four-parameter TWD97 ↔ TWD67 transform with the constants from reference §6 (Δx = 807.8, Δy = 248.6, a = 0.00001549, b = 0.000006521). Pipeline `wgs84ToTwd67` = WGS84 → TWD97 z121 → four-param. Turns T043 green.
@@ -212,9 +212,9 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 - [x] T101 [P] Author `docs/adr/0013-performance-verification-pipeline.md` from research R13.
 - [x] T102 [P] Author `docs/adr/0014-accessibility-baseline.md` from research R14.
 - [x] T103 Update `docs/adr/README.md` — fill the ADR index table with the 14 entries from T089–T102.
-- [x] T104 [P] Implement the Vitest benchmark suite at `bench/coord.bench.ts` — asserts single-point conversion ≤ 1 ms median per `plan.md` Performance Goals.
-- [x] T105 [P] Add Lighthouse CI config at `.github/workflows/lighthouse.yml` (or equivalent CI surface) asserting PWA score ≥ 90, TTI ≤ 3 s on simulated fast-3G.
-- [x] T106 [P] Add a Playwright perf probe at `tests/e2e/perf-pan.spec.ts` — scripts a 5-second pan, asserts median readout updates ≥ 10 Hz (SC-007).
+- [x] T104 [P] Created Vitest benchmark suite at `bench/coord.bench.ts` — 15 benches (10 converters + 5 parser dispatch). Local: all converters ≥ 172k ops/sec (~0.006 ms); parser dispatch 96k–997k ops/sec. Well inside the ≤ 1 ms budget. Run via `npx vitest bench --run`.
+- [x] T105 [P] Added Lighthouse CI workflow at `.github/workflows/lighthouse.yml` — PR-into-main + push-to-001-coord-map-pwa; builds + `npm run preview` + `lhci autorun` asserting PWA category ≥ 0.9, first-contentful-paint + interactive medians ≤ 3000 ms; includes bundle-size job. Activation needs `LHCI_GITHUB_APP_TOKEN` secret.
+- [x] T106 [P] Created Playwright perf probe at `tests/e2e/perf-pan.spec.ts` — 5 s scripted pan asserts ≥ 10 unique readout values and median innerText round-trip ≤ 50 ms.
 - [x] T107 Accessibility sweep: verify every interactive element reachable by keyboard in the `Tab` order (MapView → Go To trigger → FormatToggle trigger → per-row copy), contrast ratios pass WCAG AA on both light and dark tiles, crosshair aria-label reflects current readout. Fix any gaps in the touched components.
 - [x] T108 Author `/README.md` at repo root: project summary, quickstart reference, link to `.specify/memory/constitution.md`, link to `specs/001-coord-map-pwa/`, contribution workflow, licence statement for bundled `test-vectors.json` (MIT, attribution intact per reference LICENSE).
 - [x] T109 Run the full `specs/001-coord-map-pwa/quickstart.md §7` checklist end-to-end: format, lint, typecheck, unit, e2e, bench, bundle-size, UI/ADR docs updated. Record evidence (commit hashes, CI run URLs) in a new `docs/adr/0015-release-readiness-001-coord-map-pwa.md`.
