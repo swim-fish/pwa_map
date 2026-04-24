@@ -1,0 +1,18 @@
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.svelte-kit/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+tests/unit/fixtures/test-vectors.json
+
+# Spec Kit provenance — upstream-authored templates and workflow files;
+# do not reformat on `npm run format` so vendored content stays diff-clean
+# against upstream.
+.specify/
+.claude/
+CLAUDE.md

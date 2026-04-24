@@ -1,0 +1,635 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "2.0.0",
+  "license": "MIT",
+  "generatedAt": "2026-04-24T07:51:53Z",
+  "attribution": "Taiwan Coordinate Systems Reference — Copyright (c) 2026 TacMap TW contributors — MIT License",
+  "vectors": [
+    {
+      "id": "wgs84-ddtodms-001",
+      "system": "WGS84",
+      "direction": "DD_TO_DMS",
+      "input": {
+        "dd": 25.033611,
+        "axis": "lat"
+      },
+      "expected": {
+        "deg": 25,
+        "min": 2,
+        "sec": 1.0,
+        "hemisphere": "N"
+      },
+      "tolerance": {
+        "value": 0.01,
+        "unit": "arcsec"
+      },
+      "provenance": "calculated",
+      "notes": "Round-trip DD→DMS; round-trip DMS→DD is id wgs84-dmstodd-*."
+    },
+    {
+      "id": "wgs84-ddtodms-002",
+      "system": "WGS84",
+      "direction": "DD_TO_DMS",
+      "input": {
+        "dd": 121.564472,
+        "axis": "lon"
+      },
+      "expected": {
+        "deg": 121,
+        "min": 33,
+        "sec": 52.099,
+        "hemisphere": "E"
+      },
+      "tolerance": {
+        "value": 0.01,
+        "unit": "arcsec"
+      },
+      "provenance": "calculated",
+      "notes": "Round-trip DD→DMS; round-trip DMS→DD is id wgs84-dmstodd-*."
+    },
+    {
+      "id": "wgs84-ddtodms-003",
+      "system": "WGS84",
+      "direction": "DD_TO_DMS",
+      "input": {
+        "dd": -23.5,
+        "axis": "lat"
+      },
+      "expected": {
+        "deg": 23,
+        "min": 30,
+        "sec": 0.0,
+        "hemisphere": "S"
+      },
+      "tolerance": {
+        "value": 0.01,
+        "unit": "arcsec"
+      },
+      "provenance": "calculated",
+      "notes": "Round-trip DD→DMS; round-trip DMS→DD is id wgs84-dmstodd-*."
+    },
+    {
+      "id": "wgs84-dmstodd-001",
+      "system": "WGS84",
+      "direction": "DMS_TO_DD",
+      "input": {
+        "deg": 25,
+        "min": 2,
+        "sec": 1.0,
+        "hemisphere": "N"
+      },
+      "expected": {
+        "dd": 25.033611
+      },
+      "tolerance": {
+        "value": 1e-7,
+        "unit": "deg"
+      },
+      "provenance": "calculated"
+    },
+    {
+      "id": "wgs84-dmstodd-002",
+      "system": "WGS84",
+      "direction": "DMS_TO_DD",
+      "input": {
+        "deg": 120,
+        "min": 0,
+        "sec": 0.0,
+        "hemisphere": "E"
+      },
+      "expected": {
+        "dd": 120.0
+      },
+      "tolerance": {
+        "value": 1e-7,
+        "unit": "deg"
+      },
+      "provenance": "calculated"
+    },
+    {
+      "id": "twd97-121-wgs84to-001",
+      "system": "EPSG:3826",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 25.033611,
+        "lon": 121.564472
+      },
+      "expected": {
+        "easting": 306962.887,
+        "northing": 2769619.124,
+        "zone": "121"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Taipei 101"
+    },
+    {
+      "id": "twd97-121-wgs84to-002",
+      "system": "EPSG:3826",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 22.61225,
+        "lon": 120.2867
+      },
+      "expected": {
+        "easting": 176669.456,
+        "northing": 2501522.988,
+        "zone": "121"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Kaohsiung 85 Sky Tower"
+    },
+    {
+      "id": "twd97-121-wgs84to-003",
+      "system": "EPSG:3826",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 24.1416,
+        "lon": 120.6437
+      },
+      "expected": {
+        "easting": 213789.087,
+        "northing": 2670751.115,
+        "zone": "121"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Taichung City Hall"
+    },
+    {
+      "id": "twd97-121-wgs84to-004",
+      "system": "EPSG:3826",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.9932,
+        "lon": 121.6012
+      },
+      "expected": {
+        "easting": 311171.02,
+        "northing": 2654400.548,
+        "zone": "121"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Hualien railway station"
+    },
+    {
+      "id": "twd97-121-wgs84to-005",
+      "system": "EPSG:3826",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.472,
+        "lon": 120.957
+      },
+      "expected": {
+        "easting": 245607.447,
+        "northing": 2596551.291,
+        "zone": "121"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Yushan main summit"
+    },
+    {
+      "id": "twd97-121-wgs84to-006",
+      "system": "EPSG:3826",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.5,
+        "lon": 120.0
+      },
+      "expected": {
+        "easting": 147865.618,
+        "northing": 2600006.775,
+        "zone": "121"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Zone boundary (lon = 120.000000°) assigned to zone 121 per §9"
+    },
+    {
+      "id": "twd97-119-wgs84to-001",
+      "system": "EPSG:3825",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.565,
+        "lon": 119.566
+      },
+      "expected": {
+        "easting": 307778.298,
+        "northing": 2606963.573,
+        "zone": "119"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Magong port"
+    },
+    {
+      "id": "twd97-119-wgs84to-002",
+      "system": "EPSG:3825",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.555,
+        "lon": 119.494
+      },
+      "expected": {
+        "easting": 300432.091,
+        "northing": 2605828.954,
+        "zone": "119"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Xiyu West lighthouse"
+    },
+    {
+      "id": "twd97-119-wgs84to-003",
+      "system": "EPSG:3825",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.3637,
+        "lon": 119.5137
+      },
+      "expected": {
+        "easting": 302518.902,
+        "northing": 2584650.989,
+        "zone": "119"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Wang-an harbour"
+    },
+    {
+      "id": "twd97-119-wgs84to-004",
+      "system": "EPSG:3825",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.2083,
+        "lon": 119.4333
+      },
+      "expected": {
+        "easting": 294350.416,
+        "northing": 2567415.186,
+        "zone": "119"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Chimei harbour"
+    },
+    {
+      "id": "twd97-119-wgs84to-005",
+      "system": "EPSG:3825",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.2574,
+        "lon": 119.6717
+      },
+      "expected": {
+        "easting": 318727.337,
+        "northing": 2572945.325,
+        "zone": "119"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Dongji harbour"
+    },
+    {
+      "id": "twd97-119-wgs84to-006",
+      "system": "EPSG:3825",
+      "direction": "WGS84_TO_TM2",
+      "input": {
+        "lat": 23.5,
+        "lon": 119.999999
+      },
+      "expected": {
+        "easting": 352134.28,
+        "northing": 2600006.774,
+        "zone": "119"
+      },
+      "tolerance": {
+        "value": 0.1,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Zone boundary (lon = 119.999999°) — just inside zone 119 per §9"
+    },
+    {
+      "id": "twd67-twd97to-001",
+      "system": "EPSG:3828",
+      "direction": "TWD97_TO_TWD67",
+      "input": {
+        "easting": 306962.887,
+        "northing": 2769619.124
+      },
+      "expected": {
+        "easting": 306132.271,
+        "northing": 2769822.821
+      },
+      "tolerance": {
+        "value": 3.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Taipei 101. Four-parameter linearised transform, ± 3 m on main island."
+    },
+    {
+      "id": "twd67-twd97to-002",
+      "system": "EPSG:3828",
+      "direction": "TWD97_TO_TWD67",
+      "input": {
+        "easting": 176669.456,
+        "northing": 2501522.988
+      },
+      "expected": {
+        "easting": 175842.607,
+        "northing": 2501731.687
+      },
+      "tolerance": {
+        "value": 3.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Kaohsiung 85 Sky Tower. Four-parameter linearised transform, ± 3 m on main island."
+    },
+    {
+      "id": "twd67-twd97to-003",
+      "system": "EPSG:3828",
+      "direction": "TWD97_TO_TWD67",
+      "input": {
+        "easting": 213789.087,
+        "northing": 2670751.115
+      },
+      "expected": {
+        "easting": 212960.559,
+        "northing": 2670956.951
+      },
+      "tolerance": {
+        "value": 3.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Taichung City Hall. Four-parameter linearised transform, ± 3 m on main island."
+    },
+    {
+      "id": "twd67-twd97to-004",
+      "system": "EPSG:3828",
+      "direction": "TWD97_TO_TWD67",
+      "input": {
+        "easting": 311171.02,
+        "northing": 2654400.548
+      },
+      "expected": {
+        "easting": 310341.091,
+        "northing": 2654606.002
+      },
+      "tolerance": {
+        "value": 3.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Hualien railway station. Four-parameter linearised transform, ± 3 m on main island."
+    },
+    {
+      "id": "twd67-twd97to-005",
+      "system": "EPSG:3828",
+      "direction": "TWD97_TO_TWD67",
+      "input": {
+        "easting": 245607.447,
+        "northing": 2596551.291
+      },
+      "expected": {
+        "easting": 244778.91,
+        "northing": 2596758.069
+      },
+      "tolerance": {
+        "value": 3.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Yushan main summit. Four-parameter linearised transform, ± 3 m on main island."
+    },
+    {
+      "id": "mgrs-from-wgs84-001",
+      "system": "MGRS",
+      "direction": "WGS84_TO_MGRS",
+      "input": {
+        "lat": 25.033611,
+        "lon": 121.564472,
+        "precision": 5
+      },
+      "expected": {
+        "mgrs": "51RUH5517069437"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Taipei 101"
+    },
+    {
+      "id": "mgrs-from-wgs84-002",
+      "system": "MGRS",
+      "direction": "WGS84_TO_MGRS",
+      "input": {
+        "lat": 22.61225,
+        "lon": 120.2867,
+        "precision": 5
+      },
+      "expected": {
+        "mgrs": "51QTF2107503137"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Kaohsiung 85 Sky Tower"
+    },
+    {
+      "id": "mgrs-from-wgs84-003",
+      "system": "MGRS",
+      "direction": "WGS84_TO_MGRS",
+      "input": {
+        "lat": 24.1416,
+        "lon": 120.6437,
+        "precision": 5
+      },
+      "expected": {
+        "mgrs": "51RTG6055571918"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Taichung City Hall"
+    },
+    {
+      "id": "mgrs-from-wgs84-004",
+      "system": "MGRS",
+      "direction": "WGS84_TO_MGRS",
+      "input": {
+        "lat": 23.9932,
+        "lon": 121.6012,
+        "precision": 5
+      },
+      "expected": {
+        "mgrs": "51QUG5770954180"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Hualien railway station"
+    },
+    {
+      "id": "mgrs-from-wgs84-005",
+      "system": "MGRS",
+      "direction": "WGS84_TO_MGRS",
+      "input": {
+        "lat": 23.565,
+        "lon": 119.566,
+        "precision": 5
+      },
+      "expected": {
+        "mgrs": "50QQM6192008413"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "cross-verified-proj4",
+      "notes": "Magong port"
+    },
+    {
+      "id": "taipower-9char-001",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 25.033611,
+        "lon": 121.564472,
+        "form": "9"
+      },
+      "expected": {
+        "code": "B7039 BD32"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Taipei 101. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+    },
+    {
+      "id": "taipower-9char-002",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 22.61225,
+        "lon": 120.2867,
+        "form": "9"
+      },
+      "expected": {
+        "code": "P0703 CC43"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Kaohsiung 85 Sky Tower. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+    },
+    {
+      "id": "taipower-9char-003",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 24.1416,
+        "lon": 120.6437,
+        "form": "9"
+      },
+      "expected": {
+        "code": "G5341 FE65"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Taichung City Hall. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+    },
+    {
+      "id": "taipower-11char-001",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 25.033611,
+        "lon": 121.564472,
+        "form": "11"
+      },
+      "expected": {
+        "code": "B7039 BD3223"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Taipei 101. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+    },
+    {
+      "id": "taipower-11char-002",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 23.9932,
+        "lon": 121.6012,
+        "form": "11"
+      },
+      "expected": {
+        "code": "H7509 DB4016"
+      },
+      "tolerance": {
+        "value": 1.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Hualien railway station. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+    }
+  ]
+}

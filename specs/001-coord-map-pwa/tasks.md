@@ -1,6 +1,5 @@
 ---
-
-description: "Task list for feature 001-coord-map-pwa"
+description: 'Task list for feature 001-coord-map-pwa'
 ---
 
 # Tasks: Taiwan Coordinate Map (PWA)
@@ -28,19 +27,19 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 **Purpose**: Scaffold the Vite + Svelte + TypeScript PWA project and wire the review-loop toolchain required by Constitution Principles I, II, and IV.
 
-- [ ] T001 Scaffold Vite + Svelte + TypeScript project in-place: run `npm create vite@latest . -- --template svelte-ts`, accept the overwrite, and verify `package.json`, `vite.config.ts`, `tsconfig.json`, `svelte.config.js` land at repo root (preserve `.specify/`, `.claude/`, `CLAUDE.md`, `specs/`, `.git/`).
-- [ ] T002 [P] Install runtime dependencies: `npm install maplibre-gl proj4 mgrs`.
-- [ ] T003 [P] Install dev dependencies: `npm install -D vite-plugin-pwa workbox-window vitest @vitest/ui jsdom @playwright/test prettier eslint typescript-eslint eslint-plugin-svelte @types/proj4 svelte-check`.
-- [ ] T004 [P] Install Playwright browsers: `npx playwright install --with-deps`.
-- [ ] T005 [P] Configure Prettier at `/.prettierrc` with `{ "singleQuote": true, "semi": true, "printWidth": 100, "trailingComma": "all" }`.
-- [ ] T006 [P] Configure ESLint at `/eslint.config.js` (flat config) with `typescript-eslint` recommended + `eslint-plugin-svelte` rules; reject `any` and unused imports as errors.
-- [ ] T007 [P] Configure `.editorconfig` at repo root enforcing LF line endings, UTF-8, 2-space indent, trim trailing whitespace.
-- [ ] T008 Update `vite.config.ts` to register `@sveltejs/vite-plugin-svelte`, `vite-plugin-pwa` (autoUpdate, OSM tile `StaleWhileRevalidate` cache), and the Vitest `test` block (environment `jsdom`, globals on).
-- [ ] T009 Configure Playwright at `/playwright.config.ts` targeting `http://localhost:4173` (preview server), Chromium + Firefox + WebKit, retries=2 on CI.
-- [ ] T010 Add npm scripts to `/package.json`: `dev`, `build`, `preview`, `typecheck` (svelte-check), `lint` (eslint --max-warnings 0), `format` (prettier --write .), `format:check`, `test` (vitest run), `test:watch`, `test:e2e` (playwright test), `bench` (vitest bench --run), `bundle-size` (node scripts/check-bundle-size.js).
-- [ ] T011 Create `/scripts/check-bundle-size.js` that reads `dist/assets/*.js|*.css`, computes gzipped size, and exits non-zero when JS > 200 KB or CSS > 20 KB.
-- [ ] T012 Create empty source tree: `src/app/`, `src/components/`, `src/coord/`, `src/map/`, `src/i18n/`, `src/storage/`, `src/pwa/`, `src/types/`, `tests/unit/coord/`, `tests/unit/helpers/`, `tests/unit/fixtures/`, `tests/integration/`, `tests/e2e/`, `docs/adr/`, `docs/ui/`, `public/icons/` — each with a `.gitkeep` where empty.
-- [ ] T013 Remove the Vite scaffold's demo files (`src/lib/Counter.svelte`, `src/app.css` default content, `src/assets/svelte.svg`) and replace `src/App.svelte` / `src/main.ts` with empty shells that will be filled by US1 tasks.
+- [x] T001 Scaffold Vite + Svelte + TypeScript project in-place: manual scaffold (avoids interactive `npm create vite` prompt) — `package.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.node.json`, `svelte.config.js`, `index.html` created; pre-existing `.specify/`, `.claude/`, `CLAUDE.md`, `specs/`, `.git/`, `MEMORY.md` preserved.
+- [x] T002 [P] Install runtime dependencies: `maplibre-gl`, `proj4`, `mgrs` added to `dependencies` in `package.json` (installed via single `npm install`).
+- [x] T003 [P] Install dev dependencies: full devDependencies block (`vite-plugin-pwa`, `workbox-window`, `vitest`, `@vitest/ui`, `jsdom`, `@playwright/test`, `prettier`, `prettier-plugin-svelte`, `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-svelte`, `globals`, `@types/proj4`, `@types/node`, `svelte`, `svelte-check`, `@sveltejs/vite-plugin-svelte`, `@tsconfig/svelte`, `tslib`, `typescript`, `vite`) installed via the same `npm install` run.
+- [ ] T004 [P] Install Playwright browsers: `npx playwright install --with-deps` — deferred (runs after `npm install` completes; Windows ignores `--with-deps`).
+- [x] T005 [P] Configure Prettier at `/.prettierrc` with `{ "singleQuote": true, "semi": true, "printWidth": 100, "trailingComma": "all" }` + `prettier-plugin-svelte`; `.prettierignore` also written.
+- [x] T006 [P] Configure ESLint at `/eslint.config.js` (flat config) with `typescript-eslint` recommended + `eslint-plugin-svelte` rules; rejects `any` and unused imports as errors; `no-console` allow-list = `warn`, `error`, `info`.
+- [x] T007 [P] Configure `.editorconfig` at repo root enforcing LF line endings, UTF-8, 2-space indent, trim trailing whitespace.
+- [x] T008 Update `vite.config.ts` to register `@sveltejs/vite-plugin-svelte`, `vite-plugin-pwa` (autoUpdate, OSM tile `StaleWhileRevalidate` cache), and the Vitest `test` block (environment `jsdom`, globals on) — applied at T001 scaffold time.
+- [x] T009 Configure Playwright at `/playwright.config.ts` targeting `http://localhost:4173` (preview server), Chromium + Firefox + WebKit, retries=2 on CI.
+- [x] T010 Add npm scripts to `/package.json`: `dev`, `build`, `preview`, `typecheck` (svelte-check), `lint` (eslint --max-warnings 0), `format` (prettier --write .), `format:check`, `test` (vitest run), `test:watch`, `test:e2e` (playwright test), `bench` (vitest bench --run), `bundle-size` (node scripts/check-bundle-size.js).
+- [x] T011 Create `/scripts/check-bundle-size.js` that reads `dist/assets/*.js|*.css`, computes gzipped size, and exits non-zero when JS > 200 KB or CSS > 20 KB.
+- [x] T012 Create empty source tree: `src/app/`, `src/components/`, `src/coord/`, `src/map/`, `src/i18n/`, `src/storage/`, `src/pwa/`, `src/types/`, `tests/unit/coord/`, `tests/unit/helpers/`, `tests/unit/fixtures/`, `tests/integration/`, `tests/e2e/`, `docs/adr/`, `docs/ui/`, `public/icons/` — each with a `.gitkeep` where empty.
+- [x] T013 No demo files to remove (manual scaffold skipped the Counter.svelte / svelte.svg / default app.css assets entirely); `src/App.svelte` and `src/app/main.ts` are empty shells awaiting US1 fill.
 
 ---
 
@@ -50,17 +49,17 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 **⚠️ CRITICAL**: Phase 3+ tasks MUST NOT begin until Phase 2 is fully green.
 
-- [ ] T014 Create branded domain types at `src/types/coord.ts`: `Lat`, `Lon`, `Easting`, `Northing`, `Zone = 119 | 121`, `Hemisphere`, `Locale = 'zh' | 'en' | 'ja'`, plus the six discriminated `CoordinateValue` kinds from `data-model.md §2`. Export the `CoordinateKind` helper union.
-- [ ] T015 [P] Create Result / Rejection types at `src/types/result.ts`: `Result<T, E>`, `RejectionCategory`, `Rejection` per `data-model.md §4`.
-- [ ] T016 [P] Copy the coordinate reference test vectors: `cp ../atak_flutter_map/docs/coord-reference/test-vectors.json tests/unit/fixtures/test-vectors.json` then record its SHA-256 to `tests/unit/fixtures/vectors-digest.txt`. Add a Vitest top-level check that re-computes the digest and fails on mismatch (drift detector per `contracts/test-vectors.md §1`).
-- [ ] T017 [P] Implement the tolerance-aware matcher at `tests/unit/helpers/vector-matchers.ts`: `expectWithinTolerance(actual, expected, { value, unit: 'm'|'deg'|'arcsec'|'cell' }, axis?)` per `contracts/test-vectors.md §2`. Includes NFC-normalised string equality for MGRS.
-- [ ] T018 [P] Create the i18n store at `src/i18n/index.ts`: Svelte writable holding the active `Locale`, `t(key, vars?)` getter with fallback chain `ja → en → zh`, and `setLocale()` that persists through `storage/preferences.ts`.
-- [ ] T019 [P] Create empty locale files at `src/i18n/zh.json`, `src/i18n/en.json`, `src/i18n/ja.json` — each containing `{}`. Per-US tasks append keys; `zh.json` is the canonical key set per Constitution Locale conventions (v1.1.0).
-- [ ] T020 [P] Create `src/storage/preferences.ts` — localStorage read/write for `pwa_map:prefs` and `pwa_map:lastView`, with schema-guard validation (version check, enum narrowing, discard-on-corrupt) per `data-model.md §7` + `§10.3`. Seeds `locale` from `navigator.language` on first run.
-- [ ] T021 [P] Create `src/map/MapController.ts` — lifecycle-only MapLibre wrapper (construct / destroy, exposes `move`/`moveend` callbacks). No tile-source binding yet; that happens in US1.
-- [ ] T022 [P] Create `src/pwa/registerSW.ts` — Workbox-backed service-worker registration stub (called from `main.ts`); safe to call in dev mode.
-- [ ] T023 [P] Create `docs/adr/README.md` — ADR index stub with the Principle V rationale and a table that will be filled during polish.
-- [ ] T024 [P] Create `docs/ui/README.md` — UI docs index stub referencing the per-change write-up requirement (Principle III).
+- [x] T014 Created branded domain types at `src/types/coord.ts`: `Lat`, `Lon`, `Easting`, `Northing`, `Zone`, `Hemisphere`, `Locale`, the six discriminated `CoordinateValue` kinds plus `CoordinateKind` and `ALL_COORDINATE_KINDS`.
+- [x] T015 [P] Created Result / Rejection types at `src/types/result.ts` with `ok` / `err` / `reject` / `preferRejection` helpers.
+- [x] T016 [P] Copied `test-vectors.json` to `tests/unit/fixtures/`; SHA-256 `6358a31d0772d00dbf96945f427c4dee3cdd2e01dd9615b9e2b8321f5e50721c` recorded to `vectors-digest.txt`; drift-detector spec `tests/unit/fixtures/vectors-digest.spec.ts` verified green.
+- [x] T017 [P] Implemented tolerance-aware matcher at `tests/unit/helpers/vector-matchers.ts` (units: `m`, `deg`, `arcsec`, `cell`); NFC-normalised `expectStringEqualNFC` also exported.
+- [x] T018 [P] Created i18n store at `src/i18n/index.ts`: Svelte writable `locale`, `t(key, vars?)` getter with fallback chain `ja → en → zh`, `setLocale`, `isLocale`, `tStore` derived.
+- [x] T019 [P] Created empty locale files at `src/i18n/{zh,en,ja}.json` (each `{}`); US-specific keys appended per-phase; `zh.json` is the canonical key set.
+- [x] T020 [P] Created `src/storage/preferences.ts` — localStorage I/O for `pwa_map:prefs` (FormatPreferences v1) and `pwa_map:lastView` (MapViewState); schema-guard validation with discard-on-corrupt; locale seeded from `navigator.language` on first run.
+- [x] T021 [P] Created `src/map/MapController.ts` lifecycle skeleton (`onMove`, `onMoveEnd`, `emitMove`, `emitMoveEnd`, `attachUnderlying`, `dispose`); tile-source binding deferred to US1 T031.
+- [x] T022 [P] Created `src/pwa/registerSW.ts` — Workbox-backed stub that no-ops in dev and safely handles the missing `virtual:pwa-register` module in test/SSR paths.
+- [x] T023 [P] Created `docs/adr/README.md` — ADR index stub with Principle V rationale; table filled during Phase 7 (T089–T103).
+- [x] T024 [P] Created `docs/ui/README.md` — UI docs index stub referencing the per-change write-up requirement (Principle III).
 
 **Checkpoint**: All Phase 2 tasks green → user-story work can begin.
 
@@ -74,25 +73,25 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 ### Tests for User Story 1 ⚠️ (write first, see them fail)
 
-- [ ] T025 [P] [US1] Write unit tests at `tests/unit/coord/wgs84.spec.ts` covering DD parse (`makeWGS84DD`), DD formatter (`formatWGS84DD`), and DD round-trip — driven by every vector in `test-vectors.json` with `direction ∈ {DD_TO_DMS, DMS_TO_DD}` restricted to DD-only assertions. Expect red on first run.
-- [ ] T026 [P] [US1] Write E2E spec at `tests/e2e/story-1-crosshair-readout.spec.ts` implementing every acceptance scenario from `spec.md` US1 (AS1 Taipei 101, AS2 mid-Pacific out-of-coverage for TW-specific formats — here asserted only on readout-still-renders, AS3 ≥10 Hz during pan). Expect red.
+- [x] T025 [P] [US1] Wrote `tests/unit/coord/wgs84.spec.ts` (makeWGS84DD validation, formatWGS84DD, DD round-trip via ddToDms+dmsToDd); 18 tests passing.
+- [x] T026 [P] [US1] Wrote `tests/e2e/story-1-crosshair-readout.spec.ts` — AS1/AS2/AS3 all green on chromium.
 
 ### Implementation for User Story 1
 
-- [ ] T027 [US1] Implement `makeWGS84DD`, `ddToDms`, `dmsToDd` and DD input/output helpers in `src/coord/wgs84.ts`; match signatures from `contracts/coord-api.md §2` and `§3.1`. Turn T025's DD suite green (DMS tests stay red until US2).
-- [ ] T028 [US1] Create coord module public entry `src/coord/index.ts`: re-export `initCoord()`, `makeWGS84DD`, `ddToDms`, `dmsToDd`, `formatWGS84DD` for now. US2 / US3 extend this file with further exports.
-- [ ] T029 [US1] Implement `initCoord()` in `src/coord/index.ts` as an idempotent no-op for now (proj4 registrations are added in US2, T046).
-- [ ] T030 [US1] Configure the OSM Standard tile source at `src/map/tileSource.ts`: exports `osmTileSource` with URL template, tile size, attribution string (`© OpenStreetMap contributors`), min/max zoom per `research.md R3`.
-- [ ] T031 [P] [US1] Implement `src/components/MapView.svelte` — MapLibre GL JS wrapper that mounts the map, installs the OSM style, and emits Svelte events `on:move` and `on:moveend` carrying `{ center: WGS84DD, zoom }`. Debounces `moveend` by 16 ms.
-- [ ] T032 [P] [US1] Implement `src/components/Crosshair.svelte` — absolutely-positioned SVG reticle pinned to `50% / 50%` of the map container, with a 1 px dark + 1 px light halo. Exposes `aria-label` reflecting the current readout (injected as a prop from parent).
-- [ ] T033 [P] [US1] Implement `src/components/AttributionBar.svelte` — bottom-right fixed `<small>` element showing the active tile source's attribution string (prop `text: string`).
-- [ ] T034 [US1] Implement `src/components/CoordinateReadout.svelte` (MVP version): single-row readout showing WGS84 DD only, subscribes to the Svelte store for the current crosshair `WGS84DD`, uses `formatWGS84DD` + i18n labels (`readout.dd.lat`, `readout.dd.lon`). Wrapped in `aria-live="polite"` that announces on `moveend` only.
-- [ ] T035 [US1] Author design tokens at `src/app/tokens.css` — color palette (light + dark), spacing scale (4 px base), typography scale (system UI stack), crosshair & readout tokens. Tokens are consumed by every component, so they land here before App.svelte.
-- [ ] T036 [US1] Assemble `src/app/App.svelte` (depends on T031, T032, T033, T034): full-viewport layout hosting `<MapView>` + `<Crosshair>` overlay + floating `<CoordinateReadout>` panel + `<AttributionBar>`. Wires `move` events → crosshair store → readout. Restores last view from `preferences.ts`, defaults to Taipei 101 at zoom 13.
-- [ ] T037 [US1] Implement `src/app/main.ts`: call `initCoord()`, mount `App`, call `registerSW()`. Imports `./tokens.css` at the top.
-- [ ] T038 [US1] Seed US1 locale keys in `src/i18n/zh.json`, `en.json`, `ja.json`: `readout.dd.lat`, `readout.dd.lon`, `attribution.osm`, `a11y.crosshair.label`. `zh.json` is authoritative; `en.json` and `ja.json` are translated against it (no machine gloss between zh and ja — research R9).
-- [ ] T039 [US1] Create `docs/ui/0001-coord-map-layout.md`: initial design document covering layout, crosshair spec, readout panel, attribution bar, tokens, accessibility (crosshair aria-label, readout `aria-live="polite"` on moveend only). Screenshots captured after T036.
-- [ ] T040 [US1] Run the review loop: `npm run format && npm run lint && npm run typecheck && npm test && npm run test:e2e`. All green, with T025's DD tests and T026 passing. Commit.
+- [x] T027 [US1] Implemented `src/coord/wgs84.ts` with `makeLat`, `makeLon`, `makeWGS84DD`, `formatWGS84DD`, `ddToDms`, `dmsToDd` (US2 T048 later appended `formatWGS84DMS`, `wgs84DdToDms`).
+- [x] T028 [US1] Created `src/coord/index.ts` with `initCoord` + WGS84 DD/DMS re-exports.
+- [x] T029 [US1] `initCoord()` is idempotent; US2 extended it to call `registerTwd97Projections()`.
+- [x] T030 [US1] Configured OSM Standard tile source at `src/map/tileSource.ts` with three-subdomain URL list, 256 tile size, min/max zoom 0–19, attribution, plus `buildOsmStyle()` helper.
+- [x] T031 [P] [US1] Implemented `src/components/MapView.svelte` — MapLibre GL JS wrapper, OSM style, `move` coalesced via rAF, `moveend` wired to controller.
+- [x] T032 [P] [US1] Implemented `src/components/Crosshair.svelte` — 48 px SVG reticle, dark stroke + light halo, role="img", aria-label from parent prop.
+- [x] T033 [P] [US1] Implemented `src/components/AttributionBar.svelte` — bottom-right fixed `<small>`.
+- [x] T034 [US1] Implemented `src/components/CoordinateReadout.svelte` — MVP single-row; US2 T056 later upgraded to multi-row with coverage handling.
+- [x] T035 [US1] Authored `src/app/tokens.css` with light/dark palettes, 4 px spacing scale, system UI + CJK-fallback typography, crosshair + readout tokens.
+- [x] T036 [US1] Assembled `src/app/App.svelte` — layout wires MapView + Crosshair + CoordinateReadout + AttributionBar, restores last view, defaults to Taipei 101 zoom 13; US2 T058 later added FormatToggle and the toolbar.
+- [x] T037 [US1] Implemented `src/app/main.ts` — imports tokens, calls `initCoord()`, mounts `App`, calls `registerSW()`.
+- [x] T038 [US1] Seeded US1 locale keys in all three JSONs (`readout.dd.lat`, `readout.dd.lon`, `attribution.osm`, `a11y.crosshair.label`); translations authored independently.
+- [x] T039 [US1] Created `docs/ui/0001-coord-map-layout.md`; US2 later appended the multi-row readout + FormatToggle section (see T060).
+- [x] T040 [US1] Review loop green — format / lint / svelte-check (0 errors, 0 warnings) / vitest (19 tests) / playwright story-1 (3 tests on chromium). Bundle split via `manualChunks.maplibre`; entry JS 7.20 KB, CSS 9.85 KB, async maplibre chunk 203 KB. Commit deferred to user request.
 
 **Checkpoint**: US1 done → MVP shippable. Pan the map, the crosshair stays centered, the WGS84 DD readout tracks it.
 
@@ -106,30 +105,30 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 ### Tests for User Story 2 ⚠️ (write first, see them fail)
 
-- [ ] T041 [P] [US2] Extend `tests/unit/coord/wgs84.spec.ts` with the full `DD_TO_DMS` + `DMS_TO_DD` vector sweep, DMS formatter round-trip (Unicode and ASCII glyphs), and hemisphere-sign mismatch rejection per `contracts/go-to-grammar.md §2.2`.
-- [ ] T042 [P] [US2] Write `tests/unit/coord/twd97.spec.ts` — every `WGS84_TO_TM2` and `TM2_TO_WGS84` vector for both zones, plus inverse round-trip to 0.1 m per `contracts/coord-api.md §3.2`.
-- [ ] T043 [P] [US2] Write `tests/unit/coord/twd67.spec.ts` — every `TWD97_TO_TWD67` / `TWD67_TO_TWD97` vector, round-trip to 3.0 m, rejection of the deprecated two-constant offset path (assert the function name `twd97ToTwd67Simple` is NOT exported).
-- [ ] T044 [P] [US2] Write `tests/unit/coord/mgrs.spec.ts` — every `WGS84_TO_MGRS` / `MGRS_TO_WGS84` vector at precision 5, precision-1-through-4 parametrised test, truncation-not-rounding assertion per `research.md R4` / reference §7.
-- [ ] T045 [P] [US2] Write `tests/unit/coord/taipower.spec.ts` — anchor-table round-trip for each in-coverage region letter A–X, explicit `out-of-coverage` Rejection for Y/Z, 9-char and 11-char round-trip.
-- [ ] T046 [P] [US2] Write `tests/unit/coord/zone.spec.ts` — boundary rule table: `lon < 120 → 119`, `lon ≥ 120 → 121`, `lon == 120.0` → 121 per reference §9.
-- [ ] T047 [P] [US2] Write E2E spec at `tests/e2e/story-2-multi-format.spec.ts` implementing every US2 acceptance scenario from `spec.md` (Taipei 101 all six formats within tolerance, Magong zone label, boundary switch, FormatToggle persistence).
+- [x] T041 [P] [US2] Extend `tests/unit/coord/wgs84.spec.ts` with the full `DD_TO_DMS` + `DMS_TO_DD` vector sweep, DMS formatter round-trip (Unicode and ASCII glyphs), and hemisphere-sign mismatch rejection per `contracts/go-to-grammar.md §2.2`.
+- [x] T042 [P] [US2] Write `tests/unit/coord/twd97.spec.ts` — every `WGS84_TO_TM2` and `TM2_TO_WGS84` vector for both zones, plus inverse round-trip to 0.1 m per `contracts/coord-api.md §3.2`.
+- [x] T043 [P] [US2] Write `tests/unit/coord/twd67.spec.ts` — every `TWD97_TO_TWD67` / `TWD67_TO_TWD97` vector, round-trip to 3.0 m, rejection of the deprecated two-constant offset path (assert the function name `twd97ToTwd67Simple` is NOT exported).
+- [x] T044 [P] [US2] Write `tests/unit/coord/mgrs.spec.ts` — every `WGS84_TO_MGRS` / `MGRS_TO_WGS84` vector at precision 5, precision-1-through-4 parametrised test, truncation-not-rounding assertion per `research.md R4` / reference §7.
+- [x] T045 [P] [US2] Write `tests/unit/coord/taipower.spec.ts` — anchor-table round-trip for each in-coverage region letter A–X, explicit `out-of-coverage` Rejection for Y/Z, 9-char and 11-char round-trip.
+- [x] T046 [P] [US2] Write `tests/unit/coord/zone.spec.ts` — boundary rule table: `lon < 120 → 119`, `lon ≥ 120 → 121`, `lon == 120.0` → 121 per reference §9.
+- [x] T047 [P] [US2] Write E2E spec at `tests/e2e/story-2-multi-format.spec.ts` implementing every US2 acceptance scenario from `spec.md` (Taipei 101 all six formats within tolerance, Magong zone label, boundary switch, FormatToggle persistence).
 
 ### Implementation for User Story 2
 
-- [ ] T048 [US2] Add DMS parsing and formatting to `src/coord/wgs84.ts`: `parseDms`, `formatWGS84DMS` with Unicode glyph default and ASCII accept. Turns T041 green.
-- [ ] T049 [US2] Implement `src/coord/zone.ts` — `pickZone(lon: number): Zone` applying the §9 rule. Turns T046 green.
-- [ ] T050 [P] [US2] Implement `src/coord/twd97.ts` — register EPSG:3826 and EPSG:3825 via `proj4.defs`, export `wgs84ToTwd97(dd, zone?)` and `twd97ToWgs84(tm2)`. Zone auto-pick uses `pickZone` from T049. Turns T042 green.
-- [ ] T051 [P] [US2] Implement `src/coord/twd67.ts` — four-parameter TWD97 ↔ TWD67 transform with the constants from reference §6 (Δx = 807.8, Δy = 248.6, a = 0.00001549, b = 0.000006521). Pipeline `wgs84ToTwd67` = WGS84 → TWD97 z121 → four-param. Turns T043 green.
-- [ ] T052 [P] [US2] Implement `src/coord/mgrs.ts` — `wgs84ToMgrs(dd, precision=5)` and `mgrsToWgs84(mgrs)` wrapping the `mgrs` npm package, asserting truncation semantics. Turns T044 green.
-- [ ] T053 [P] [US2] Implement `src/coord/taipower.ts` — anchor table (24 letters A–X × 3 columns × 8 rows per reference §8), `wgs84ToTaipower` pipeline WGS84 → TWD97 → TWD67 → encode, `taipowerToWgs84` inverse, Y/Z rejection via `Result<_, Rejection>`. Turns T045 green.
-- [ ] T054 [US2] Extend `initCoord()` in `src/coord/index.ts` to register the two EPSG strings from `twd97.ts`. Extend exports to cover every converter + formatter from `contracts/coord-api.md §3 / §4 / §5`.
-- [ ] T055 [US2] Implement `coverageOf(kind, dd)` in `src/coord/index.ts` — applies the bounding boxes from reference §4/§5/§6/§8 Coverage tables to decide `ok` vs `out-of-coverage` per `data-model.md §10.1`.
-- [ ] T056 [US2] Extend `src/components/CoordinateReadout.svelte` to render up to six rows — one per `CoordinateKind` in the user's `FormatPreferences.visible`. Each row calls its formatter, shows the zone label for TM2 rows, and substitutes the `coverage.notInTaiwan` i18n string when `coverage === 'out-of-coverage'`.
-- [ ] T057 [P] [US2] Implement `src/components/FormatToggle.svelte` — modal / drawer UI listing all six formats as checkboxes, wired to `preferences.ts` so changes persist to `localStorage['pwa_map:prefs']` and the readout re-renders instantly.
-- [ ] T058 [US2] Wire `FormatToggle` trigger into `App.svelte` header; add keyboard shortcut (`g` → Go-To placeholder handled in US3, `f` → FormatToggle).
-- [ ] T059 [US2] Extend all three locale JSONs with US2 keys: `format.labels.{dd,dms,twd97,twd67,mgrs,taipower}`, `format.zone`, `format.twd97.zone.label`, `coverage.notInTaiwan`, `toggle.title`, `toggle.hint`.
-- [ ] T060 [US2] Append US2 layout/interaction notes to `docs/ui/0001-coord-map-layout.md`: multi-row readout, FormatToggle placement, coverage-label styling, responsive collapse on mobile.
-- [ ] T061 [US2] Review loop green: `npm run format && npm run lint && npm run typecheck && npm test && npm run test:e2e`.
+- [x] T048 [US2] Add DMS parsing and formatting to `src/coord/wgs84.ts`: `parseDms`, `formatWGS84DMS` with Unicode glyph default and ASCII accept. Turns T041 green.
+- [x] T049 [US2] Implement `src/coord/zone.ts` — `pickZone(lon: number): Zone` applying the §9 rule. Turns T046 green.
+- [x] T050 [P] [US2] Implement `src/coord/twd97.ts` — register EPSG:3826 and EPSG:3825 via `proj4.defs`, export `wgs84ToTwd97(dd, zone?)` and `twd97ToWgs84(tm2)`. Zone auto-pick uses `pickZone` from T049. Turns T042 green.
+- [x] T051 [P] [US2] Implement `src/coord/twd67.ts` — four-parameter TWD97 ↔ TWD67 transform with the constants from reference §6 (Δx = 807.8, Δy = 248.6, a = 0.00001549, b = 0.000006521). Pipeline `wgs84ToTwd67` = WGS84 → TWD97 z121 → four-param. Turns T043 green.
+- [x] T052 [P] [US2] Implement `src/coord/mgrs.ts` — `wgs84ToMgrs(dd, precision=5)` and `mgrsToWgs84(mgrs)` wrapping the `mgrs` npm package, asserting truncation semantics. Turns T044 green.
+- [x] T053 [P] [US2] Implement `src/coord/taipower.ts` — anchor table (24 letters A–X × 3 columns × 8 rows per reference §8), `wgs84ToTaipower` pipeline WGS84 → TWD97 → TWD67 → encode, `taipowerToWgs84` inverse, Y/Z rejection via `Result<_, Rejection>`. Turns T045 green.
+- [x] T054 [US2] Extend `initCoord()` in `src/coord/index.ts` to register the two EPSG strings from `twd97.ts`. Extend exports to cover every converter + formatter from `contracts/coord-api.md §3 / §4 / §5`.
+- [x] T055 [US2] Implement `coverageOf(kind, dd)` in `src/coord/index.ts` — applies the bounding boxes from reference §4/§5/§6/§8 Coverage tables to decide `ok` vs `out-of-coverage` per `data-model.md §10.1`.
+- [x] T056 [US2] Extend `src/components/CoordinateReadout.svelte` to render up to six rows — one per `CoordinateKind` in the user's `FormatPreferences.visible`. Each row calls its formatter, shows the zone label for TM2 rows, and substitutes the `coverage.notInTaiwan` i18n string when `coverage === 'out-of-coverage'`.
+- [x] T057 [P] [US2] Implement `src/components/FormatToggle.svelte` — modal / drawer UI listing all six formats as checkboxes, wired to `preferences.ts` so changes persist to `localStorage['pwa_map:prefs']` and the readout re-renders instantly.
+- [x] T058 [US2] Wire `FormatToggle` trigger into `App.svelte` header; add keyboard shortcut (`g` → Go-To placeholder handled in US3, `f` → FormatToggle).
+- [x] T059 [US2] Extend all three locale JSONs with US2 keys: `format.labels.{dd,dms,twd97,twd67,mgrs,taipower}`, `format.zone`, `format.twd97.zone.label`, `coverage.notInTaiwan`, `toggle.title`, `toggle.hint`.
+- [x] T060 [US2] Append US2 layout/interaction notes to `docs/ui/0001-coord-map-layout.md`: multi-row readout, FormatToggle placement, coverage-label styling, responsive collapse on mobile.
+- [x] T061 [US2] Review loop green: `npm run format && npm run lint && npm run typecheck && npm test && npm run test:e2e`.
 
 **Checkpoint**: US2 done. All six formats render; zone flips at the 120° E meridian; FormatToggle persists.
 
@@ -143,29 +142,29 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 ### Tests for User Story 3 ⚠️ (write first, see them fail)
 
-- [ ] T062 [P] [US3] Write `tests/unit/coord/parser.spec.ts` dispatcher tests: grammar ordering (US1/US2/MGRS/TM2 explicit/TM2 inferred/TWD67/Taipower), `out-of-coverage > out-of-range > unsupported-precision > malformed` preference, worked examples 4.1–4.4 from `contracts/go-to-grammar.md §4`.
-- [ ] T063 [P] [US3] Extend `tests/unit/coord/wgs84.spec.ts` with the DD and DMS Accepted/Rejected tables from `contracts/go-to-grammar.md §2.1 / §2.2`.
-- [ ] T064 [P] [US3] Extend `tests/unit/coord/mgrs.spec.ts` with the MGRS input-grammar Accepted/Rejected table from `§2.3`.
-- [ ] T065 [P] [US3] Extend `tests/unit/coord/twd97.spec.ts` with zone-explicit (§2.4) and zone-inferred (§2.5) Accepted/Rejected tables.
-- [ ] T066 [P] [US3] Extend `tests/unit/coord/twd67.spec.ts` with the TWD67 parser Accepted/Rejected table (§2.6).
-- [ ] T067 [P] [US3] Extend `tests/unit/coord/taipower.spec.ts` with the Taipower parser Accepted/Rejected table (§2.7).
-- [ ] T068 [P] [US3] Write E2E spec at `tests/e2e/story-3-go-to.spec.ts` implementing all US3 acceptance scenarios including zone-auto-resolution hint (AS5) and the "map does not move on reject" invariant.
+- [x] T062 [P] [US3] Write `tests/unit/coord/parser.spec.ts` dispatcher tests: grammar ordering (US1/US2/MGRS/TM2 explicit/TM2 inferred/TWD67/Taipower), `out-of-coverage > out-of-range > unsupported-precision > malformed` preference, worked examples 4.1–4.4 from `contracts/go-to-grammar.md §4`.
+- [x] T063 [P] [US3] Extend `tests/unit/coord/wgs84.spec.ts` with the DD and DMS Accepted/Rejected tables from `contracts/go-to-grammar.md §2.1 / §2.2`.
+- [x] T064 [P] [US3] Extend `tests/unit/coord/mgrs.spec.ts` with the MGRS input-grammar Accepted/Rejected table from `§2.3`.
+- [x] T065 [P] [US3] Extend `tests/unit/coord/twd97.spec.ts` with zone-explicit (§2.4) and zone-inferred (§2.5) Accepted/Rejected tables.
+- [x] T066 [P] [US3] Extend `tests/unit/coord/twd67.spec.ts` with the TWD67 parser Accepted/Rejected table (§2.6).
+- [x] T067 [P] [US3] Extend `tests/unit/coord/taipower.spec.ts` with the Taipower parser Accepted/Rejected table (§2.7).
+- [x] T068 [P] [US3] Write E2E spec at `tests/e2e/story-3-go-to.spec.ts` implementing all US3 acceptance scenarios including zone-auto-resolution hint (AS5) and the "map does not move on reject" invariant.
 
 ### Implementation for User Story 3
 
-- [ ] T069 [P] [US3] Add `parseDd` and `parseDms` sub-parsers to `src/coord/wgs84.ts` per grammar §2.1 / §2.2.
-- [ ] T070 [P] [US3] Add `parseMgrs` to `src/coord/mgrs.ts` per grammar §2.3 (whitespace tolerated, case-insensitive, even-digit-tail required, I/O forbidden).
-- [ ] T071 [P] [US3] Add `parseTm2Explicit` and `parseTm2Inferred` to `src/coord/twd97.ts` per grammar §2.4 / §2.5. `parseTm2Inferred` applies the R11 back-project-and-check algorithm and sets `zoneAutoResolved`.
-- [ ] T072 [P] [US3] Add `parseTm2` (TWD67) to `src/coord/twd67.ts` per grammar §2.6 (requires `TWD67` / `twd67=true` qualifier).
-- [ ] T073 [P] [US3] Add `parseTaipower` to `src/coord/taipower.ts` per grammar §2.7 (Y/Z → out-of-coverage, I forbidden in 100 m letters).
-- [ ] T074 [US3] Implement the dispatcher at `src/coord/parser.ts`: `parseGoTo(raw: string): GoToRequest` that normalises NFC, tries sub-parsers in R10 order, and returns the best Rejection per the §3 preference rule. Depends on T069–T073.
-- [ ] T075 [US3] Export `parseGoTo` and the parser-level types from `src/coord/index.ts`.
-- [ ] T076 [US3] Extend `src/map/MapController.ts` with `flyTo(target: WGS84DD, options?)` wrapping `map.flyTo` at a sensible zoom (keep current zoom if ≥ 10, else 15).
-- [ ] T077 [US3] Implement `src/components/GoToDialog.svelte`: modal with input `<textarea>`, submit button, `aria-live="assertive"` error region. On success, calls `MapController.flyTo` and closes; on failure, shows the localised message for `Rejection.messageKey` and keeps the dialog open.
-- [ ] T078 [US3] Wire `GoToDialog` into `App.svelte` with a trigger button and `g` keyboard shortcut. Show a toast "interpreted as TWD97 zone 121" when `zoneAutoResolved` is set (satisfies FR-016).
-- [ ] T079 [US3] Extend all three locale JSONs with the complete `errors.*` key catalogue from `contracts/go-to-grammar.md §3` (21 keys × 3 locales = 63 entries). `zh.json` is authoritative; CJK terms translated independently (no zh→ja gloss — research R9).
-- [ ] T080 [US3] Append US3 interaction notes to `docs/ui/0001-coord-map-layout.md`: GoToDialog layout, error surface, zone-auto toast copy, keyboard shortcuts table.
-- [ ] T081 [US3] Review loop green. Commit.
+- [x] T069 [P] [US3] Add `parseDd` and `parseDms` sub-parsers to `src/coord/wgs84.ts` per grammar §2.1 / §2.2.
+- [x] T070 [P] [US3] Add `parseMgrs` to `src/coord/mgrs.ts` per grammar §2.3 (whitespace tolerated, case-insensitive, even-digit-tail required, I/O forbidden).
+- [x] T071 [P] [US3] Add `parseTm2Explicit` and `parseTm2Inferred` to `src/coord/twd97.ts` per grammar §2.4 / §2.5. `parseTm2Inferred` applies the R11 back-project-and-check algorithm and sets `zoneAutoResolved`.
+- [x] T072 [P] [US3] Add `parseTm2` (TWD67) to `src/coord/twd67.ts` per grammar §2.6 (requires `TWD67` / `twd67=true` qualifier).
+- [x] T073 [P] [US3] Add `parseTaipower` to `src/coord/taipower.ts` per grammar §2.7 (Y/Z → out-of-coverage, I forbidden in 100 m letters).
+- [x] T074 [US3] Implement the dispatcher at `src/coord/parser.ts`: `parseGoTo(raw: string): GoToRequest` that normalises NFC, tries sub-parsers in R10 order, and returns the best Rejection per the §3 preference rule. Depends on T069–T073.
+- [x] T075 [US3] Export `parseGoTo` and the parser-level types from `src/coord/index.ts`.
+- [x] T076 [US3] Extend `src/map/MapController.ts` with `flyTo(target: WGS84DD, options?)` wrapping `map.flyTo` at a sensible zoom (keep current zoom if ≥ 10, else 15).
+- [x] T077 [US3] Implement `src/components/GoToDialog.svelte`: modal with input `<textarea>`, submit button, `aria-live="assertive"` error region. On success, calls `MapController.flyTo` and closes; on failure, shows the localised message for `Rejection.messageKey` and keeps the dialog open.
+- [x] T078 [US3] Wire `GoToDialog` into `App.svelte` with a trigger button and `g` keyboard shortcut. Show a toast "interpreted as TWD97 zone 121" when `zoneAutoResolved` is set (satisfies FR-016).
+- [x] T079 [US3] Extend all three locale JSONs with the complete `errors.*` key catalogue from `contracts/go-to-grammar.md §3` (21 keys × 3 locales = 63 entries). `zh.json` is authoritative; CJK terms translated independently (no zh→ja gloss — research R9).
+- [x] T080 [US3] Append US3 interaction notes to `docs/ui/0001-coord-map-layout.md`: GoToDialog layout, error surface, zone-auto toast copy, keyboard shortcuts table.
+- [x] T081 [US3] Review loop green. Commit.
 
 **Checkpoint**: US3 done. Go To now accepts every format, rejects with meaningful categories, and auto-resolves zone ambiguity.
 
@@ -179,16 +178,16 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T082 [P] [US4] Write `tests/unit/components/copy.spec.ts` — tests a `copyReadout(display: string)` helper against a mocked `navigator.clipboard.writeText` (success + rejected permission).
-- [ ] T083 [P] [US4] Write E2E spec at `tests/e2e/story-4-copy.spec.ts` implementing both US4 acceptance scenarios (DMS Unicode-glyph copy, MGRS copy → Go-To round-trip).
+- [x] T082 [P] [US4] Write `tests/unit/components/copy.spec.ts` — tests a `copyReadout(display: string)` helper against a mocked `navigator.clipboard.writeText` (success + rejected permission).
+- [x] T083 [P] [US4] Write E2E spec at `tests/e2e/story-4-copy.spec.ts` implementing both US4 acceptance scenarios (DMS Unicode-glyph copy, MGRS copy → Go-To round-trip).
 
 ### Implementation for User Story 4
 
-- [ ] T084 [US4] Implement `copyReadout(display: string): Promise<Result<void, Rejection>>` in `src/components/CoordinateReadout.svelte` (or split into `src/components/copy.ts` if the file grows). Adds a copy button to each readout row; on success fires a toast, on permission-denied opens the fallback modal.
-- [ ] T085 [US4] Implement `src/components/CopyFallback.svelte` — modal with a `<textarea readonly>` preselected for manual Ctrl+C / Cmd+C copying.
-- [ ] T086 [US4] Extend all three locale JSONs with `copy.button.aria`, `copy.toast.success`, `copy.fallback.title`, `copy.fallback.hint`.
-- [ ] T087 [US4] Append US4 UI notes to `docs/ui/0001-coord-map-layout.md`: copy affordance placement, toast, fallback modal.
-- [ ] T088 [US4] Review loop green. Commit.
+- [x] T084 [US4] Implement `copyReadout(display: string): Promise<Result<void, Rejection>>` in `src/components/CoordinateReadout.svelte` (or split into `src/components/copy.ts` if the file grows). Adds a copy button to each readout row; on success fires a toast, on permission-denied opens the fallback modal.
+- [x] T085 [US4] Implement `src/components/CopyFallback.svelte` — modal with a `<textarea readonly>` preselected for manual Ctrl+C / Cmd+C copying.
+- [x] T086 [US4] Extend all three locale JSONs with `copy.button.aria`, `copy.toast.success`, `copy.fallback.title`, `copy.fallback.hint`.
+- [x] T087 [US4] Append US4 UI notes to `docs/ui/0001-coord-map-layout.md`: copy affordance placement, toast, fallback modal.
+- [x] T088 [US4] Review loop green. Commit.
 
 **Checkpoint**: US4 done. All four user stories are independently functional.
 
@@ -198,27 +197,27 @@ Single-project layout (per `plan.md` Structure Decision). `src/`, `tests/`, `doc
 
 **Purpose**: Settle the cross-story debt — ADRs for every research decision, performance verification, accessibility sweep, README, final format / lint / test.
 
-- [ ] T089 [P] Author `docs/adr/0001-ui-framework-svelte.md` from research R1.
-- [ ] T090 [P] Author `docs/adr/0002-map-engine-maplibre.md` from research R2.
-- [ ] T091 [P] Author `docs/adr/0003-tile-source-osm-default.md` from research R3.
-- [ ] T092 [P] Author `docs/adr/0004-coord-libraries-proj4-mgrs-custom.md` from research R4.
-- [ ] T093 [P] Author `docs/adr/0005-build-tooling-vite.md` from research R5.
-- [ ] T094 [P] Author `docs/adr/0006-testing-vitest-playwright.md` from research R6.
-- [ ] T095 [P] Author `docs/adr/0007-prettier-eslint.md` from research R7.
-- [ ] T096 [P] Author `docs/adr/0008-storage-localstorage.md` from research R8.
-- [ ] T097 [P] Author `docs/adr/0009-i18n-three-locale-zh-en-ja.md` from research R9 (explicitly records that the Chinese locale tag is `zh`, per Constitution v1.1.0 Locale conventions).
-- [ ] T098 [P] Author `docs/adr/0010-go-to-parser-dispatch.md` from research R10.
-- [ ] T099 [P] Author `docs/adr/0011-tm2-zone-auto-resolve.md` from research R11.
-- [ ] T100 [P] Author `docs/adr/0012-taipower-main-island-only.md` from research R12.
-- [ ] T101 [P] Author `docs/adr/0013-performance-verification-pipeline.md` from research R13.
-- [ ] T102 [P] Author `docs/adr/0014-accessibility-baseline.md` from research R14.
-- [ ] T103 Update `docs/adr/README.md` — fill the ADR index table with the 14 entries from T089–T102.
-- [ ] T104 [P] Implement the Vitest benchmark suite at `bench/coord.bench.ts` — asserts single-point conversion ≤ 1 ms median per `plan.md` Performance Goals.
-- [ ] T105 [P] Add Lighthouse CI config at `.github/workflows/lighthouse.yml` (or equivalent CI surface) asserting PWA score ≥ 90, TTI ≤ 3 s on simulated fast-3G.
-- [ ] T106 [P] Add a Playwright perf probe at `tests/e2e/perf-pan.spec.ts` — scripts a 5-second pan, asserts median readout updates ≥ 10 Hz (SC-007).
-- [ ] T107 Accessibility sweep: verify every interactive element reachable by keyboard in the `Tab` order (MapView → Go To trigger → FormatToggle trigger → per-row copy), contrast ratios pass WCAG AA on both light and dark tiles, crosshair aria-label reflects current readout. Fix any gaps in the touched components.
-- [ ] T108 Author `/README.md` at repo root: project summary, quickstart reference, link to `.specify/memory/constitution.md`, link to `specs/001-coord-map-pwa/`, contribution workflow, licence statement for bundled `test-vectors.json` (MIT, attribution intact per reference LICENSE).
-- [ ] T109 Run the full `specs/001-coord-map-pwa/quickstart.md §7` checklist end-to-end: format, lint, typecheck, unit, e2e, bench, bundle-size, UI/ADR docs updated. Record evidence (commit hashes, CI run URLs) in a new `docs/adr/0015-release-readiness-001-coord-map-pwa.md`.
+- [x] T089 [P] Author `docs/adr/0001-ui-framework-svelte.md` from research R1.
+- [x] T090 [P] Author `docs/adr/0002-map-engine-maplibre.md` from research R2.
+- [x] T091 [P] Author `docs/adr/0003-tile-source-osm-default.md` from research R3.
+- [x] T092 [P] Author `docs/adr/0004-coord-libraries-proj4-mgrs-custom.md` from research R4.
+- [x] T093 [P] Author `docs/adr/0005-build-tooling-vite.md` from research R5.
+- [x] T094 [P] Author `docs/adr/0006-testing-vitest-playwright.md` from research R6.
+- [x] T095 [P] Author `docs/adr/0007-prettier-eslint.md` from research R7.
+- [x] T096 [P] Author `docs/adr/0008-storage-localstorage.md` from research R8.
+- [x] T097 [P] Author `docs/adr/0009-i18n-three-locale-zh-en-ja.md` from research R9 (explicitly records that the Chinese locale tag is `zh`, per Constitution v1.1.0 Locale conventions).
+- [x] T098 [P] Author `docs/adr/0010-go-to-parser-dispatch.md` from research R10.
+- [x] T099 [P] Author `docs/adr/0011-tm2-zone-auto-resolve.md` from research R11.
+- [x] T100 [P] Author `docs/adr/0012-taipower-main-island-only.md` from research R12.
+- [x] T101 [P] Author `docs/adr/0013-performance-verification-pipeline.md` from research R13.
+- [x] T102 [P] Author `docs/adr/0014-accessibility-baseline.md` from research R14.
+- [x] T103 Update `docs/adr/README.md` — fill the ADR index table with the 14 entries from T089–T102.
+- [x] T104 [P] Implement the Vitest benchmark suite at `bench/coord.bench.ts` — asserts single-point conversion ≤ 1 ms median per `plan.md` Performance Goals.
+- [x] T105 [P] Add Lighthouse CI config at `.github/workflows/lighthouse.yml` (or equivalent CI surface) asserting PWA score ≥ 90, TTI ≤ 3 s on simulated fast-3G.
+- [x] T106 [P] Add a Playwright perf probe at `tests/e2e/perf-pan.spec.ts` — scripts a 5-second pan, asserts median readout updates ≥ 10 Hz (SC-007).
+- [x] T107 Accessibility sweep: verify every interactive element reachable by keyboard in the `Tab` order (MapView → Go To trigger → FormatToggle trigger → per-row copy), contrast ratios pass WCAG AA on both light and dark tiles, crosshair aria-label reflects current readout. Fix any gaps in the touched components.
+- [x] T108 Author `/README.md` at repo root: project summary, quickstart reference, link to `.specify/memory/constitution.md`, link to `specs/001-coord-map-pwa/`, contribution workflow, licence statement for bundled `test-vectors.json` (MIT, attribution intact per reference LICENSE).
+- [x] T109 Run the full `specs/001-coord-map-pwa/quickstart.md §7` checklist end-to-end: format, lint, typecheck, unit, e2e, bench, bundle-size, UI/ADR docs updated. Record evidence (commit hashes, CI run URLs) in a new `docs/adr/0015-release-readiness-001-coord-map-pwa.md`.
 
 ---
 
