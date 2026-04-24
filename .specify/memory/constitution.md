@@ -1,39 +1,41 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (initial template) → 1.0.0
-Bump rationale: First ratification of the constitution. All placeholder tokens
-replaced with concrete principles and governance rules. MAJOR version set to 1.0.0
-per semantic-versioning convention for an initial adopted document.
+Version change: 1.0.0 → 1.1.0
+Bump rationale: Added a new subsection under Development Workflow
+("Locale conventions") that binds the project to the `zh` BCP-47 tag as the
+sole canonical identifier for Taiwan Traditional Chinese. This is a material
+expansion of guidance (not a wording tweak), so semver MINOR is the correct
+bump. No principle added, removed, or redefined — the five core principles
+from v1.0.0 are unchanged.
 
-Modified principles (old → new):
-  - [PRINCIPLE_1_NAME] → I. Code Quality & Formatting Discipline
-  - [PRINCIPLE_2_NAME] → II. Test-First Development (NON-NEGOTIABLE)
-  - [PRINCIPLE_3_NAME] → III. User Experience Consistency
-  - [PRINCIPLE_4_NAME] → IV. Performance Requirements
-  - [PRINCIPLE_5_NAME] → V. Documentation & Architectural Decision Records
+Modified principles: none (v1.0.0's five principles retained verbatim).
 
 Added sections:
-  - Development Workflow (agent delegation, formatting gate, review loop)
-  - Governance (amendment and compliance rules)
+  - Development Workflow → "Locale conventions" subsection.
 
-Removed sections: none
+Removed sections: none.
 
 Templates requiring updates:
-  - ✅ .specify/templates/plan-template.md — Constitution Check gate now maps to
-       these five principles; no structural change needed, content alignment
-       verified.
-  - ✅ .specify/templates/spec-template.md — Mandatory sections already cover
-       user scenarios, requirements, success criteria; consistent with
-       principles III and IV.
-  - ✅ .specify/templates/tasks-template.md — Task categorization accommodates
-       TDD ordering and formatting tasks (T003 covers linting/formatting).
-  - ⚠ docs/ui/ — Directory referenced by Principle III. Create on first UI
-       change; no file to modify now.
-  - ⚠ docs/adr/ — Directory referenced by Principle V. Create on first ADR;
-       no file to modify now.
+  - ✅ .specify/templates/plan-template.md — No structural change; locale
+       rule applies to products, not to plan artefacts.
+  - ✅ .specify/templates/spec-template.md — No structural change needed.
+  - ✅ .specify/templates/tasks-template.md — No structural change needed.
+  - ✅ specs/001-coord-map-pwa/* — All uses of `zh-TW` already migrated to
+       `zh` in the prior commit chain; this amendment codifies that
+       migration as project-wide rule.
+  - ⚠ docs/ui/ — Still pending; will be created on first UI change
+       (Principle III).
+  - ⚠ docs/adr/ — Still pending; will be created on first ADR
+       (Principle V). An ADR codifying the `zh` locale decision SHOULD be
+       added the next time `/speckit.implement` runs.
 
-Follow-up TODOs: none. Ratification date set to today (2026-04-24).
+Prior history:
+  v1.0.0 (2026-04-24) — First ratification of the constitution. Established
+  principles I–V and the initial Development Workflow / Governance
+  structure. See commit history for the original Sync Impact Report.
+
+Follow-up TODOs: none.
 -->
 
 # PWA Map Constitution
@@ -136,6 +138,24 @@ explicit tasks for formatting, TDD tests-before-implementation, UI/ADR
 documentation updates, and performance verification when those principles
 apply to the feature.
 
+**Locale conventions**. `zh` is the canonical locale identifier for
+Traditional Chinese as written in Taiwan (正體中文), which is the project's
+ONLY Chinese variant. The project does NOT ship `zh-TW`, `zh-Hant`, `zh-CN`,
+`zh-Hans`, or any other Chinese BCP-47 subtag. Every code symbol, JSON
+filename, persisted preference key, UI selector value, translation-file
+name, and documentation cross-reference that names the Chinese locale MUST
+use `zh` verbatim. When translations for a non-Chinese language are added
+in the future, follow the same shortest-unambiguous-tag convention
+(e.g., `en`, `ja`, `ko`) unless the feature genuinely requires
+region-specific variants (e.g., `pt-BR` vs `pt-PT`).
+
+**Rationale**: `zh-TW` / `zh-Hant` implies the possibility of a second
+Chinese variant (`zh-CN`, `zh-Hans`) that this project will never ship.
+Using `zh` alone makes the one-variant rule lexically obvious, prevents
+Simplified Chinese strings from silently leaking into the codebase via
+well-meaning translators, and keeps all i18n code paths a single `switch`
+case simpler.
+
 ## Governance
 
 This constitution supersedes ad-hoc practices and undocumented conventions.
@@ -164,4 +184,4 @@ simpler alternative explicitly named and rejected with reason.
 Runtime development guidance for agents lives in `CLAUDE.md` and the
 current feature plan under `specs/`.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-24
+**Version**: 1.1.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-24
