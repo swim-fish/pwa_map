@@ -14,10 +14,11 @@ This directory holds per-change UI documentation per Constitution
 
 ## Index
 
-| #                                | Title                                 | Status   | Affected screens                                           |
-| -------------------------------- | ------------------------------------- | -------- | ---------------------------------------------------------- |
-| [0001](0001-coord-map-layout.md) | Coord-map PWA layout (feature 001)    | Accepted | Map shell, crosshair, readout, format toggle, Go-To dialog |
-| [0002](0002-goto-split-input.md) | Go-To split-field input (feature 002) | Accepted | Go-To modal                                                |
+| #                                 | Title                                 | Status   | Affected screens                                           |
+| --------------------------------- | ------------------------------------- | -------- | ---------------------------------------------------------- |
+| [0001](0001-coord-map-layout.md)  | Coord-map PWA layout (feature 001)    | Accepted | Map shell, crosshair, readout, format toggle, Go-To dialog |
+| [0002](0002-goto-split-input.md)  | Go-To split-field input (feature 002) | Accepted | Go-To modal                                                |
+| [0003](0003-layers-and-locale.md) | Layer + locale pickers (feature 003)  | Accepted | Toolbar, map canvas, attribution bar, failure toast        |
 
 ## Adding a new UI record
 

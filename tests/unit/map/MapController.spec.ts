@@ -40,6 +40,97 @@ function makeController(
   return { controller, spy };
 }
 
+describe('MapController.setBasemap + tile-failure path (feature 003 FR-009)', () => {
+  function makeBasemapController(initialBasemap: 'osm-standard' | 'nlsc-emap5' = 'osm-standard'): {
+    controller: MapController;
+    spy: { lastSetStyle: unknown; tilefails: Array<{ failedId: string; revertedTo: string }> };
+  } {
+    const controller = new MapController({
+      container: document.createElement('div'),
+      center: TAIPEI_101,
+      zoom: 13,
+    });
+    const spy: {
+      lastSetStyle: unknown;
+      tilefails: Array<{ failedId: string; revertedTo: string }>;
+    } = {
+      lastSetStyle: null,
+      tilefails: [],
+    };
+    const fakeMap = {
+      setStyle(s: unknown): void {
+        spy.lastSetStyle = s;
+      },
+    };
+    controller.attachUnderlying(fakeMap);
+    controller.setLayerSelection({ basemap: initialBasemap, overlay: false });
+    spy.lastSetStyle = null; // reset so the next setBasemap is what we measure
+    controller.onTileFail((ev) => spy.tilefails.push(ev));
+    return { controller, spy };
+  }
+
+  test('setBasemap("nlsc-emap5", false) calls map.setStyle with a NLSC style', () => {
+    const { controller, spy } = makeBasemapController();
+    controller.setBasemap('nlsc-emap5', false);
+    expect(spy.lastSetStyle).not.toBeNull();
+    const style = spy.lastSetStyle as { sources: Record<string, unknown> };
+    expect(style.sources['nlsc-emap5']).toBeDefined();
+  });
+
+  test('three tile errors within 5 s of a swap reverts to the previous basemap and emits tilefail', () => {
+    const { controller, spy } = makeBasemapController('osm-standard');
+    controller.setBasemap('nlsc-emap5', false);
+    controller.recordTileError('nlsc-emap5');
+    controller.recordTileError('nlsc-emap5');
+    controller.recordTileError('nlsc-emap5');
+    expect(spy.tilefails.length).toBe(1);
+    expect(spy.tilefails[0]).toEqual({ failedId: 'nlsc-emap5', revertedTo: 'osm-standard' });
+    expect(controller.layerSelection.basemap).toBe('osm-standard');
+  });
+
+  test('a single CORS / network failure (errorIsFatal=true) reverts immediately', () => {
+    const { controller, spy } = makeBasemapController('osm-standard');
+    controller.setBasemap('nlsc-emap5', false);
+    controller.recordTileError('nlsc-emap5', { fatal: true });
+    expect(spy.tilefails.length).toBe(1);
+    expect(controller.layerSelection.basemap).toBe('osm-standard');
+  });
+
+  test('errors after the 5 s window are ignored (no revert, no tilefail)', () => {
+    const { controller, spy } = makeBasemapController('osm-standard');
+    controller.setBasemap('nlsc-emap5', false);
+    // Simulate the window expiring.
+    controller.expireFailureWindowForTests();
+    controller.recordTileError('nlsc-emap5');
+    controller.recordTileError('nlsc-emap5');
+    controller.recordTileError('nlsc-emap5');
+    expect(spy.tilefails.length).toBe(0);
+    expect(controller.layerSelection.basemap).toBe('nlsc-emap5');
+  });
+
+  test('errors for a different source than the active basemap are ignored', () => {
+    const { controller, spy } = makeBasemapController('osm-standard');
+    controller.setBasemap('nlsc-emap5', false);
+    controller.recordTileError('google-hybrid');
+    controller.recordTileError('google-hybrid');
+    controller.recordTileError('google-hybrid');
+    expect(spy.tilefails.length).toBe(0);
+    expect(controller.layerSelection.basemap).toBe('nlsc-emap5');
+  });
+
+  test('overlay toggle preserves the basemap and rebuilds style with two sources', () => {
+    const { controller, spy } = makeBasemapController('osm-standard');
+    controller.setBasemap('osm-standard', true);
+    expect(spy.lastSetStyle).not.toBeNull();
+    const style = spy.lastSetStyle as {
+      sources: Record<string, unknown>;
+      layers: { id: string }[];
+    };
+    expect(Object.keys(style.sources).length).toBe(2);
+    expect(style.layers.length).toBe(2);
+  });
+});
+
 describe('MapController.flyTo zoom preservation (feature 002 FR-011)', () => {
   test('current zoom 5, no options.zoom → flyTo receives zoom: 5 (no snap-to-15)', () => {
     const { controller, spy } = makeController(5);

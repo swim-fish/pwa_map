@@ -33,6 +33,9 @@ drifting.
 | [0017](0017-goto-split-layout-architecture.md)        | Go-To split-layout architecture (composer + chips)   | Accepted | —          |
 | [0018](0018-recents-storage-schema.md)                | Recents storage schema — `pwa_map:gotoHistory_v1`    | Accepted | —          |
 | [0019](0019-flyto-zoom-preservation.md)               | `MapController.flyTo` zoom preservation              | Accepted | —          |
+| [0020](0020-map-source-catalogue.md)                  | Map source catalogue + HTTPS upgrade                 | Accepted | —          |
+| [0021](0021-prefs-additive-evolution.md)              | `pwa_map:prefs` additive schema evolution            | Accepted | —          |
+| [0022](0022-tile-failure-toast.md)                    | Tile-failure detection + auto-revert toast           | Accepted | —          |
 
 ## Adding a new ADR
 

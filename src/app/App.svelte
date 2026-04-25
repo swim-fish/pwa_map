@@ -8,10 +8,13 @@
   import GoToDialog from '$components/GoToDialog.svelte';
   import DestinationIndicator from '$components/goto/DestinationIndicator.svelte';
   import CopyFallback from '$components/CopyFallback.svelte';
+  import LayerPicker from '$components/LayerPicker.svelte';
+  import LocalePicker from '$components/LocalePicker.svelte';
   import type { GoToRequestOk } from '$coord/index';
-  import type { CoordinateKind as CoordinateKindType } from '$types/coord';
-  import { osmTileSource } from '$map/tileSource';
-  import { MapController, type MapMoveEvent } from '$map/MapController';
+  import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
+  import type { LayerSelection } from '$types/map';
+  import { findSource } from '$map/sources';
+  import { MapController, type MapMoveEvent, type TileFailEvent } from '$map/MapController';
   import type { CoordinateKind, Lat, Lon, WGS84DD } from '$types/coord';
   import { formatWGS84DD } from '$coord/index';
   import { t, tStore, setLocale } from '$i18n/index';
@@ -32,6 +35,11 @@
   let prefs: FormatPreferences = loadPreferences();
   setLocale(prefs.locale);
 
+  let layerSelection: LayerSelection = {
+    basemap: prefs.mapLayer ?? 'osm-standard',
+    overlay: prefs.overlay ?? false,
+  };
+
   const lastView = loadLastView();
   const initialCenter: WGS84DD = lastView?.center ?? TAIPEI_101;
   const initialZoom = lastView?.zoom ?? 13;
@@ -45,14 +53,35 @@
   let crosshair: WGS84DD = initialCenter;
   let formatToggleOpen = false;
   let goToOpen = false;
+  let layerPickerOpen = false;
+  let localePickerOpen = false;
   let zoneHint: { zone: number; ts: number } | null = null;
   let copyToast: { ts: number } | null = null;
   let copyFallback: { text: string; ts: number } | null = null;
+  let layerFailToast: { messageKey: string; ts: number } | null = null;
   let destinationIndicator: {
     start: () => void;
     stop: () => void;
     onMapMove: (now?: number) => void;
   } | null = null;
+
+  controller.setLayerSelection(layerSelection);
+  controller.onTileFail((ev: TileFailEvent) => {
+    const failed = findSource(ev.failedId);
+    const groupKey =
+      failed?.group === 'nlsc'
+        ? 'map.failure.nlsc'
+        : failed?.group === 'google'
+          ? 'map.failure.google'
+          : 'map.failure.other';
+    layerSelection = controller.layerSelection;
+    prefs = { ...prefs, mapLayer: layerSelection.basemap, overlay: layerSelection.overlay };
+    savePreferences(prefs);
+    layerFailToast = { messageKey: groupKey, ts: Date.now() };
+    setTimeout(() => {
+      if (layerFailToast && Date.now() - layerFailToast.ts >= 4900) layerFailToast = null;
+    }, 5000);
+  });
 
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
   function scheduleSave(ev: MapMoveEvent): void {
@@ -76,6 +105,28 @@
   function onFormatChange(ev: CustomEvent<{ visible: readonly CoordinateKind[] }>): void {
     prefs = { ...prefs, visible: ev.detail.visible };
     savePreferences(prefs);
+  }
+
+  function onLayerChange(ev: CustomEvent<LayerSelection>): void {
+    const next = ev.detail;
+    const overlayToggleOnly = next.basemap === layerSelection.basemap;
+    layerSelection = next;
+    controller.setBasemap(next.basemap, next.overlay);
+    prefs = { ...prefs, mapLayer: next.basemap, overlay: next.overlay };
+    savePreferences(prefs);
+    // A pure overlay toggle keeps the picker open per `contracts/layer-picker.md` §3;
+    // a basemap pick closes it.
+    if (!overlayToggleOnly) {
+      layerPickerOpen = false;
+    }
+  }
+
+  function onLocaleChange(ev: CustomEvent<Locale>): void {
+    const next = ev.detail;
+    setLocale(next);
+    prefs = { ...prefs, locale: next };
+    savePreferences(prefs);
+    localePickerOpen = false;
   }
 
   function onKeydown(e: KeyboardEvent): void {
@@ -155,7 +206,14 @@
 <svelte:window on:keydown={onKeydown} />
 
 <main class="shell">
-  <MapView {initialCenter} {initialZoom} {controller} on:move={onMove} on:moveend={onMoveEnd} />
+  <MapView
+    {initialCenter}
+    {initialZoom}
+    {controller}
+    layer={layerSelection}
+    on:move={onMove}
+    on:moveend={onMoveEnd}
+  />
   <Crosshair {ariaLabel} />
 
   <header class="toolbar">
@@ -179,6 +237,26 @@
     >
       {$tStore('toggle.open.button')}
     </button>
+    <button
+      type="button"
+      class="toolbar-btn"
+      on:click={() => (layerPickerOpen = !layerPickerOpen)}
+      data-testid="open-layers"
+      aria-haspopup="menu"
+      aria-expanded={layerPickerOpen}
+    >
+      {$tStore('toolbar.layers.button')}
+    </button>
+    <button
+      type="button"
+      class="toolbar-btn"
+      on:click={() => (localePickerOpen = !localePickerOpen)}
+      data-testid="open-locale"
+      aria-haspopup="menu"
+      aria-expanded={localePickerOpen}
+    >
+      {$tStore('toolbar.locale.button')}
+    </button>
   </header>
 
   <CoordinateReadout
@@ -189,7 +267,21 @@
     on:copy-success={onCopySuccess}
     on:copy-fallback={onCopyFallback}
   />
-  <AttributionBar text={osmTileSource.attribution} />
+  <AttributionBar basemap={layerSelection.basemap} overlay={layerSelection.overlay} />
+
+  <LayerPicker
+    open={layerPickerOpen}
+    selection={layerSelection}
+    on:change={onLayerChange}
+    on:close={() => (layerPickerOpen = false)}
+  />
+
+  <LocalePicker
+    open={localePickerOpen}
+    selection={prefs.locale}
+    on:change={onLocaleChange}
+    on:close={() => (localePickerOpen = false)}
+  />
 
   <FormatToggle
     visible={prefs.visible}
@@ -209,6 +301,12 @@
   {#if copyToast}
     <div class="toast" role="status" aria-live="polite" data-testid="copy-toast">
       {$tStore('copy.toast.success')}
+    </div>
+  {/if}
+
+  {#if layerFailToast}
+    <div class="toast" role="status" aria-live="polite" data-testid="layer-fail-toast">
+      {$tStore(layerFailToast.messageKey)}
     </div>
   {/if}
 

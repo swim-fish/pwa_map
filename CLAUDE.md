@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/002-goto-split-input/plan.md`
+Active feature plan: `specs/003-i18n-and-map-layers/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts

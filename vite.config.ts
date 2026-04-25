@@ -38,10 +38,34 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
+            urlPattern: /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'osm-tiles',
+              expiration: {
+                maxEntries: 4096,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/wmts\.nlsc\.gov\.tw\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'nlsc-tiles',
+              expiration: {
+                maxEntries: 4096,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/mt\d?\.google\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-tiles',
               expiration: {
                 maxEntries: 4096,
                 maxAgeSeconds: 60 * 60 * 24 * 7,

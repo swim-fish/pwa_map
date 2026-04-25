@@ -7,6 +7,7 @@ import type {
 } from '$types/coord';
 import { ALL_COORDINATE_KINDS } from '$types/coord';
 import { isLocale } from '$i18n/index';
+import { isBasemapId, type BasemapId } from '$map/sources';
 
 const PREFS_KEY = 'pwa_map:prefs';
 const LAST_VIEW_KEY = 'pwa_map:lastView';
@@ -18,6 +19,8 @@ export interface FormatPreferences {
   readonly mgrsPrecision: MGRSPrecision;
   readonly taipowerPrecision: TaipowerPrecision;
   readonly locale: Locale;
+  readonly mapLayer?: BasemapId;
+  readonly overlay?: boolean;
 }
 
 export interface MapViewState {
@@ -45,6 +48,8 @@ export function defaultPreferences(): FormatPreferences {
     mgrsPrecision: 5,
     taipowerPrecision: 9,
     locale: seedLocaleFromNavigator(),
+    mapLayer: 'osm-standard',
+    overlay: false,
   };
 }
 
@@ -72,13 +77,29 @@ function validatePreferences(raw: unknown): FormatPreferences | null {
   if (!isMgrsPrecision(o.mgrsPrecision)) return null;
   if (!isTaipowerPrecision(o.taipowerPrecision)) return null;
   if (!isLocale(o.locale)) return null;
-  return {
+
+  // Optional additive fields (feature 003): present → must be valid.
+  let mapLayer: BasemapId | undefined;
+  if (o.mapLayer !== undefined) {
+    if (!isBasemapId(o.mapLayer)) return null;
+    mapLayer = o.mapLayer;
+  }
+  let overlay: boolean | undefined;
+  if (o.overlay !== undefined) {
+    if (typeof o.overlay !== 'boolean') return null;
+    overlay = o.overlay;
+  }
+
+  const result: FormatPreferences = {
     version: PREFS_VERSION,
     visible: visible as readonly CoordinateKind[],
     mgrsPrecision: o.mgrsPrecision,
     taipowerPrecision: o.taipowerPrecision,
     locale: o.locale,
+    ...(mapLayer !== undefined ? { mapLayer } : {}),
+    ...(overlay !== undefined ? { overlay } : {}),
   };
+  return result;
 }
 
 function safeStorage(): Storage | null {
