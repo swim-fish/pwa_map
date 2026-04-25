@@ -1,0 +1,24 @@
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.svelte-kit/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+tests/unit/fixtures/test-vectors.json
+
+# Spec Kit provenance — upstream-authored templates and workflow files;
+# do not reformat on `npm run format` so vendored content stays diff-clean
+# against upstream.
+.specify/
+.claude/
+CLAUDE.md
+
+# Feature-spec prose — authored by /speckit.specify and edited inline;
+# the Prettier Markdown formatter wraps tables and line-breaks aggressively,
+# which corrupts code spans (e.g. ">= 0.9" turning into blockquote syntax).
+# We edit these files surgically via Edit; formatting churn is unwelcome.
+specs/

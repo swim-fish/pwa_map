@@ -1,0 +1,46 @@
+# Node / Vite
+node_modules/
+dist/
+build/
+.vite/
+*.local
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# PWA service worker build output
+dev-dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Scratch
+scratch/

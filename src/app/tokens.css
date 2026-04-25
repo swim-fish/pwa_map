@@ -1,0 +1,75 @@
+:root {
+  /* Spacing scale — 4 px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Colors — light theme (default) */
+  --color-bg: #f5f5f5;
+  --color-fg: #0f172a;
+  --color-fg-muted: #475569;
+  --color-surface: #ffffff;
+  --color-surface-elev: rgba(255, 255, 255, 0.95);
+  --color-border: #cbd5e1;
+  --color-accent: #0ea5e9;
+  --color-danger: #dc2626;
+
+  /* Crosshair tokens */
+  --crosshair-outer: #0f172a;
+  --crosshair-inner: #ffffff;
+  --crosshair-size: 48px;
+
+  /* Readout tokens */
+  --readout-bg: var(--color-surface-elev);
+  --readout-fg: var(--color-fg);
+  --readout-shadow: 0 2px 12px rgba(15, 23, 42, 0.15);
+
+  /* Typography */
+  --font-ui:
+    14px / 1.4 system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans TC', 'Noto Sans JP',
+    sans-serif;
+  --font-numeric:
+    14px / 1.4 ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Consolas, monospace;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f172a;
+    --color-fg: #f1f5f9;
+    --color-fg-muted: #94a3b8;
+    --color-surface: #1e293b;
+    --color-surface-elev: rgba(30, 41, 59, 0.95);
+    --color-border: #334155;
+    --readout-bg: var(--color-surface-elev);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
