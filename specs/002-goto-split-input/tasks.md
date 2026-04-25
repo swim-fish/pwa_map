@@ -32,9 +32,9 @@ Single project — `src/` and `tests/` at repo root. Adjusted from plan.md.
 **Purpose**: Documentation skeletons and constitutional bookkeeping that
 must exist before any production code lands.
 
-- [ ] T001 [P] Create `docs/ui/0002-goto-split-input.md` skeleton — sections for chip rack, layout grids, recents row, disambiguator, destination indicator, design tokens reused from `src/app/tokens.css` (Constitution Principle III)
-- [ ] T002 [P] Create ADR skeletons `docs/adr/0017-goto-split-layout-architecture.md`, `docs/adr/0018-recents-storage-schema.md`, `docs/adr/0019-flyto-zoom-preservation.md` populated with Status: Proposed and the rationale stubs from `research.md` D1 / D3 / D5 (Constitution Principle V)
-- [ ] T003 [P] Update `docs/adr/README.md` and `docs/ui/README.md` indexes to include the new entries with "draft until /speckit.implement" annotations
+- [X] T001 [P] Create `docs/ui/0002-goto-split-input.md` skeleton — sections for chip rack, layout grids, recents row, disambiguator, destination indicator, design tokens reused from `src/app/tokens.css` (Constitution Principle III)
+- [X] T002 [P] Create ADR skeletons `docs/adr/0017-goto-split-layout-architecture.md`, `docs/adr/0018-recents-storage-schema.md`, `docs/adr/0019-flyto-zoom-preservation.md` populated with Status: Proposed and the rationale stubs from `research.md` D1 / D3 / D5 (Constitution Principle V)
+- [X] T003 [P] Update `docs/adr/README.md` and `docs/ui/README.md` indexes to include the new entries with "draft until /speckit.implement" annotations
 
 ---
 
@@ -44,14 +44,14 @@ must exist before any production code lands.
 
 **⚠️ CRITICAL**: No user story phase can begin until this phase is complete.
 
-- [ ] T004 Create `src/types/goto.ts` exporting `FormatSelection`, `LayoutFields` (discriminated union per format), `RecentEntry`, `RecentList`, `Candidate`, `DestinationIndicator` per `data-model.md` §1–§5
-- [ ] T005 [P] Add new i18n keys to `src/i18n/zh.json` (canonical key set) under `goto.chips.*`, `goto.fields.*`, `goto.recent.*`, `goto.errors.*`, `goto.disambig.*`, `goto.indicator.*` — see research D9 for the namespace plan
-- [ ] T006 [P] Mirror the same key set in `src/i18n/en.json` with English copy
-- [ ] T007 [P] Mirror the same key set in `src/i18n/ja.json` with Japanese copy
-- [ ] T008 [P] Write failing test for parser sub-parser named exports — extend `tests/unit/coord/parser.spec.ts` to assert `parseDdOnly`, `parseDmsOnly`, `parseMgrsOnly`, `parseTm2InferredOnly`, `parseTm2ExplicitOnly`, `parseTwd67Only`, `parseTaipowerOnly` exist and each returns the same `GoToRequest` shape as the dispatcher (per `contracts/composer.md` §3)
-- [ ] T009 Add the named sub-parser exports to `src/coord/parser.ts` as thin re-exports of the existing internal functions (no grammar change — feature 001's parser contract MUST stay unchanged)
-- [ ] T010 [P] Write failing test for zoom preservation in a new `tests/unit/map/MapController.spec.ts` covering: (a) currentZoom 5 + no `options.zoom` → underlying `flyTo` receives `zoom: 5`, (b) currentZoom 18 + no `options.zoom` → `zoom: 18`, (c) explicit `options.zoom: 12` overrides current zoom (per `contracts/flyto-zoom.md` §4)
-- [ ] T011 Amend `src/map/MapController.ts` `flyTo` so the default `nextZoom` is `currentZoom` rather than the snap-to-15 fallback from feature 001
+- [X] T004 Create `src/types/goto.ts` exporting `FormatSelection`, `LayoutFields` (discriminated union per format), `RecentEntry`, `RecentList`, `Candidate`, `DestinationIndicator` per `data-model.md` §1–§5
+- [X] T005 [P] Add new i18n keys to `src/i18n/zh.json` (canonical key set) under `goto.chips.*`, `goto.fields.*`, `goto.recent.*`, `goto.errors.*`, `goto.disambig.*`, `goto.indicator.*` — see research D9 for the namespace plan
+- [X] T006 [P] Mirror the same key set in `src/i18n/en.json` with English copy
+- [X] T007 [P] Mirror the same key set in `src/i18n/ja.json` with Japanese copy
+- [X] T008 [P] Write failing test for parser sub-parser named exports — extend `tests/unit/coord/parser.spec.ts` to assert `parseDdOnly`, `parseDmsOnly`, `parseMgrsOnly`, `parseTm2InferredOnly`, `parseTm2ExplicitOnly`, `parseTwd67Only`, `parseTaipowerOnly` exist and each returns the same `GoToRequest` shape as the dispatcher (per `contracts/composer.md` §3)
+- [X] T009 Add the named sub-parser exports to `src/coord/parser.ts` as thin re-exports of the existing internal functions (no grammar change — feature 001's parser contract MUST stay unchanged)
+- [X] T010 [P] Write failing test for zoom preservation in a new `tests/unit/map/MapController.spec.ts` covering: (a) currentZoom 5 + no `options.zoom` → underlying `flyTo` receives `zoom: 5`, (b) currentZoom 18 + no `options.zoom` → `zoom: 18`, (c) explicit `options.zoom: 12` overrides current zoom (per `contracts/flyto-zoom.md` §4)
+- [X] T011 Amend `src/map/MapController.ts` `flyTo` so the default `nextZoom` is `currentZoom` rather than the snap-to-15 fallback from feature 001
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -65,23 +65,23 @@ must exist before any production code lands.
 
 ### Tests for User Story 1 (TDD — write first, verify failing)
 
-- [ ] T012 [US1] Write `tests/unit/coord/composer.spec.ts` covering the seven cases in `contracts/composer.md` §2 (auto / dd / dms / twd97-tm2 / twd67-tm2 / mgrs / taipower), each-field empty rejections (`§4 obligation 2`), MGRS / Taipower upper-casing (`§4 obligation 3`), TWD67 prefix exactness (`§4 obligation 4`), TWD97 zone-explicit vs inferred raw + hint distinction (`§4 obligation 5`), discriminant-mismatch rejection (`§4 obligation 6`), and the round-trip property against `tests/unit/fixtures/test-vectors.json`
-- [ ] T013 [US1] Implement `src/coord/composer.ts` exporting `composeRaw(selection, fields): ComposeResult` per `contracts/composer.md` §1 — verify T012 passes
-- [ ] T014 [US1] Write `tests/integration/go-to-split.spec.ts` US1 describe block: chip rack renders 7 chips in order, switching chip re-lays the body, each layout submits through the matching sub-parser hint, format-specific rejection messages surface (FR-012)
+- [X] T012 [US1] Write `tests/unit/coord/composer.spec.ts` covering the seven cases in `contracts/composer.md` §2 (auto / dd / dms / twd97-tm2 / twd67-tm2 / mgrs / taipower), each-field empty rejections (`§4 obligation 2`), MGRS / Taipower upper-casing (`§4 obligation 3`), TWD67 prefix exactness (`§4 obligation 4`), TWD97 zone-explicit vs inferred raw + hint distinction (`§4 obligation 5`), discriminant-mismatch rejection (`§4 obligation 6`), and the round-trip property against `tests/unit/fixtures/test-vectors.json`
+- [X] T013 [US1] Implement `src/coord/composer.ts` exporting `composeRaw(selection, fields): ComposeResult` per `contracts/composer.md` §1 — verify T012 passes
+- [X] T014 [US1] Write `tests/integration/go-to-split.spec.ts` US1 describe block: chip rack renders 7 chips in order, switching chip re-lays the body, each layout submits through the matching sub-parser hint, format-specific rejection messages surface (FR-012)
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Implement `src/components/goto/ChipRack.svelte` with `role="tablist"` and chip buttons using `role="tab"` + `aria-selected` per research D6
-- [ ] T016 [P] [US1] Implement `src/components/goto/AutoLayout.svelte` (single `<textarea>` mirroring the current `goto-input` testid for selector compatibility)
-- [ ] T017 [P] [US1] Implement `src/components/goto/DdLayout.svelte` (`緯度` and `經度` numeric fields with `inputmode="decimal"`)
-- [ ] T018 [P] [US1] Implement `src/components/goto/DmsLayout.svelte` with deg/min/sec × 2 fields and a two-segment N/S, E/W `role="radiogroup"` selector per research D8 + FR-005
-- [ ] T019 [P] [US1] Implement `src/components/goto/Tm2Layout.svelte` with easting / northing fields plus a `zone` selector (`auto | 119 | 121`) for TWD97
-- [ ] T020 [P] [US1] Implement `src/components/goto/Twd67Layout.svelte` with easting / northing fields only (no zone, per `data-model.md` §2 validation rules)
-- [ ] T021 [P] [US1] Implement `src/components/goto/MgrsLayout.svelte` — GZD+band field auto-uppercased, 100 km square auto-uppercased, easting/northing digit-filtered per research D7 + FR-004
-- [ ] T022 [P] [US1] Implement `src/components/goto/TaipowerLayout.svelte` with `前 5 碼` and `後 4 或 6 碼` fields plus a 9 / 11 precision toggle
-- [ ] T023 [US1] Rewrite `src/components/GoToDialog.svelte` to: host `ChipRack`, render the active layout component, manage per-layout field state, on submit call `composeRaw()` then route through the hint-named sub-parser per `contracts/composer.md` §3, surface format-specific localised errors, dispatch `submit` with the existing `GoToRequestOk` shape — verify T014 passes
-- [ ] T024 [US1] Update `tests/e2e/story-3-go-to.spec.ts` selectors / flows where they assumed the old single-textarea dialog (the auto-detect path keeps its `goto-input` testid via `AutoLayout.svelte`); the existing acceptance scenarios MUST still pass
-- [ ] T025 [US1] Write `tests/e2e/story-3b-split-and-recents.spec.ts` US1 describe block covering each chip's happy path against the published test-vectors (Taipei 101 for DD/DMS/MGRS/TWD97/TWD67, Taipower B7039 BD32 for the Taipower layout)
+- [X] T015 [P] [US1] Implement `src/components/goto/ChipRack.svelte` with `role="tablist"` and chip buttons using `role="tab"` + `aria-selected` per research D6
+- [X] T016 [P] [US1] Implement `src/components/goto/AutoLayout.svelte` (single `<textarea>` mirroring the current `goto-input` testid for selector compatibility)
+- [X] T017 [P] [US1] Implement `src/components/goto/DdLayout.svelte` (`緯度` and `經度` numeric fields with `inputmode="decimal"`)
+- [X] T018 [P] [US1] Implement `src/components/goto/DmsLayout.svelte` with deg/min/sec × 2 fields and a two-segment N/S, E/W `role="radiogroup"` selector per research D8 + FR-005
+- [X] T019 [P] [US1] Implement `src/components/goto/Tm2Layout.svelte` with easting / northing fields plus a `zone` selector (`auto | 119 | 121`) for TWD97
+- [X] T020 [P] [US1] Implement `src/components/goto/Twd67Layout.svelte` with easting / northing fields only (no zone, per `data-model.md` §2 validation rules)
+- [X] T021 [P] [US1] Implement `src/components/goto/MgrsLayout.svelte` — GZD+band field auto-uppercased, 100 km square auto-uppercased, easting/northing digit-filtered per research D7 + FR-004
+- [X] T022 [P] [US1] Implement `src/components/goto/TaipowerLayout.svelte` with `前 5 碼` and `後 4 或 6 碼` fields plus a 9 / 11 precision toggle
+- [X] T023 [US1] Rewrite `src/components/GoToDialog.svelte` to: host `ChipRack`, render the active layout component, manage per-layout field state, on submit call `composeRaw()` then route through the hint-named sub-parser per `contracts/composer.md` §3, surface format-specific localised errors, dispatch `submit` with the existing `GoToRequestOk` shape — verify T014 passes
+- [X] T024 [US1] Update `tests/e2e/story-3-go-to.spec.ts` selectors / flows where they assumed the old single-textarea dialog (the auto-detect path keeps its `goto-input` testid via `AutoLayout.svelte`); the existing acceptance scenarios MUST still pass
+- [X] T025 [US1] Write `tests/e2e/story-3b-split-and-recents.spec.ts` US1 describe block covering each chip's happy path against the published test-vectors (Taipei 101 for DD/DMS/MGRS/TWD97/TWD67, Taipower B7039 BD32 for the Taipower layout)
 
 **Checkpoint**: User Story 1 is shippable as the MVP — operators can enter coordinates via labelled fields for any of the seven formats.
 
@@ -95,15 +95,15 @@ must exist before any production code lands.
 
 ### Tests for User Story 2 (TDD — write first, verify failing)
 
-- [ ] T026 [US2] Write `tests/unit/storage/recents.spec.ts` covering all 11 obligations in `contracts/recents-storage.md` §5 (empty load, round-trip, version mismatch, corrupt JSON, bad entry shape, add-empty, add-LRU, add-FIFO-eviction, add-distinct-identity, remove, persistence size sanity)
-- [ ] T027 [US2] Implement `src/storage/recents.ts` exporting `loadRecents`, `saveRecents`, `addRecent`, `removeRecent`, `RECENTS_KEY = 'pwa_map:gotoHistory_v1'`, `MAX_RECENTS = 10` per `contracts/recents-storage.md` §3 — verify T026 passes
-- [ ] T028 [US2] Extend `tests/integration/go-to-split.spec.ts` with US2 describe block: recents row renders MRU-ordered, tap-submit closes the modal and emits `submit`, long-press 500 ms with no ≥ 6 px movement opens the delete confirmation, confirm removes the entry, cancel leaves it, reload-resilience (write a fixture into localStorage and assert it renders)
+- [X] T026 [US2] Write `tests/unit/storage/recents.spec.ts` covering all 11 obligations in `contracts/recents-storage.md` §5 (empty load, round-trip, version mismatch, corrupt JSON, bad entry shape, add-empty, add-LRU, add-FIFO-eviction, add-distinct-identity, remove, persistence size sanity)
+- [X] T027 [US2] Implement `src/storage/recents.ts` exporting `loadRecents`, `saveRecents`, `addRecent`, `removeRecent`, `RECENTS_KEY = 'pwa_map:gotoHistory_v1'`, `MAX_RECENTS = 10` per `contracts/recents-storage.md` §3 — verify T026 passes
+- [X] T028 [US2] Extend `tests/integration/go-to-split.spec.ts` with US2 describe block: recents row renders MRU-ordered, tap-submit closes the modal and emits `submit`, long-press 500 ms with no ≥ 6 px movement opens the delete confirmation, confirm removes the entry, cancel leaves it, reload-resilience (write a fixture into localStorage and assert it renders)
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Implement `src/components/goto/RecentChips.svelte` with `goto.recent.tooltip` localised hover/focus copy and `pointerdown`/`pointerup`/`pointermove` long-press detection per research D10
-- [ ] T030 [US2] Wire the recents pipeline into `src/components/GoToDialog.svelte`: call `loadRecents()` when `open` flips to `true`, render `<RecentChips>` above the chip rack when entries exist, on submit call `addRecent()` and persist, on long-press confirmation call `removeRecent()` and persist — verify T028 passes
-- [ ] T031 [US2] Extend `tests/e2e/story-3b-split-and-recents.spec.ts` with US2 describe block covering acceptance scenarios US2.AS1–AS6 (insert order, FIFO at 10, dedup move-to-front, long-press delete confirm, long-press cancel, reload persistence)
+- [X] T029 [US2] Implement `src/components/goto/RecentChips.svelte` with `goto.recent.tooltip` localised hover/focus copy and `pointerdown`/`pointerup`/`pointermove` long-press detection per research D10
+- [X] T030 [US2] Wire the recents pipeline into `src/components/GoToDialog.svelte`: call `loadRecents()` when `open` flips to `true`, render `<RecentChips>` above the chip rack when entries exist, on submit call `addRecent()` and persist, on long-press confirmation call `removeRecent()` and persist — verify T028 passes
+- [X] T031 [US2] Extend `tests/e2e/story-3b-split-and-recents.spec.ts` with US2 describe block covering acceptance scenarios US2.AS1–AS6 (insert order, FIFO at 10, dedup move-to-front, long-press delete confirm, long-press cancel, reload persistence)
 
 **Checkpoint**: Recents row is fully functional. The MVP from Phase 3 + the recents row from this phase deliver Stories 1 + 2 independently.
 
@@ -117,17 +117,17 @@ must exist before any production code lands.
 
 ### Tests for User Story 3 (TDD — write first, verify failing)
 
-- [ ] T032 [US3] Write `tests/unit/coord/disambiguate.spec.ts` covering all six obligations in `contracts/disambiguator.md` §3 (TWD97 dual-zone case yields ≥ 2 candidates; unambiguous DD yields exactly 1; Taipower yields exactly 1; garbage yields []; every candidate's `target` lies inside `coverageOf`'s Taiwan box; sub-parser preference ordering DD → DMS → MGRS → TWD97-119 → TWD97-121 → TWD67 → Taipower)
-- [ ] T033 [US3] Implement `src/coord/disambiguate.ts` exporting `candidates(raw): readonly Candidate[]` per `contracts/disambiguator.md` §1 — verify T032 passes
-- [ ] T034 [US3] Extend `tests/integration/go-to-split.spec.ts` with US3 describe block: 1-candidate auto-submit goes straight to flyTo with no Disambiguator render; ≥ 2-candidate submit opens the sheet without moving the map; pick → flyTo to the picked target; cancel → no map movement; destination indicator becomes visible after a successful flyTo and hides on a user `move` within 150 ms; current zoom is preserved across the flyTo
+- [X] T032 [US3] Write `tests/unit/coord/disambiguate.spec.ts` covering all six obligations in `contracts/disambiguator.md` §3 (TWD97 dual-zone case yields ≥ 2 candidates; unambiguous DD yields exactly 1; Taipower yields exactly 1; garbage yields []; every candidate's `target` lies inside `coverageOf`'s Taiwan box; sub-parser preference ordering DD → DMS → MGRS → TWD97-119 → TWD97-121 → TWD67 → Taipower)
+- [X] T033 [US3] Implement `src/coord/disambiguate.ts` exporting `candidates(raw): readonly Candidate[]` per `contracts/disambiguator.md` §1 — verify T032 passes
+- [X] T034 [US3] Extend `tests/integration/go-to-split.spec.ts` with US3 describe block: 1-candidate auto-submit goes straight to flyTo with no Disambiguator render; ≥ 2-candidate submit opens the sheet without moving the map; pick → flyTo to the picked target; cancel → no map movement; destination indicator becomes visible after a successful flyTo and hides on a user `move` within 150 ms; current zoom is preserved across the flyTo
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Implement `src/components/goto/Disambiguator.svelte` per `contracts/disambiguator.md` §2 — `role="dialog"` bottom sheet, candidate rows as `data-testid="disambig-row-{i}"` buttons with localised label + back-projected DD preview, Escape and backdrop cancel, focus trapped while open
-- [ ] T036 [P] [US3] Implement `src/components/goto/DestinationIndicator.svelte` per `contracts/destination-indicator.md` §2 — DOM overlay, `aria-hidden="true"`, `pointer-events: none`, fade-in 200 ms / hold 3 s / fade-out 300 ms, exposes `start()` / `stop()` (or backed by a writable store under `src/components/goto/destinationStore.ts`); user-vs-program-initiated `move` distinguished per `contracts/destination-indicator.md` §3 buffer rule
-- [ ] T037 [US3] Wire the Disambiguator into `src/components/GoToDialog.svelte`: on `auto`-chip submit, call `candidates(raw)`; if `length ≥ 2` open the sheet with the candidate list and suspend dispatching `submit` until the user picks; pick dispatches `submit` with the picked candidate's target; cancel keeps the modal open and the map unchanged
-- [ ] T038 [US3] Wire the DestinationIndicator into `src/app/App.svelte` (or wherever `flyTo` is currently triggered): on every successful `flyTo` resolution call `start()`; subscribe to `MapController.onMove` to call `stop()` on user-initiated moves only — verify T034 passes
-- [ ] T039 [US3] Extend `tests/e2e/story-3b-split-and-recents.spec.ts` with US3 describe block including (a) the AS1 ambiguous-DD case end-to-end, (b) AS2 cancel-leaves-map-untouched, (c) AS3 indicator visibility window (3 s + fade), (d) AS4 indicator dismiss-on-pan within 150 ms (SC-007), (e) AS5/SC-003 zoom-preservation sweep across 100 random starting zooms in `[2, 18]`
+- [X] T035 [P] [US3] Implement `src/components/goto/Disambiguator.svelte` per `contracts/disambiguator.md` §2 — `role="dialog"` bottom sheet, candidate rows as `data-testid="disambig-row-{i}"` buttons with localised label + back-projected DD preview, Escape and backdrop cancel, focus trapped while open
+- [X] T036 [P] [US3] Implement `src/components/goto/DestinationIndicator.svelte` per `contracts/destination-indicator.md` §2 — DOM overlay, `aria-hidden="true"`, `pointer-events: none`, fade-in 200 ms / hold 3 s / fade-out 300 ms, exposes `start()` / `stop()` (or backed by a writable store under `src/components/goto/destinationStore.ts`); user-vs-program-initiated `move` distinguished per `contracts/destination-indicator.md` §3 buffer rule
+- [X] T037 [US3] Wire the Disambiguator into `src/components/GoToDialog.svelte`: on `auto`-chip submit, call `candidates(raw)`; if `length ≥ 2` open the sheet with the candidate list and suspend dispatching `submit` until the user picks; pick dispatches `submit` with the picked candidate's target; cancel keeps the modal open and the map unchanged
+- [X] T038 [US3] Wire the DestinationIndicator into `src/app/App.svelte` (or wherever `flyTo` is currently triggered): on every successful `flyTo` resolution call `start()`; subscribe to `MapController.onMove` to call `stop()` on user-initiated moves only — verify T034 passes
+- [X] T039 [US3] Extend `tests/e2e/story-3b-split-and-recents.spec.ts` with US3 describe block including (a) the AS1 ambiguous-DD case end-to-end, (b) AS2 cancel-leaves-map-untouched, (c) AS3 indicator visibility window (3 s + fade), (d) AS4 indicator dismiss-on-pan within 150 ms (SC-007), (e) AS5/SC-003 zoom-preservation sweep across 100 random starting zooms in `[2, 18]`
 
 **Checkpoint**: All three user stories are independently functional and testable.
 
@@ -137,16 +137,16 @@ must exist before any production code lands.
 
 **Purpose**: Verification, documentation finalisation, and the constitutional review loop (Principles I, IV, V).
 
-- [ ] T040 [P] Run `npm run format` on the worktree (Constitution Principle I + Development Workflow formatting gate)
-- [ ] T041 Run `npm run lint` and fix any warnings (`--max-warnings 0`)
-- [ ] T042 Run `npm run typecheck` and resolve any errors
-- [ ] T043 Run `npm run test` (all Vitest unit + integration) — all green
-- [ ] T044 Run `npm run test:e2e` — all green including the new `story-3b-split-and-recents.spec.ts`
-- [ ] T045 [P] Run `npm run bundle-size` — confirm JS gzipped ≤ 200 KB and CSS gzipped ≤ 22 KB (Performance Goals + Constitution Principle IV); profile and trim if a budget is breached
-- [ ] T046 [P] Finalize `docs/ui/0002-goto-split-input.md` with screenshots, the chip-rack design tokens reused, the layout grid spec, recents-row visual, disambiguator sheet, and destination-indicator timing diagram
-- [ ] T047 [P] Finalize `docs/adr/0017-goto-split-layout-architecture.md` with the realised composer + sub-parser-routing design notes; finalize `0018-recents-storage-schema.md` with the on-disk schema + corrupt-load fallback rationale; finalize `0019-flyto-zoom-preservation.md` with the call-site impact analysis
-- [ ] T048 Update `docs/adr/README.md` to mark 0017 / 0018 / 0019 Accepted (Constitution Principle V — index updated after `/speckit.implement`)
-- [ ] T049 Walk through `specs/002-goto-split-input/quickstart.md` US1 / US2 / US3 smoke tests on a clean `npm run dev` and record any gaps
+- [X] T040 [P] Run `npm run format` on the worktree (Constitution Principle I + Development Workflow formatting gate)
+- [X] T041 Run `npm run lint` and fix any warnings (`--max-warnings 0`)
+- [X] T042 Run `npm run typecheck` and resolve any errors
+- [X] T043 Run `npm run test` (all Vitest unit + integration) — all green
+- [X] T044 Run `npm run test:e2e` — all green including the new `story-3b-split-and-recents.spec.ts`
+- [X] T045 [P] Run `npm run bundle-size` — confirm JS gzipped ≤ 200 KB and CSS gzipped ≤ 22 KB (Performance Goals + Constitution Principle IV); profile and trim if a budget is breached
+- [X] T046 [P] Finalize `docs/ui/0002-goto-split-input.md` with screenshots, the chip-rack design tokens reused, the layout grid spec, recents-row visual, disambiguator sheet, and destination-indicator timing diagram
+- [X] T047 [P] Finalize `docs/adr/0017-goto-split-layout-architecture.md` with the realised composer + sub-parser-routing design notes; finalize `0018-recents-storage-schema.md` with the on-disk schema + corrupt-load fallback rationale; finalize `0019-flyto-zoom-preservation.md` with the call-site impact analysis
+- [X] T048 Update `docs/adr/README.md` to mark 0017 / 0018 / 0019 Accepted (Constitution Principle V — index updated after `/speckit.implement`)
+- [X] T049 Walk through `specs/002-goto-split-input/quickstart.md` US1 / US2 / US3 smoke tests on a clean `npm run dev` and record any gaps
 
 ---
 

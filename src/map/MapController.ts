@@ -81,7 +81,7 @@ export class MapController {
       return;
     }
     const currentZoom = map.getZoom ? map.getZoom() : this.currentZoom;
-    const nextZoom = options.zoom ?? (currentZoom >= 10 ? currentZoom : 15);
+    const nextZoom = options.zoom ?? currentZoom;
     if (typeof map.flyTo === 'function') {
       map.flyTo({
         center: [target.lon as number, target.lat as number],

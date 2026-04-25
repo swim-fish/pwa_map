@@ -14,9 +14,10 @@ This directory holds per-change UI documentation per Constitution
 
 ## Index
 
-| #                                                 | Title | Status | Affected screens |
-| ------------------------------------------------- | ----- | ------ | ---------------- |
-| _first entry lands with US1 (tasks T036 / T039)._ |       |        |                  |
+| #                                | Title                                 | Status   | Affected screens                                           |
+| -------------------------------- | ------------------------------------- | -------- | ---------------------------------------------------------- |
+| [0001](0001-coord-map-layout.md) | Coord-map PWA layout (feature 001)    | Accepted | Map shell, crosshair, readout, format toggle, Go-To dialog |
+| [0002](0002-goto-split-input.md) | Go-To split-field input (feature 002) | Accepted | Go-To modal                                                |
 
 ## Adding a new UI record
 

@@ -438,7 +438,10 @@ function parseTwd67Input(raw: string): SubParseResult {
   if (zone === 'unknown' || (zone && zone !== 121)) {
     return rej('out-of-range', 'errors.tm2.unknownZone', raw, 'twd67-tm2');
   }
-  const pair = extractTm2Pair(s);
+  // Strip the TWD67 qualifier *before* extracting the easting/northing pair —
+  // its embedded digits (the "67") would otherwise be matched as the easting.
+  const stripped = s.replace(/twd67/gi, ' ');
+  const pair = extractTm2Pair(stripped);
   if (!pair) return rej('malformed', 'errors.noSeparator', raw, 'twd67-tm2');
   if (pair.e < 0) {
     return rej('out-of-range', 'errors.tm2.negativeEasting', raw, 'twd67-tm2');
@@ -446,7 +449,7 @@ function parseTwd67Input(raw: string): SubParseResult {
   if (pair.n < 0) {
     return rej('out-of-range', 'errors.tm2.negativeNorthing', raw, 'twd67-tm2');
   }
-  if (/\bm\b/i.test(s.replace(/twd67/i, ''))) {
+  if (/\bm\b/i.test(stripped)) {
     return rej('malformed', 'errors.twd67.kmUnit', raw, 'twd67-tm2');
   }
   try {
@@ -555,6 +558,40 @@ export function parseGoTo(rawInput: string): GoToRequest {
 }
 
 export default parseGoTo;
+
+function liftSub(result: SubParseResult, raw: string, attemptedAs: CoordinateKind): GoToRequest {
+  if (result.verdict === 'accept') return result.request;
+  if (result.verdict === 'reject') return err(result.rejection);
+  return err(reject('malformed', 'errors.noSeparator', raw, attemptedAs));
+}
+
+export function parseDdOnly(raw: string): GoToRequest {
+  return liftSub(parseDd(raw), raw, 'wgs84-dd');
+}
+
+export function parseDmsOnly(raw: string): GoToRequest {
+  return liftSub(parseDms(raw), raw, 'wgs84-dms');
+}
+
+export function parseMgrsOnly(raw: string): GoToRequest {
+  return liftSub(parseMgrsString(raw), raw, 'mgrs');
+}
+
+export function parseTm2InferredOnly(raw: string): GoToRequest {
+  return liftSub(parseTm2Inferred(raw), raw, 'twd97-tm2');
+}
+
+export function parseTm2ExplicitOnly(raw: string, _zone: 119 | 121): GoToRequest {
+  return liftSub(parseTm2Explicit(raw), raw, 'twd97-tm2');
+}
+
+export function parseTwd67Only(raw: string): GoToRequest {
+  return liftSub(parseTwd67Input(raw), raw, 'twd67-tm2');
+}
+
+export function parseTaipowerOnly(raw: string): GoToRequest {
+  return liftSub(parseTaipowerInput(raw), raw, 'taipower');
+}
 
 // Internal — helpers for focused unit tests.
 export const __INTERNAL__ = {

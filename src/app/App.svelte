@@ -6,6 +6,7 @@
   import AttributionBar from '$components/AttributionBar.svelte';
   import FormatToggle from '$components/FormatToggle.svelte';
   import GoToDialog from '$components/GoToDialog.svelte';
+  import DestinationIndicator from '$components/goto/DestinationIndicator.svelte';
   import CopyFallback from '$components/CopyFallback.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType } from '$types/coord';
@@ -47,6 +48,11 @@
   let zoneHint: { zone: number; ts: number } | null = null;
   let copyToast: { ts: number } | null = null;
   let copyFallback: { text: string; ts: number } | null = null;
+  let destinationIndicator: {
+    start: () => void;
+    stop: () => void;
+    onMapMove: (now?: number) => void;
+  } | null = null;
 
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
   function scheduleSave(ev: MapMoveEvent): void {
@@ -59,6 +65,7 @@
 
   function onMove(ev: CustomEvent<MapMoveEvent>): void {
     crosshair = ev.detail.center;
+    destinationIndicator?.onMapMove();
   }
 
   function onMoveEnd(ev: CustomEvent<MapMoveEvent>): void {
@@ -100,6 +107,7 @@
     controller.flyTo(target);
     crosshair = target;
     goToOpen = false;
+    destinationIndicator?.start();
     if (zoneAutoResolved) {
       zoneHint = { zone: zoneAutoResolved, ts: Date.now() };
       setTimeout(() => {
@@ -209,6 +217,8 @@
     text={copyFallback?.text ?? ''}
     on:close={() => (copyFallback = null)}
   />
+
+  <DestinationIndicator bind:this={destinationIndicator} />
 
   <span class="sr-only" aria-hidden="true"
     >{$tStore('readout.dd.lat')} {formatWGS84DD(crosshair)}</span

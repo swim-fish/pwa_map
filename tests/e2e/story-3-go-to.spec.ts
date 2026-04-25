@@ -98,7 +98,9 @@ test.describe('Story 3 — Go To control', () => {
     await expect(page.getByTestId('goto-error')).toContainText(/outer-island|MVP|coverage|離島/i);
   });
 
-  test('AS5: TM2 zone-inferred pair lands and shows zone toast', async ({ page }) => {
+  test('AS5: ambiguous TM2 pair opens the disambiguator (feature 002 supersedes auto-resolve)', async ({
+    page,
+  }) => {
     await seedPrefs(page);
     await page.goto('/');
     await page.evaluate(() => {
@@ -109,8 +111,16 @@ test.describe('Story 3 — Go To control', () => {
     });
     await openGoTo(page);
     await submitGoTo(page, '306962.887, 2769619.124');
-    await page.waitForTimeout(900);
-    await expect(page.getByTestId('zone-toast')).toBeVisible();
-    await expect(page.getByTestId('zone-toast')).toContainText(/121/);
+    // Per FR-009 the disambiguator opens for ≥ 2 plausible interpretations
+    // instead of the prior auto-resolve toast.
+    await expect(page.getByTestId('goto-disambig')).toBeVisible();
+    await page
+      .locator('[data-testid="disambig-row"][data-disambig-sub="twd97-zone-121"]')
+      .first()
+      .click();
+    await expect(page.getByTestId('goto-disambig')).toHaveCount(0);
+    await expect(page.getByTestId('readout-dd')).toContainText(/25\.03\d+.*121\.56\d+/, {
+      timeout: 1500,
+    });
   });
 });

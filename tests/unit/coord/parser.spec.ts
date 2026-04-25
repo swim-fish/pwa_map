@@ -1,5 +1,14 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { initCoord, parseGoTo } from '../../../src/coord';
+import {
+  parseDdOnly,
+  parseDmsOnly,
+  parseMgrsOnly,
+  parseTm2InferredOnly,
+  parseTm2ExplicitOnly,
+  parseTwd67Only,
+  parseTaipowerOnly,
+} from '../../../src/coord/parser';
 
 beforeAll(() => {
   initCoord();
@@ -182,5 +191,63 @@ describe('parseGoTo — top-level dispatcher', () => {
     const r = parseGoTo('Y5555 AB12');
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error.category).toBe('out-of-coverage');
+  });
+});
+
+describe('parser sub-parser named exports (feature 002 composer routing)', () => {
+  test('parseDdOnly accepts a DD pair', () => {
+    const r = parseDdOnly('25.033611, 121.564472');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.parsedAs).toBe('wgs84-dd');
+  });
+
+  test('parseDdOnly rejects an MGRS string with a DD-shaped error category', () => {
+    const r = parseDdOnly('51R UH 55170 69437');
+    expect(r.ok).toBe(false);
+  });
+
+  test('parseDmsOnly accepts a DMS pair', () => {
+    const r = parseDmsOnly('25°02′01.0″ N, 121°33′52.099″ E');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.parsedAs).toBe('wgs84-dms');
+  });
+
+  test('parseMgrsOnly accepts canonical MGRS', () => {
+    const r = parseMgrsOnly('51R UH 55170 69437');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.parsedAs).toBe('mgrs');
+  });
+
+  test('parseTm2InferredOnly accepts inferred-zone TM2', () => {
+    const r = parseTm2InferredOnly('306962.887, 2769619.124');
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.parsedAs).toBe('twd97-tm2');
+      expect(r.zoneAutoResolved).toBe(121);
+    }
+  });
+
+  test('parseTm2ExplicitOnly accepts zone 121', () => {
+    const r = parseTm2ExplicitOnly('306962.887, 2769619.124 (zone 121)', 121);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.parsedAs).toBe('twd97-tm2');
+  });
+
+  test('parseTwd67Only accepts a TWD67 pair and back-projects to Taipei 101', () => {
+    const r = parseTwd67Only('TWD67 306132.271, 2769822.821');
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.parsedAs).toBe('twd67-tm2');
+      // Guard against the "67" inside `TWD67` being captured as the easting
+      // (regression test for the parser fix in feature 002).
+      expect(r.target.lat).toBeCloseTo(25.033611, 2);
+      expect(r.target.lon).toBeCloseTo(121.564472, 2);
+    }
+  });
+
+  test('parseTaipowerOnly accepts a 9-char Taipower', () => {
+    const r = parseTaipowerOnly('B7039 BD32');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.parsedAs).toBe('taipower');
   });
 });
