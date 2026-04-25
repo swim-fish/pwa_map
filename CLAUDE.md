@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/001-coord-map-pwa/plan.md`
+Active feature plan: `specs/002-goto-split-input/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts
