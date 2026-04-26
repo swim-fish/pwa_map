@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/004-offline-pwa-polish/plan.md`
+Active feature plan: `specs/005-pwa-installable/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts
