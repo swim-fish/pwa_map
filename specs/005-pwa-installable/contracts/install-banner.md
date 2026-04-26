@@ -78,13 +78,13 @@ Required `data-testid` selectors:
 | --------------- | ------------------------------------------------------------------------------------------------ |
 | Position        | `position: fixed; bottom: calc(var(--space-4, 16px) + var(--space-6, 24px)); right: var(--space-4, 16px);` (above attribution badge per research D5) |
 | Width           | `max-width: min(420px, calc(100vw - 32px));`                                                     |
-| Z-index         | `6` (one above the toast layer's `5` baseline; one below modal dialogs' `10+`)                   |
+| Z-index         | `6` (deliberately below the bottom-center transient toast column at `z-index: 50` from `App.svelte`; same layer as the top-center `UpdatePrompt`. On the rare overlap, the toast wins by z-index — acceptable since toasts auto-dismiss within 5 s.) |
 | Background      | `var(--color-surface-elev)` — same as UpdatePrompt (FR-016 contrast guarantee inherits)          |
 | Foreground      | `var(--color-fg)`                                                                                |
 | Border          | `1px solid var(--color-border)`                                                                  |
 | Border radius   | `8px`                                                                                            |
 | Shadow          | `0 4px 16px rgba(15, 23, 42, 0.18)` — same as UpdatePrompt                                       |
-| Animation       | `transition:fly|local={{ y: 16, duration: 180 }}` (default); skipped under `prefers-reduced-motion: reduce` (D6) |
+| Animation       | 180 ms CSS `@keyframes install-banner-in` entry (translateY `16` → `0`, opacity `0` → `1`); no Svelte `transition:` directive. Skipped under `prefers-reduced-motion: reduce` via the override below. **Implementation note**: the original draft of this contract called for `transition:fly|local={{ y: 16, duration: 180 }}`, but Svelte 4's outro keeps the node mounted through a microtask + RAF cycle even at `duration: 0`, which broke DOM-absence assertions in jsdom integration tests. Switching to a CSS-only entry animation preserves the visual entry behaviour while letting `{#if}` blocks unmount synchronously on dismissal. Exit is now an instant unmount (acceptable per integration tests). |
 
 The CSS MUST include this reduced-motion override:
 

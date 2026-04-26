@@ -275,12 +275,15 @@ on the next qualifying load.
 ### Key Entities
 
 - **InstallPromptState**: A transient in-memory record describing
-  the current affordance state — `{ surface: 'android' | 'ios' |
-  'unsupported' | 'hidden'; deferredPrompt: BeforeInstallPromptEvent
-  | null; dismissedUntil: number | null; installed: boolean }`. Not
-  persisted; rebuilt on every page load from
-  `beforeinstallprompt`, `appinstalled`, `navigator.standalone`,
-  `matchMedia`, and the `pwa_map:installDismissedUntil` key.
+  the current affordance state — `{ surface: InstallSurface;
+  deferredPrompt: BeforeInstallPromptEvent | null; dismissedUntil:
+  number | null; installed: boolean }` where `InstallSurface` is the
+  seven-literal union from `PlatformDetection` below plus the
+  `'hidden'` literal applied by store actions in response to
+  dismissal / `appinstalled`. Not persisted; rebuilt on every page
+  load from `beforeinstallprompt`, `appinstalled`,
+  `navigator.standalone`, `matchMedia`, and the
+  `pwa_map:installDismissedUntil` key.
 - **DismissalRecord**: A single `localStorage` entry under
   `pwa_map:installDismissedUntil`, value `string`-ified epoch ms
   ("the affordance MUST stay hidden until this timestamp"). Absence
@@ -296,7 +299,9 @@ on the next qualifying load.
   `navigator.userAgent`, `navigator.standalone`, `matchMedia`, and
   the captured `beforeinstallprompt` event. Returns one of
   `'android-chromium' | 'ios-safari' | 'ios-other' | 'desktop-chromium'
-  | 'unsupported' | 'standalone'`.
+  | 'unsupported' | 'standalone'`. The seventh literal `'hidden'` is
+  added by `InstallPromptState` actions and is never returned by the
+  detector itself.
 
 ## Success Criteria *(mandatory)*
 

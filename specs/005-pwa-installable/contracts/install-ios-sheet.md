@@ -133,7 +133,7 @@ is purely educational.
 | Title typo      | `font-size: 14px; font-weight: 600;` — matches feature-004 `UpdatePrompt`                        |
 | Step list       | `font-size: 13px; line-height: 1.5;`; numbered with `ol > li`                                    |
 | Share-icon size | 16 × 16 px nominal, inherits `currentColor` so it tracks `--color-fg` in dark mode              |
-| Animation       | Same fly transition as `InstallBanner.svelte`; same reduced-motion override                     |
+| Animation       | 180 ms CSS `@keyframes install-ios-sheet-in` entry (translate(-50%, 16) → translate(-50%, 0), opacity `0` → `1`); no Svelte `transition:` directive. Same rationale as `InstallBanner.svelte` §4 — see that contract's Animation row for the deviation note. Same reduced-motion override. |
 
 The CSS reduced-motion override mirrors the banner:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
@@ -13,6 +13,13 @@ const CSS_BUDGET_BYTES = 20 * 1024;
 
 // Async chunks allowed up to this size each (individual chunk budget).
 const ASYNC_CHUNK_BUDGET_BYTES = 250 * 1024;
+
+// Per-feature delta gate (feature 005 SC-007: ≤ 4 KB gzipped delta from
+// the prior shipped baseline on the entry JS bundle). The baseline is
+// stored in scripts/bundle-baseline.json and updated by running
+// `npm run bundle-size -- --update-baseline` from a known-good build.
+const ENTRY_JS_DELTA_BUDGET_BYTES = 4 * 1024;
+const BASELINE_FILE = join(process.cwd(), 'scripts', 'bundle-baseline.json');
 
 // Chunks whose names start with one of these prefixes are treated as deferred.
 const DEFERRED_CHUNK_PREFIXES = ['maplibre', 'workbox-window'];
@@ -41,6 +48,8 @@ function fmt(bytes) {
 }
 
 async function main() {
+  const updateBaseline = process.argv.includes('--update-baseline');
+
   try {
     await stat(DIST_ASSETS);
   } catch {
@@ -100,6 +109,40 @@ async function main() {
       );
       failed = true;
     }
+  }
+
+  // Delta-from-baseline gate (feature 005 SC-007 enforcement).
+  let baseline = null;
+  try {
+    const raw = await readFile(BASELINE_FILE, 'utf8');
+    baseline = JSON.parse(raw);
+  } catch {
+    /* no baseline yet — first run or pre-005 */
+  }
+
+  if (updateBaseline) {
+    const next = {
+      entryJsBytes: entryTotal,
+      cssBytes: cssTotal,
+      capturedAt: new Date().toISOString(),
+    };
+    await writeFile(BASELINE_FILE, JSON.stringify(next, null, 2) + '\n');
+    console.info(`[bundle-size] Baseline updated: ${BASELINE_FILE} (entry JS ${fmt(entryTotal)}).`);
+  } else if (baseline !== null && typeof baseline.entryJsBytes === 'number') {
+    const delta = entryTotal - baseline.entryJsBytes;
+    console.info(
+      `[bundle-size] Entry JS delta from baseline: ${delta >= 0 ? '+' : ''}${fmt(delta)} / per-feature delta budget ${fmt(ENTRY_JS_DELTA_BUDGET_BYTES)}`,
+    );
+    if (delta > ENTRY_JS_DELTA_BUDGET_BYTES) {
+      console.error(
+        `[bundle-size] FAIL: entry JS delta ${fmt(delta)} exceeds per-feature delta budget ${fmt(ENTRY_JS_DELTA_BUDGET_BYTES)}.`,
+      );
+      failed = true;
+    }
+  } else {
+    console.warn(
+      `[bundle-size] WARN: no baseline at ${BASELINE_FILE}. Run \`npm run bundle-size -- --update-baseline\` from a known-good build to capture one.`,
+    );
   }
 
   if (failed) process.exit(1);

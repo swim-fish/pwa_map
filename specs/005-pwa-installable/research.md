@@ -229,8 +229,14 @@ The iOS instructional sheet anchors to the **bottom of the viewport
 with horizontal centering** as a card-style sheet (`bottom:
 var(--space-4); left: 50%; transform: translateX(-50%);` with the
 same max-width clamp), one viewport-row above the standard toast
-column. Both surfaces use `position: fixed`, `z-index: 6` (one above
-the toast layer, one below any future modal dialogs).
+column. Both surfaces use `position: fixed`, `z-index: 6` — deliberately
+**below** the bottom-center transient toast column at `z-index: 50`
+(from `App.svelte`) and at the **same layer** as the top-center
+`UpdatePrompt` from feature 004. The two persistent cards never
+collide because they anchor to different sides of the viewport. On
+the rare overlap with a transient toast, the toast wins by z-index,
+which is acceptable since toasts auto-dismiss within 5 s while the
+install affordance stays until acted on.
 
 **Conflict map** (existing surfaces from features 001–004):
 
