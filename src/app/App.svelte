@@ -11,6 +11,8 @@
   import LayerPicker from '$components/LayerPicker.svelte';
   import LocalePicker from '$components/LocalePicker.svelte';
   import UpdatePrompt from '$components/UpdatePrompt.svelte';
+  import InstallBanner from '$components/InstallBanner.svelte';
+  import InstallIosSheet from '$components/InstallIosSheet.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
   import type { LayerSelection } from '$types/map';
@@ -27,6 +29,11 @@
     type FormatPreferences,
   } from '$storage/preferences';
   import { offlineReadySignal, dismissOfflineReady, fireNeedRefresh } from '$pwa/updateSignal';
+  import {
+    captureBeforeInstallPrompt,
+    markInstalled,
+    type BeforeInstallPromptEvent,
+  } from '$pwa/installSignal';
 
   let offlineReadyTimer: ReturnType<typeof setTimeout> | null = null;
   $: if ($offlineReadySignal.visible) {
@@ -184,6 +191,16 @@
   });
 
   onMount(() => {
+    const onBeforeInstall = (e: Event): void => {
+      e.preventDefault();
+      captureBeforeInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    const onAppInstalled = (): void => {
+      markInstalled();
+    };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', onAppInstalled);
+
     const hooks = {
       setCenter(lat: number, lon: number): void {
         const map = controller.getUnderlying() as {
@@ -219,12 +236,35 @@
     if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
       const w = window as unknown as Record<string, unknown>;
       w.__pwaTestHooks ??= {};
-      (w.__pwaTestHooks as Record<string, unknown>).triggerUpdateAvailable = () => {
+      const pwaHooks = w.__pwaTestHooks as Record<string, unknown>;
+      pwaHooks.triggerUpdateAvailable = () => {
         fireNeedRefresh(async () => {
           /* test no-op — real path calls updateSW(true) */
         });
       };
+      pwaHooks.triggerBeforeInstallPrompt = (opts?: {
+        outcome?: 'accepted' | 'dismissed';
+      }): void => {
+        const evt = new Event('beforeinstallprompt') as unknown as BeforeInstallPromptEvent & {
+          prompt: () => Promise<void>;
+          userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+        };
+        evt.prompt = async () => undefined;
+        evt.userChoice = Promise.resolve({
+          outcome: opts?.outcome ?? 'accepted',
+          platform: 'web',
+        });
+        window.dispatchEvent(evt);
+      };
+      pwaHooks.triggerAppInstalled = (): void => {
+        window.dispatchEvent(new Event('appinstalled'));
+      };
     }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      window.removeEventListener('appinstalled', onAppInstalled);
+    };
   });
 </script>
 
@@ -342,6 +382,8 @@
   {/if}
 
   <UpdatePrompt />
+  <InstallBanner />
+  <InstallIosSheet />
 
   <CopyFallback
     open={copyFallback !== null}
