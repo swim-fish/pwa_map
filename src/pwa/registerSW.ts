@@ -1,18 +1,27 @@
 import { registerSW as workboxRegister } from 'virtual:pwa-register';
+import { fireNeedRefresh, fireOfflineReady } from './updateSignal';
+import { hasShownOfflineReady, markOfflineReadyShown } from '$storage/offlineReady';
 
 export function registerSW(): void {
   if (import.meta.env.DEV) return;
   try {
-    workboxRegister({
+    const updateSW = workboxRegister({
       immediate: true,
       onOfflineReady() {
-        // future: surface a toast — kept silent in MVP
+        if (hasShownOfflineReady()) return;
+        markOfflineReadyShown();
+        fireOfflineReady();
       },
       onNeedRefresh() {
-        // autoUpdate strategy handles the reload; no prompt needed
+        fireNeedRefresh(async () => {
+          await updateSW(true);
+        });
+      },
+      onRegisterError() {
+        // FR-012 — silent fallback; no toast, no console.error.
       },
     });
   } catch {
-    /* tests and SSR paths: virtual module absent — noop */
+    /* virtual:pwa-register absent (tests / SSR) — noop */
   }
 }

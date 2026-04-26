@@ -121,5 +121,9 @@
   "map.failure.nlsc": "NLSC タイルの読み込みに失敗しました。前のレイヤーに戻しました",
   "map.failure.google": "Google タイルの読み込みに失敗しました。前のレイヤーに戻しました",
   "map.failure.other": "タイルの読み込みに失敗しました。前のレイヤーに戻しました",
-  "locale.picker.title": "言語を選択"
+  "locale.picker.title": "言語を選択",
+  "pwa.update.title": "アップデートあり",
+  "pwa.update.confirm": "今すぐ更新",
+  "pwa.update.later": "後で",
+  "pwa.offline.ready": "オフラインで利用可能"
 }

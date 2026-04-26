@@ -121,5 +121,9 @@
   "map.failure.nlsc": "NLSC tiles failed to load — reverted to previous layer",
   "map.failure.google": "Google tiles failed to load — reverted to previous layer",
   "map.failure.other": "Tiles failed to load — reverted to previous layer",
-  "locale.picker.title": "Choose language"
+  "locale.picker.title": "Choose language",
+  "pwa.update.title": "Update available",
+  "pwa.update.confirm": "Update now",
+  "pwa.update.later": "Later",
+  "pwa.offline.ready": "Ready for offline use"
 }

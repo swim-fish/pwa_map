@@ -36,6 +36,8 @@ drifting.
 | [0020](0020-map-source-catalogue.md)                  | Map source catalogue + HTTPS upgrade                 | Accepted | —          |
 | [0021](0021-prefs-additive-evolution.md)              | `pwa_map:prefs` additive schema evolution            | Accepted | —          |
 | [0022](0022-tile-failure-toast.md)                    | Tile-failure detection + auto-revert toast           | Accepted | —          |
+| [0023](0023-sw-registration-strategy.md)              | SW registration strategy — `autoUpdate` → `prompt`   | Accepted | —          |
+| [0024](0024-dev-manifest-middleware.md)               | Dev-mode manifest middleware                         | Accepted | —          |
 
 ## Adding a new ADR
 

@@ -3,37 +3,40 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
+import { devManifestPlugin } from './src/pwa/devManifestPlugin';
 
 const r = (p: string): string => fileURLToPath(new URL(p, import.meta.url));
+
+const manifest = {
+  name: 'Taiwan Coordinate Map',
+  short_name: 'CoordMap',
+  description:
+    'A Taiwan-covering PWA that shows a crosshair reticle with live multi-format coordinate readout.',
+  theme_color: '#0f172a',
+  background_color: '#ffffff',
+  display: 'standalone',
+  orientation: 'any',
+  start_url: '/',
+  scope: '/',
+  icons: [
+    { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    {
+      src: '/icons/icon-maskable-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable',
+    },
+  ],
+} as const;
 
 export default defineConfig({
   plugins: [
     svelte(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: false,
-      manifest: {
-        name: 'Taiwan Coordinate Map',
-        short_name: 'CoordMap',
-        description:
-          'A Taiwan-covering PWA that shows a crosshair reticle with live multi-format coordinate readout.',
-        theme_color: '#0f172a',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'any',
-        start_url: '/',
-        scope: '/',
-        icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          {
-            src: '/icons/icon-maskable-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
-      },
+      manifest,
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         runtimeCaching: [
@@ -77,6 +80,7 @@ export default defineConfig({
       },
       devOptions: { enabled: false },
     }),
+    devManifestPlugin(manifest),
   ],
   resolve: {
     alias: {

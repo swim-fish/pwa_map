@@ -31,8 +31,8 @@
     right: var(--space-2, 8px);
     bottom: var(--space-2, 8px);
     padding: 2px var(--space-2, 8px);
-    background: rgba(255, 255, 255, 0.82);
-    color: var(--color-fg, #0f172a);
+    background: var(--attribution-bg);
+    color: var(--attribution-fg);
     font-size: 12px;
     line-height: 1.3;
     border-radius: 4px;

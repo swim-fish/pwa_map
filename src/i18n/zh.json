@@ -121,5 +121,9 @@
   "map.failure.nlsc": "NLSC 圖磚載入失敗，已退回上一個圖層",
   "map.failure.google": "Google 圖磚載入失敗，已退回上一個圖層",
   "map.failure.other": "圖磚載入失敗，已退回上一個圖層",
-  "locale.picker.title": "選擇語言"
+  "locale.picker.title": "選擇語言",
+  "pwa.update.title": "有新版本可用",
+  "pwa.update.confirm": "立即更新",
+  "pwa.update.later": "稍後",
+  "pwa.offline.ready": "已準備好離線使用"
 }

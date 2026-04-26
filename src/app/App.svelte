@@ -10,6 +10,7 @@
   import CopyFallback from '$components/CopyFallback.svelte';
   import LayerPicker from '$components/LayerPicker.svelte';
   import LocalePicker from '$components/LocalePicker.svelte';
+  import UpdatePrompt from '$components/UpdatePrompt.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
   import type { LayerSelection } from '$types/map';
@@ -25,6 +26,16 @@
     savePreferences,
     type FormatPreferences,
   } from '$storage/preferences';
+  import { offlineReadySignal, dismissOfflineReady, fireNeedRefresh } from '$pwa/updateSignal';
+
+  let offlineReadyTimer: ReturnType<typeof setTimeout> | null = null;
+  $: if ($offlineReadySignal.visible) {
+    if (offlineReadyTimer) clearTimeout(offlineReadyTimer);
+    offlineReadyTimer = setTimeout(() => {
+      dismissOfflineReady();
+      offlineReadyTimer = null;
+    }, 5000);
+  }
 
   const TAIPEI_101: WGS84DD = {
     kind: 'wgs84-dd',
@@ -200,6 +211,20 @@
       },
     };
     (window as unknown as Record<string, unknown>).__mapTestHooks = hooks;
+
+    // Test-only hook for the deterministic update-prompt E2E flow
+    // (research D7). Real SW upgrade lifecycle is too slow + flaky for
+    // E2E; this hook produces the same `fireNeedRefresh` signal the
+    // production registerSW callback would emit. Gated to non-prod.
+    if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
+      const w = window as unknown as Record<string, unknown>;
+      w.__pwaTestHooks ??= {};
+      (w.__pwaTestHooks as Record<string, unknown>).triggerUpdateAvailable = () => {
+        fireNeedRefresh(async () => {
+          /* test no-op — real path calls updateSW(true) */
+        });
+      };
+    }
   });
 </script>
 
@@ -309,6 +334,14 @@
       {$tStore(layerFailToast.messageKey)}
     </div>
   {/if}
+
+  {#if $offlineReadySignal.visible}
+    <div class="toast" role="status" aria-live="polite" data-testid="offline-ready-toast">
+      {$tStore('pwa.offline.ready')}
+    </div>
+  {/if}
+
+  <UpdatePrompt />
 
   <CopyFallback
     open={copyFallback !== null}
