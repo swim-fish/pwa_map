@@ -44,22 +44,22 @@
     }, 5000);
   }
 
-  const TAIPEI_101: WGS84DD = {
+  const DEFAULT_CENTER: WGS84DD = {
     kind: 'wgs84-dd',
-    lat: 25.033611 as Lat,
-    lon: 121.564472 as Lon,
+    lat: 24.190793 as Lat,
+    lon: 120.654919 as Lon,
   };
 
   let prefs: FormatPreferences = loadPreferences();
   setLocale(prefs.locale);
 
   let layerSelection: LayerSelection = {
-    basemap: prefs.mapLayer ?? 'osm-standard',
+    basemap: prefs.mapLayer ?? 'nlsc-emap5',
     overlay: prefs.overlay ?? false,
   };
 
   const lastView = loadLastView();
-  const initialCenter: WGS84DD = lastView?.center ?? TAIPEI_101;
+  const initialCenter: WGS84DD = lastView?.center ?? DEFAULT_CENTER;
   const initialZoom = lastView?.zoom ?? 13;
 
   const controller = new MapController({

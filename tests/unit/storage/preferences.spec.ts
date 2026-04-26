@@ -35,8 +35,8 @@ describe('preferences schema (feature 003 additive evolution)', () => {
     expect(loaded.locale).toBe('zh');
     expect(loaded.visible).toEqual(['wgs84-dd', 'twd97-tm2']);
     // mapLayer / overlay may be absent on a pre-003 blob — consumers fall
-    // back via `prefs.mapLayer ?? 'osm-standard'` etc.
-    expect(loaded.mapLayer ?? 'osm-standard').toBe('osm-standard');
+    // back via `prefs.mapLayer ?? 'nlsc-emap5'` etc. (default updated 2026-04-26).
+    expect(loaded.mapLayer ?? 'nlsc-emap5').toBe('nlsc-emap5');
     expect(loaded.overlay ?? false).toBe(false);
   });
 
@@ -61,7 +61,7 @@ describe('preferences schema (feature 003 additive evolution)', () => {
       }),
     );
     const loaded = loadPreferences();
-    expect(loaded.mapLayer).toBe('osm-standard');
+    expect(loaded.mapLayer).toBe('nlsc-emap5');
   });
 
   test('overlay id passed as mapLayer is rejected (overlay is not a basemap)', () => {
@@ -73,7 +73,7 @@ describe('preferences schema (feature 003 additive evolution)', () => {
       }),
     );
     const loaded = loadPreferences();
-    expect(loaded.mapLayer).toBe('osm-standard');
+    expect(loaded.mapLayer).toBe('nlsc-emap5');
   });
 
   test('non-boolean overlay rejects entire blob → returns defaults', () => {
@@ -89,9 +89,10 @@ describe('preferences schema (feature 003 additive evolution)', () => {
     expect(loaded.overlay).toBe(false);
   });
 
-  test('defaultPreferences sets mapLayer="osm-standard" and overlay=false', () => {
+  test('defaultPreferences sets locale="zh", mapLayer="nlsc-emap5", overlay=false', () => {
     const def = defaultPreferences();
-    expect(def.mapLayer).toBe('osm-standard');
+    expect(def.locale).toBe('zh');
+    expect(def.mapLayer).toBe('nlsc-emap5');
     expect(def.overlay).toBe(false);
   });
 });

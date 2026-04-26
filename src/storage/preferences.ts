@@ -33,22 +33,14 @@ export interface MapViewState {
 const MGRS_PRECISIONS: readonly MGRSPrecision[] = [1, 2, 3, 4, 5];
 const TAIPOWER_PRECISIONS: readonly TaipowerPrecision[] = [9, 11];
 
-function seedLocaleFromNavigator(): Locale {
-  if (typeof navigator === 'undefined') return 'zh';
-  const lang = navigator.language?.toLowerCase() ?? '';
-  if (lang.startsWith('ja')) return 'ja';
-  if (lang.startsWith('zh')) return 'zh';
-  return 'en';
-}
-
 export function defaultPreferences(): FormatPreferences {
   return {
     version: PREFS_VERSION,
     visible: ['wgs84-dd', 'wgs84-dms', 'twd97-tm2', 'mgrs'],
     mgrsPrecision: 5,
     taipowerPrecision: 9,
-    locale: seedLocaleFromNavigator(),
-    mapLayer: 'osm-standard',
+    locale: 'zh',
+    mapLayer: 'nlsc-emap5',
     overlay: false,
   };
 }
