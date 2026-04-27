@@ -470,6 +470,24 @@ function parseTwd67Input(raw: string): SubParseResult {
 // ---------- Taipower ----------
 
 const TAIPOWER_SHAPE = /^([A-Z])(\d{4})\s*([A-Z]{2})(\d{2,4})$/i;
+// Strip the project's documented Taipower separator set (whitespace,
+// hyphen, underscore) before length classification. Mirrors the
+// existing `\s+` strip and adds the hyphen / underscore variants the
+// auto-precision contract calls out (research §R7).
+const TAIPOWER_SEPARATOR = /[\s\-_]/g;
+
+/**
+ * Detect Taipower input precision by trimmed, separator-stripped length.
+ * Pure: no DOM, no localStorage, no Date.now(). Returns null for any
+ * length other than 9 / 11 — the caller surfaces the existing localised
+ * `'unsupported-precision'` rejection (feature 002 vocabulary).
+ */
+export function detectTaipowerPrecision(input: string): 9 | 11 | null {
+  const stripped = input.trim().replace(TAIPOWER_SEPARATOR, '');
+  if (stripped.length === 9) return 9;
+  if (stripped.length === 11) return 11;
+  return null;
+}
 
 function parseTaipowerInput(raw: string): SubParseResult {
   const s = normalise(raw).replace(/\s+/g, ' ').toUpperCase();
@@ -491,6 +509,13 @@ function parseTaipowerInput(raw: string): SubParseResult {
       return rej('unsupported-precision', 'errors.taipower.wrongLength', raw, 'taipower');
     }
     return rej('malformed', 'errors.taipower.wrongLength', raw, 'taipower');
+  }
+  // Auto-precision check (FR-015). The SHAPE regex permits a 3-digit
+  // tail — guard against length-10 inputs by requiring the trimmed,
+  // separator-stripped length to be exactly 9 or 11.
+  const detectedPrecision = detectTaipowerPrecision(raw);
+  if (detectedPrecision === null) {
+    return rej('unsupported-precision', 'errors.taipower.wrongLength', raw, 'taipower');
   }
   const region = m[1].toUpperCase();
   const subRegion = m[2];

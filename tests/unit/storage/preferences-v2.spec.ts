@@ -31,7 +31,9 @@ describe('preferences v1→v2 migration (contracts/preferences-v2.md §8)', () =
     const p = loadPreferences();
     expect(p.tileTtlDays).toBe(DEFAULT_TILE_TTL_DAYS);
     expect(p.tileMaxEntries).toBe(DEFAULT_TILE_MAX_ENTRIES);
-    expect(p.version).toBe(2);
+    // Feature 010 bumped the schema to v3; the validator always normalises
+    // to the current PREFS_VERSION on every successful path.
+    expect(p.version).toBe(3);
   });
 
   it('(2) v1 record is upgraded with default v2 fields on load', () => {
@@ -50,7 +52,8 @@ describe('preferences v1→v2 migration (contracts/preferences-v2.md §8)', () =
 
     expect(p.tileTtlDays).toBe(DEFAULT_TILE_TTL_DAYS);
     expect(p.tileMaxEntries).toBe(DEFAULT_TILE_MAX_ENTRIES);
-    expect(p.version).toBe(2);
+    // Feature 010: v1 → v3 in one hop (additive evolution, ADR 0021).
+    expect(p.version).toBe(3);
     expect(p.locale).toBe('zh');
     expect(p.mapLayer).toBe('nlsc-emap5');
     expect(p.mgrsPrecision).toBe(5);

@@ -77,6 +77,8 @@
   "goto.fields.zoneAuto": "自動",
   "goto.fields.zone119": "119",
   "goto.fields.zone121": "121",
+  "goto.fields.zoneTagMainIsland": "本島",
+  "goto.fields.zoneTagPenghu": "澎湖列島",
   "goto.fields.gzdBand": "GZD 帯",
   "goto.fields.square": "100km 方眼",
   "goto.fields.first5": "前 5 桁",

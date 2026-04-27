@@ -36,7 +36,6 @@ export type LayoutFields =
       readonly kind: 'taipower';
       readonly first5: string;
       readonly last4or6: string;
-      readonly precision: 9 | 11;
     };
 
 export interface RecentEntry {

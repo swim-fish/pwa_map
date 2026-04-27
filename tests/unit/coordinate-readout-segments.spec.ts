@@ -61,6 +61,15 @@ const GOTO_LABEL_KEYS: Record<CoordinateKind, readonly string[]> = {
   taipower: ['goto.fields.first5', 'goto.fields.last4or6', 'goto.fields.precision'],
 };
 
+// Feature 010 dropped the user-facing precision selector from
+// TaipowerLayout (FR-015 — auto-precision from input length). The
+// readout's per-format segment shape is unchanged; only the Go To input
+// no longer references the `goto.fields.precision` key. This narrowed
+// list is what the layout-source assertion checks for `taipower`.
+const GOTO_LAYOUT_LABEL_KEYS_OVERRIDE: Partial<Record<CoordinateKind, readonly string[]>> = {
+  taipower: ['goto.fields.first5', 'goto.fields.last4or6'],
+};
+
 // Confirm the label-key invariant by also reading the layout source files
 // — protects against silent renaming on the Go To side.
 function assertLayoutSourceUsesKeys(layoutPath: string, keys: readonly string[]): void {
@@ -98,7 +107,7 @@ describe('feature 009 — coordinateSegments(): label-key parity with Go To', ()
     assertLayoutSourceUsesKeys('src/components/goto/MgrsLayout.svelte', GOTO_LABEL_KEYS.mgrs);
     assertLayoutSourceUsesKeys(
       'src/components/goto/TaipowerLayout.svelte',
-      GOTO_LABEL_KEYS.taipower,
+      GOTO_LAYOUT_LABEL_KEYS_OVERRIDE.taipower ?? GOTO_LABEL_KEYS.taipower,
     );
   });
 

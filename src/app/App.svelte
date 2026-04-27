@@ -130,6 +130,11 @@
     savePreferences(prefs);
   }
 
+  function onFormatReorder(ev: CustomEvent<{ formatOrder: readonly CoordinateKind[] }>): void {
+    prefs = { ...prefs, formatOrder: ev.detail.formatOrder };
+    savePreferences(prefs);
+  }
+
   function onLayerChange(ev: CustomEvent<LayerSelection>): void {
     const next = ev.detail;
     const overlayToggleOnly = next.basemap === layerSelection.basemap;
@@ -356,6 +361,7 @@
   <CoordinateReadout
     position={crosshair}
     visible={prefs.visible}
+    formatOrder={prefs.formatOrder}
     mgrsPrecision={prefs.mgrsPrecision}
     taipowerPrecision={prefs.taipowerPrecision}
     on:copy-success={onCopySuccess}
@@ -379,8 +385,10 @@
 
   <FormatToggle
     visible={prefs.visible}
+    formatOrder={prefs.formatOrder}
     open={formatToggleOpen}
     on:change={onFormatChange}
+    on:reorder={onFormatReorder}
     on:close={() => (formatToggleOpen = false)}
   />
 

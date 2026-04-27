@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import type { CoordinateKind, WGS84DD } from '$types/coord';
   import {
     coverageOf,
@@ -16,12 +16,13 @@
     wgs84ToTwd97,
   } from '$coord/index';
   import { coordinateSegments, type CoordinateSegment } from '$coord/segments';
-  import type { FormatPreferences } from '$storage/preferences';
+  import { DEFAULT_FORMAT_ORDER, type FormatPreferences } from '$storage/preferences';
   import { tStore } from '$i18n/index';
   import { copyReadout } from './copy';
 
   export let position: WGS84DD;
   export let visible: readonly CoordinateKind[];
+  export let formatOrder: readonly CoordinateKind[] = DEFAULT_FORMAT_ORDER;
   export let mgrsPrecision: FormatPreferences['mgrsPrecision'] = 5;
   export let taipowerPrecision: FormatPreferences['taipowerPrecision'] = 9;
 
@@ -29,6 +30,42 @@
     'copy-success': { kind: CoordinateKind };
     'copy-fallback': { text: string };
   }>();
+
+  // The matchMedia query mirrors the --readout-collapse-bp token so the
+  // CSS @media rule and the Svelte reactivity stay in lockstep
+  // (research.md §R6 — 0.02px half-pixel adjustment).
+  const NARROW_QUERY = '(max-width: calc(600px - 0.02px))';
+  let isNarrow = false;
+  let mql: MediaQueryList | null = null;
+  let mqlListener: ((e: MediaQueryListEvent | MediaQueryList) => void) | null = null;
+
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    mql = window.matchMedia(NARROW_QUERY);
+    isNarrow = mql.matches;
+    mqlListener = (e: MediaQueryListEvent | MediaQueryList): void => {
+      isNarrow = e.matches;
+    };
+    mql.addEventListener('change', mqlListener as (e: MediaQueryListEvent) => void);
+  }
+
+  onDestroy(() => {
+    if (mql && mqlListener) {
+      mql.removeEventListener('change', mqlListener as (e: MediaQueryListEvent) => void);
+    }
+  });
+
+  let tapExpanded = false;
+
+  $: enabled = formatOrder.filter((k) => visible.includes(k));
+
+  $: viewMode =
+    isNarrow && enabled.length >= 2 ? (tapExpanded ? 'tap-expanded' : 'collapsed') : 'expanded';
+
+  // Resize past the breakpoint clears any transient tap-expanded state
+  // (Invariant 5 — `tapExpanded` is component-local, never persisted).
+  $: if (!isNarrow && tapExpanded) {
+    tapExpanded = false;
+  }
 
   type Row = {
     kind: CoordinateKind;
@@ -77,9 +114,18 @@
     };
   }
 
-  $: rows = visible.map((k) => rowFor(k, position));
+  $: allRows = enabled.map((k) => rowFor(k, position));
 
-  async function onCopy(row: Row): Promise<void> {
+  // In `collapsed` mode the component only emits the priority-one row to
+  // the DOM (Invariant 1 — keeps the contract jsdom-testable AND avoids
+  // mounting copy buttons that the user cannot see). The CSS @media rule
+  // remains the visual fallback for any future widening.
+  $: rows = viewMode === 'collapsed' ? allRows.slice(0, 1) : allRows;
+
+  async function onCopy(row: Row, ev: MouseEvent): Promise<void> {
+    // Copy clicks must not bubble to the body tap-handler that toggles
+    // tap-expanded (Invariant 3 / FR-010).
+    ev.stopPropagation();
     if (row.coverage !== 'ok' || row.canonical === '') return;
     const r = await copyReadout(row.canonical);
     if (r.ok) {
@@ -88,15 +134,46 @@
       dispatch('copy-fallback', { text: row.canonical });
     }
   }
+
+  function onBodyTap(): void {
+    if (viewMode === 'collapsed') {
+      tapExpanded = true;
+    } else if (viewMode === 'tap-expanded') {
+      tapExpanded = false;
+    }
+  }
+
+  function onBodyKeydown(ev: KeyboardEvent): void {
+    if (viewMode === 'expanded') return;
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      onBodyTap();
+    }
+  }
 </script>
 
-<section class="readout" aria-live="polite" data-testid="readout-panel">
-  {#each rows as row (row.kind)}
-    <div class="row" data-testid="readout-{row.kind}">
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<section
+  class="readout"
+  data-mode={viewMode}
+  data-testid="readout-panel"
+  aria-live="polite"
+  role={viewMode === 'expanded' ? undefined : 'button'}
+  aria-expanded={viewMode === 'expanded' ? undefined : viewMode === 'tap-expanded'}
+  tabindex={viewMode === 'expanded' ? undefined : 0}
+  on:click={onBodyTap}
+  on:keydown={onBodyKeydown}
+>
+  {#each rows as row, i (row.kind)}
+    <div
+      class="row"
+      class:row--priority-one={i === 0 && enabled.length >= 2}
+      data-testid="readout-{row.kind}"
+    >
       <span class="label">{$tStore(row.labelKey)}</span>
       {#if row.coverage === 'ok'}
         <span class="segments">
-          {#each row.segments as seg, i (i + ':' + seg.labelKey)}
+          {#each row.segments as seg, j (j + ':' + seg.labelKey)}
             <span class="segment">
               <span class="seg-label">{$tStore(seg.labelKey)}</span>
               <span class="seg-value">{seg.value}</span>
@@ -106,7 +183,7 @@
         <button
           type="button"
           class="copy"
-          on:click={() => onCopy(row)}
+          on:click={(ev) => onCopy(row, ev)}
           aria-label={$tStore('copy.button.aria', { format: $tStore(row.labelKey) })}
           data-testid="copy-{row.kind}"
         >
@@ -138,6 +215,7 @@
     max-width: min(640px, calc(100vw - 24px));
     display: grid;
     gap: var(--space-1, 4px);
+    transition: max-height 200ms ease;
   }
 
   .row {
@@ -145,6 +223,22 @@
     grid-template-columns: 120px 1fr auto;
     align-items: baseline;
     gap: var(--space-2, 8px);
+  }
+
+  /* Collapse: only the priority-one row stays visible on narrow viewports
+     when ≥ 2 formats are enabled (FR-001 / FR-002). The breakpoint
+     mirrors the --readout-collapse-bp token. */
+  @media (max-width: calc(var(--readout-collapse-bp) - 0.02px)) {
+    .readout[data-mode='collapsed'] .row:not(.row--priority-one) {
+      display: none;
+    }
+    .readout[data-mode='collapsed'] {
+      cursor: pointer;
+      max-width: min(360px, calc(100vw - 24px));
+    }
+    .readout[data-mode='tap-expanded'] {
+      cursor: pointer;
+    }
   }
 
   .label {

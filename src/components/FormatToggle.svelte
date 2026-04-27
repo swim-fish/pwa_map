@@ -3,24 +3,60 @@
   import type { CoordinateKind } from '$types/coord';
   import { ALL_COORDINATE_KINDS } from '$types/coord';
   import { tStore } from '$i18n/index';
+  import FormatPriorityRow from './FormatPriorityRow.svelte';
+  import { reorderArray } from './formatPriority';
+  import { DEFAULT_FORMAT_ORDER } from '$storage/preferences';
 
   export let visible: readonly CoordinateKind[];
+  export let formatOrder: readonly CoordinateKind[] = DEFAULT_FORMAT_ORDER;
   export let open: boolean = false;
 
   const dispatch = createEventDispatcher<{
     change: { visible: readonly CoordinateKind[] };
+    reorder: { formatOrder: readonly CoordinateKind[] };
     close: void;
   }>();
+
+  // Live announcement for screen readers (research §R5). Cleared after
+  // the row count's quanta so a re-order to the same kind announces again.
+  let announcement = '';
+  let announceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function announceMove(kind: CoordinateKind, newIndex: number, total: number): void {
+    if (announceTimer) clearTimeout(announceTimer);
+    announcement = `${$tStore('format.labels.' + kind)} · ${newIndex + 1} / ${total}`;
+    announceTimer = setTimeout(() => {
+      announcement = '';
+    }, 2000);
+  }
 
   function isVisible(k: CoordinateKind): boolean {
     return visible.includes(k);
   }
 
-  function toggle(k: CoordinateKind): void {
+  function onToggle(ev: CustomEvent<{ kind: CoordinateKind }>): void {
+    const k = ev.detail.kind;
     const next = isVisible(k) ? visible.filter((x) => x !== k) : [...visible, k];
     // Preserve canonical order from ALL_COORDINATE_KINDS for predictability.
     const ordered = ALL_COORDINATE_KINDS.filter((x) => next.includes(x));
     dispatch('change', { visible: ordered });
+  }
+
+  function onReorderRequest(ev: CustomEvent<{ kind: CoordinateKind; deltaY: number }>): void {
+    const { kind, deltaY } = ev.detail;
+    const from = formatOrder.indexOf(kind);
+    if (from < 0) return;
+    // Map vertical delta to a target index. The drawer's row layout is
+    // approximately 56 px row height (44 px tap-target + 12 px spacing);
+    // dividing the delta gives the number of rows to step. Clamp to the
+    // valid range — the parent's reorderArray() also no-ops on bounds.
+    const ROW_HEIGHT = 56;
+    const stepDelta = Math.round(deltaY / ROW_HEIGHT);
+    const to = Math.max(0, Math.min(formatOrder.length - 1, from + stepDelta));
+    if (to === from) return; // same-position no-op
+    const next = reorderArray(formatOrder, from, to);
+    dispatch('reorder', { formatOrder: next });
+    announceMove(kind, to, formatOrder.length);
   }
 
   function close(): void {
@@ -55,21 +91,17 @@
       </button>
     </header>
     <p class="hint">{$tStore('toggle.hint')}</p>
-    <ul class="list">
-      {#each ALL_COORDINATE_KINDS as kind (kind)}
-        <li>
-          <label>
-            <input
-              type="checkbox"
-              checked={isVisible(kind)}
-              on:change={() => toggle(kind)}
-              data-testid="toggle-{kind}"
-            />
-            <span>{$tStore(`format.labels.${kind}`)}</span>
-          </label>
-        </li>
+    <ul class="list" role="list" aria-label={$tStore('toggle.title')}>
+      {#each formatOrder as kind (kind)}
+        <FormatPriorityRow
+          {kind}
+          enabled={isVisible(kind)}
+          on:reorderRequest={onReorderRequest}
+          on:toggle={onToggle}
+        />
       {/each}
     </ul>
+    <span class="sr-only" aria-live="polite" data-testid="reorder-announcer">{announcement}</span>
   </section>
 {/if}
 
@@ -131,28 +163,21 @@
 
   .list {
     display: grid;
-    gap: var(--space-2, 8px);
+    gap: var(--space-1, 4px);
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  label {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2, 8px);
-    padding: var(--space-2, 8px);
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  label:hover {
-    background: var(--color-bg, #f5f5f5);
-  }
-
-  input[type='checkbox'] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>
