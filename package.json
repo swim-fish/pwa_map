@@ -26,7 +26,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "bench": "vitest bench --run",
-    "bundle-size": "node scripts/check-bundle-size.js"
+    "bundle-size": "node scripts/check-bundle-size.js",
+    "deploy:check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npx vitest run tests/integration/deploy-base-alignment.spec.ts && npm run bundle-size"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",

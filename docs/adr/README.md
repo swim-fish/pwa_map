@@ -41,6 +41,7 @@ drifting.
 | [0025](0025-pwa-install-surfaces.md)                  | PWA install surfaces & dismissal-key design                     | Accepted | —          |
 | [0026](0026-compass-and-crosshair-zoom.md)            | Compass + crosshair-anchored zoom + wheel override              | Accepted | —          |
 | [0027](0027-tile-cache-settings.md)                   | Tile cache settings — adjustable TTL / MaxEntries / no-download | Accepted | —          |
+| [0028](0028-github-pages-deploy.md)                   | GitHub Pages auto-deploy + subpath base-path strategy           | Accepted | —          |
 
 ## Adding a new ADR
 
