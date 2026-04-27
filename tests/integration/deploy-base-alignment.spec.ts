@@ -31,11 +31,17 @@ interface Manifest {
   readonly icons?: ReadonlyArray<{ src?: string }>;
 }
 
+// Phase 2 cases (1)-(6) inspect post-build artefacts under dist/.
+// On a fresh CI checkout `dist/` does not exist until `npm run
+// build` runs, so those cases are SKIPPED (not failed) when the
+// directory is missing. The deploy / CI workflows ALSO invoke
+// this spec explicitly AFTER the build step
+// (`npx vitest run tests/integration/deploy-base-alignment.spec.ts`),
+// at which point `dist/` exists and all 8 cases run. That second
+// invocation is the load-bearing gate; the `npm test` invocation
+// below is the cheap pre-build pass that exercises the 2 pure
+// import-and-call cases (7) and (8).
 const distExists = existsSync(MANIFEST_PATH);
-const skipBuiltCases = !distExists;
-const skipReason = skipBuiltCases
-  ? `dist/manifest.webmanifest not found at ${MANIFEST_PATH}; run \`npm run build\` first.`
-  : '';
 
 let manifest: Manifest | null = null;
 let indexHtml = '';
@@ -58,14 +64,12 @@ if (distExists) {
   }
 }
 
-describe('feature 008 — deploy-base alignment (built artifact)', () => {
+describe.skipIf(!distExists)('feature 008 — deploy-base alignment (built artifact)', () => {
   it('(1) dist/manifest.webmanifest exists', () => {
-    if (skipBuiltCases) return expect.fail(skipReason);
     expect(existsSync(MANIFEST_PATH)).toBe(true);
   });
 
   it('(2) manifest start_url === scope === id', () => {
-    if (skipBuiltCases) return expect.fail(skipReason);
     expect(manifest!.start_url).toBeDefined();
     expect(manifest!.scope).toBeDefined();
     expect(manifest!.id).toBeDefined();
@@ -74,7 +78,6 @@ describe('feature 008 — deploy-base alignment (built artifact)', () => {
   });
 
   it('(3) manifest path equals base prefix Vite emits in index.html', () => {
-    if (skipBuiltCases) return expect.fail(skipReason);
     expect(scriptSrc).not.toBe('');
     expect(basePrefix).not.toBe('');
     // Manifest paths and the asset prefix must both start with the
@@ -85,18 +88,15 @@ describe('feature 008 — deploy-base alignment (built artifact)', () => {
   });
 
   it('(4) dist/sw.js exists at exactly dist/sw.js (URL is `${base}sw.js`)', () => {
-    if (skipBuiltCases) return expect.fail(skipReason);
     expect(existsSync(SW_PATH)).toBe(true);
   });
 
   it('(5) dist/index.html does NOT contain a <base> tag', () => {
-    if (skipBuiltCases) return expect.fail(skipReason);
     // Be deliberately strict: any `<base ` or `<base>` in any case.
     expect(indexHtml).not.toMatch(/<base[\s>]/i);
   });
 
   it('(6) first manifest icon src resolves to a file under dist/ (relative or base-prefixed)', () => {
-    if (skipBuiltCases) return expect.fail(skipReason);
     expect(manifest!.icons?.length ?? 0).toBeGreaterThan(0);
     const firstIconSrc = manifest!.icons![0].src ?? '';
     expect(firstIconSrc).not.toBe('');
