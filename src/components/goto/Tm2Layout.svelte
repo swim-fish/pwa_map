@@ -7,6 +7,24 @@
   function setZone(z: 'auto' | 119 | 121): void {
     zone = z;
   }
+
+  // Composition rule per contracts/zone-label-i18n.md §"Composition rule":
+  //   zone 121 → "121 <main-island-tag>"   (zh / ja)
+  //   zone 121 → "121 (Main Island)"       (en — parenthesised)
+  // Same pattern for 119 / Penghu. The component does not branch on
+  // locale name; the bracketed form is selected by the locale's own
+  // word-shape preference (English uses parentheses; CJK does not).
+  function composeZoneLabel(zoneNum: 121 | 119, tStoreFn: (k: string) => string): string {
+    const tagKey = zoneNum === 121 ? 'goto.fields.zoneTagMainIsland' : 'goto.fields.zoneTagPenghu';
+    const numKey = zoneNum === 121 ? 'goto.fields.zone121' : 'goto.fields.zone119';
+    const num = tStoreFn(numKey);
+    const tag = tStoreFn(tagKey);
+    // English convention: parenthesised tag.
+    if (tStoreFn('goto.fields.zoneAuto') === 'auto') {
+      return `${num} (${tag})`;
+    }
+    return `${num} ${tag}`;
+  }
 </script>
 
 <div class="layout" data-testid="goto-layout-twd97-tm2">
@@ -46,7 +64,7 @@
       aria-checked={zone === 119}
       class:active={zone === 119}
       data-testid="goto-field-tm2-zone-119"
-      on:click={() => setZone(119)}>119</button
+      on:click={() => setZone(119)}>{composeZoneLabel(119, $tStore)}</button
     >
     <button
       type="button"
@@ -54,7 +72,7 @@
       aria-checked={zone === 121}
       class:active={zone === 121}
       data-testid="goto-field-tm2-zone-121"
-      on:click={() => setZone(121)}>121</button
+      on:click={() => setZone(121)}>{composeZoneLabel(121, $tStore)}</button
     >
   </div>
 </div>
@@ -94,6 +112,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
+    flex-wrap: wrap;
   }
 
   .zone-row .label {

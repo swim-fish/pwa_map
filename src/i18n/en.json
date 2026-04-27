@@ -77,6 +77,8 @@
   "goto.fields.zoneAuto": "auto",
   "goto.fields.zone119": "119",
   "goto.fields.zone121": "121",
+  "goto.fields.zoneTagMainIsland": "Main Island",
+  "goto.fields.zoneTagPenghu": "Penghu",
   "goto.fields.gzdBand": "GZD + band",
   "goto.fields.square": "100 km square",
   "goto.fields.first5": "First 5",

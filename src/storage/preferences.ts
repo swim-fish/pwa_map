@@ -19,7 +19,7 @@ import {
 
 const PREFS_KEY = 'pwa_map:prefs';
 const LAST_VIEW_KEY = 'pwa_map:lastView';
-const PREFS_VERSION = 2 as const;
+const PREFS_VERSION = 3 as const;
 
 /** v1 shape — kept for the migration path; not exported. */
 interface FormatPreferencesV1 {
@@ -44,7 +44,20 @@ export interface FormatPreferencesV2 {
   readonly tileMaxEntries: TileMaxEntries;
 }
 
-export type FormatPreferences = FormatPreferencesV2;
+export interface FormatPreferencesV3 {
+  readonly version: 3;
+  readonly visible: readonly CoordinateKind[];
+  readonly mgrsPrecision: MGRSPrecision;
+  readonly taipowerPrecision: TaipowerPrecision;
+  readonly locale: Locale;
+  readonly mapLayer?: BasemapId;
+  readonly overlay?: boolean;
+  readonly tileTtlDays: TtlDays;
+  readonly tileMaxEntries: TileMaxEntries;
+  readonly formatOrder: readonly CoordinateKind[];
+}
+
+export type FormatPreferences = FormatPreferencesV3;
 
 export interface MapViewState {
   readonly center: WGS84DD;
@@ -56,17 +69,27 @@ export interface MapViewState {
 const MGRS_PRECISIONS: readonly MGRSPrecision[] = [1, 2, 3, 4, 5];
 const TAIPOWER_PRECISIONS: readonly TaipowerPrecision[] = [9, 11];
 
+export const DEFAULT_FORMAT_ORDER: readonly CoordinateKind[] = [
+  'wgs84-dd',
+  'wgs84-dms',
+  'twd97-tm2',
+  'twd67-tm2',
+  'mgrs',
+  'taipower',
+] as const;
+
 export function defaultPreferences(): FormatPreferences {
   return {
     version: PREFS_VERSION,
     visible: ['wgs84-dd', 'wgs84-dms', 'twd97-tm2', 'mgrs', 'taipower'],
     mgrsPrecision: 5,
-    taipowerPrecision: 9,
+    taipowerPrecision: 11,
     locale: 'zh',
     mapLayer: 'nlsc-emap5',
     overlay: false,
     tileTtlDays: DEFAULT_TILE_TTL_DAYS,
     tileMaxEntries: DEFAULT_TILE_MAX_ENTRIES,
+    formatOrder: DEFAULT_FORMAT_ORDER,
   };
 }
 
@@ -88,6 +111,13 @@ function isTtlDays(v: unknown): v is TtlDays {
 
 function isTileMaxEntries(v: unknown): v is TileMaxEntries {
   return typeof v === 'number' && (MAX_ENTRIES_OPTIONS as readonly number[]).includes(v);
+}
+
+function isValidFormatOrder(v: unknown): v is readonly CoordinateKind[] {
+  if (!Array.isArray(v)) return false;
+  if (v.length !== ALL_COORDINATE_KINDS.length) return false;
+  if (!v.every(isCoordinateKind)) return false;
+  return new Set(v).size === ALL_COORDINATE_KINDS.length;
 }
 
 interface CommonValidatedFields {
@@ -133,19 +163,25 @@ function validatePreferences(raw: unknown): FormatPreferences | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
 
-  if (o.version !== 1 && o.version !== 2) return null;
+  if (o.version !== 1 && o.version !== 2 && o.version !== 3) return null;
 
   const common = validateCommonFields(o);
   if (!common) return null;
 
-  // v2 fields: substitute defaults if missing or invalid (additive
+  // v2+ fields: substitute defaults if missing or invalid (additive
   // migration; never reject the whole record over a v2-only field).
+  const versionAllowsTileFields = o.version === 2 || o.version === 3;
   const tileTtlDays: TtlDays =
-    o.version === 2 && isTtlDays(o.tileTtlDays) ? o.tileTtlDays : DEFAULT_TILE_TTL_DAYS;
+    versionAllowsTileFields && isTtlDays(o.tileTtlDays) ? o.tileTtlDays : DEFAULT_TILE_TTL_DAYS;
   const tileMaxEntries: TileMaxEntries =
-    o.version === 2 && isTileMaxEntries(o.tileMaxEntries)
+    versionAllowsTileFields && isTileMaxEntries(o.tileMaxEntries)
       ? o.tileMaxEntries
       : DEFAULT_TILE_MAX_ENTRIES;
+
+  // v3 field: formatOrder. v1 / v2 records, or a v3 record with a
+  // malformed array, fall back to the documented default order.
+  const formatOrder: readonly CoordinateKind[] =
+    o.version === 3 && isValidFormatOrder(o.formatOrder) ? o.formatOrder : DEFAULT_FORMAT_ORDER;
 
   return {
     version: PREFS_VERSION,
@@ -157,6 +193,7 @@ function validatePreferences(raw: unknown): FormatPreferences | null {
     ...(common.overlay !== undefined ? { overlay: common.overlay } : {}),
     tileTtlDays,
     tileMaxEntries,
+    formatOrder,
   };
 }
 

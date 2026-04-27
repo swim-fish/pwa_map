@@ -165,7 +165,6 @@ describe('composeRaw — happy paths produce parser-accepted raw', () => {
       kind: 'taipower',
       first5: 'b7039',
       last4or6: 'bd32',
-      precision: 9,
     };
     const r = composeRaw(sel, fields);
     expect(r.ok).toBe(true);
@@ -253,7 +252,7 @@ describe('composeRaw — empty-field rejections', () => {
   test('taipower missing last4or6', () => {
     const r = composeRaw(
       { kind: 'fixed', value: 'taipower' },
-      { kind: 'taipower', first5: 'B7039', last4or6: '', precision: 9 },
+      { kind: 'taipower', first5: 'B7039', last4or6: '' },
     );
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error.fieldId).toBe('taipower-last4or6');

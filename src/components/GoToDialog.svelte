@@ -71,7 +71,7 @@
       case 'mgrs':
         return { kind: 'mgrs', gzdBand: '', square: '', easting: '', northing: '' };
       case 'taipower':
-        return { kind: 'taipower', first5: '', last4or6: '', precision: 9 };
+        return { kind: 'taipower', first5: '', last4or6: '' };
       default:
         return { kind: 'auto', raw: '' };
     }
@@ -308,11 +308,7 @@
         bind:northing={fields.northing}
       />
     {:else if fields.kind === 'taipower'}
-      <TaipowerLayout
-        bind:first5={fields.first5}
-        bind:last4or6={fields.last4or6}
-        bind:precision={fields.precision}
-      />
+      <TaipowerLayout bind:first5={fields.first5} bind:last4or6={fields.last4or6} />
     {/if}
 
     {#if error}

@@ -17,7 +17,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:local": "vite build --mode local-preview",
     "preview": "vite preview --port 4173",
+    "preview:local": "vite build --mode local-preview && vite preview --port 4173",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",

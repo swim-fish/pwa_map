@@ -27,7 +27,7 @@
     <div class="update-prompt-actions">
       <button
         type="button"
-        class="update-prompt-confirm"
+        class="update-prompt-confirm tap-target"
         data-testid="update-prompt-confirm"
         on:click={onConfirm}
       >
@@ -35,7 +35,7 @@
       </button>
       <button
         type="button"
-        class="update-prompt-later"
+        class="update-prompt-later tap-target"
         data-testid="update-prompt-later"
         on:click={onLater}
       >
@@ -47,11 +47,6 @@
 
 <style>
   .update-prompt {
-    position: fixed;
-    top: var(--space-4, 16px);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 6;
     display: flex;
     flex-direction: column;
     gap: var(--space-2, 8px);
@@ -78,8 +73,6 @@
 
   .update-prompt-confirm,
   .update-prompt-later {
-    min-width: 36px;
-    min-height: 36px;
     padding: var(--space-2, 8px) var(--space-3, 12px);
     border-radius: 6px;
     font: inherit;
