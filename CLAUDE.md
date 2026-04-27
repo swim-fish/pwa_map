@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/006-compass/plan.md`
+Active feature plan: `specs/007-tile-cache-settings/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts

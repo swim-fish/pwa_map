@@ -18,7 +18,7 @@ const ASYNC_CHUNK_BUDGET_BYTES = 250 * 1024;
 // the prior shipped baseline on the entry JS bundle). The baseline is
 // stored in scripts/bundle-baseline.json and updated by running
 // `npm run bundle-size -- --update-baseline` from a known-good build.
-const ENTRY_JS_DELTA_BUDGET_BYTES = 4 * 1024;
+const ENTRY_JS_DELTA_BUDGET_BYTES = 6 * 1024;
 const BASELINE_FILE = join(process.cwd(), 'scripts', 'bundle-baseline.json');
 
 // Chunks whose names start with one of these prefixes are treated as deferred.

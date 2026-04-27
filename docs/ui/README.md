@@ -14,14 +14,15 @@ This directory holds per-change UI documentation per Constitution
 
 ## Index
 
-| #                                  | Title                                     | Status   | Affected screens                                                         |
-| ---------------------------------- | ----------------------------------------- | -------- | ------------------------------------------------------------------------ |
-| [0001](0001-coord-map-layout.md)   | Coord-map PWA layout (feature 001)        | Accepted | Map shell, crosshair, readout, format toggle, Go-To dialog               |
-| [0002](0002-goto-split-input.md)   | Go-To split-field input (feature 002)     | Accepted | Go-To modal                                                              |
-| [0003](0003-layers-and-locale.md)  | Layer + locale pickers (feature 003)      | Accepted | Toolbar, map canvas, attribution bar, failure toast                      |
-| [0004](0004-offline-pwa-polish.md) | Offline PWA + update prompt (feature 004) | Accepted | App shell (offline), update-prompt, offline-ready toast, attribution bar |
-| [0005](0005-pwa-installable.md)    | PWA install affordance (feature 005)      | Accepted | Install banner (bottom-right), iOS instructional sheet (bottom-center)   |
-| [0006](0006-compass.md)            | Compass + crosshair-zoom (feature 006)    | Accepted | Bottom-right control cluster (compass + +/− buttons), wheel-zoom anchor  |
+| #                                   | Title                                     | Status   | Affected screens                                                         |
+| ----------------------------------- | ----------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| [0001](0001-coord-map-layout.md)    | Coord-map PWA layout (feature 001)        | Accepted | Map shell, crosshair, readout, format toggle, Go-To dialog               |
+| [0002](0002-goto-split-input.md)    | Go-To split-field input (feature 002)     | Accepted | Go-To modal                                                              |
+| [0003](0003-layers-and-locale.md)   | Layer + locale pickers (feature 003)      | Accepted | Toolbar, map canvas, attribution bar, failure toast                      |
+| [0004](0004-offline-pwa-polish.md)  | Offline PWA + update prompt (feature 004) | Accepted | App shell (offline), update-prompt, offline-ready toast, attribution bar |
+| [0005](0005-pwa-installable.md)     | PWA install affordance (feature 005)      | Accepted | Install banner (bottom-right), iOS instructional sheet (bottom-center)   |
+| [0006](0006-compass.md)             | Compass + crosshair-zoom (feature 006)    | Accepted | Bottom-right control cluster (compass + +/− buttons), wheel-zoom anchor  |
+| [0007](0007-settings-tile-cache.md) | Tile-cache Settings sheet (feature 007)   | Accepted | Toolbar gear + centred modal sheet + confirmation dialog                 |
 
 ## Adding a new UI record
 

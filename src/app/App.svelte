@@ -15,6 +15,7 @@
   import InstallIosSheet from '$components/InstallIosSheet.svelte';
   import Compass from '$components/Compass.svelte';
   import ZoomControls from '$components/ZoomControls.svelte';
+  import SettingsSheet from '$components/SettingsSheet.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
   import type { LayerSelection } from '$types/map';
@@ -75,6 +76,7 @@
   let goToOpen = false;
   let layerPickerOpen = false;
   let localePickerOpen = false;
+  let settingsOpen = false;
   let zoneHint: { zone: number; ts: number } | null = null;
   let copyToast: { ts: number } | null = null;
   let copyFallback: { text: string; ts: number } | null = null;
@@ -326,6 +328,17 @@
     >
       {$tStore('toolbar.locale.button')}
     </button>
+    <button
+      type="button"
+      class="toolbar-btn settings-toolbar-btn"
+      on:click={() => (settingsOpen = true)}
+      data-testid="settings-toolbar-button"
+      aria-haspopup="dialog"
+      aria-expanded={settingsOpen}
+      aria-label={$tStore('settings.toolbar.button')}
+    >
+      <span aria-hidden="true">⚙</span>
+    </button>
   </header>
 
   <CoordinateReadout
@@ -360,6 +373,8 @@
   />
 
   <GoToDialog open={goToOpen} on:submit={onGoToSubmit} on:close={() => (goToOpen = false)} />
+
+  <SettingsSheet open={settingsOpen} on:close={() => (settingsOpen = false)} />
 
   {#if zoneHint}
     <div class="toast" role="status" aria-live="polite" data-testid="zone-toast">
@@ -438,6 +453,14 @@
 
   .toolbar-btn:hover {
     background: var(--color-surface, #ffffff);
+  }
+
+  .settings-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    padding: var(--space-2, 8px);
   }
 
   .map-controls {

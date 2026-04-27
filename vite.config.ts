@@ -4,6 +4,12 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
 import { devManifestPlugin } from './src/pwa/devManifestPlugin';
+import {
+  TILE_CACHE_MAX_AGE_DAYS_CEILING,
+  TILE_CACHE_MAX_ENTRIES_CEILING,
+} from './src/pwa/cachePolicy';
+
+const TILE_MAX_AGE_SECONDS = TILE_CACHE_MAX_AGE_DAYS_CEILING * 60 * 60 * 24;
 
 const r = (p: string): string => fileURLToPath(new URL(p, import.meta.url));
 
@@ -40,8 +46,8 @@ export default defineConfig({
             options: {
               cacheName: 'osm-tiles',
               expiration: {
-                maxEntries: 4096,
-                maxAgeSeconds: 60 * 60 * 24 * 7,
+                maxEntries: TILE_CACHE_MAX_ENTRIES_CEILING,
+                maxAgeSeconds: TILE_MAX_AGE_SECONDS,
               },
               cacheableResponse: { statuses: [0, 200] },
             },
@@ -52,8 +58,8 @@ export default defineConfig({
             options: {
               cacheName: 'nlsc-tiles',
               expiration: {
-                maxEntries: 4096,
-                maxAgeSeconds: 60 * 60 * 24 * 7,
+                maxEntries: TILE_CACHE_MAX_ENTRIES_CEILING,
+                maxAgeSeconds: TILE_MAX_AGE_SECONDS,
               },
               cacheableResponse: { statuses: [0, 200] },
             },
@@ -64,8 +70,8 @@ export default defineConfig({
             options: {
               cacheName: 'google-tiles',
               expiration: {
-                maxEntries: 4096,
-                maxAgeSeconds: 60 * 60 * 24 * 7,
+                maxEntries: TILE_CACHE_MAX_ENTRIES_CEILING,
+                maxAgeSeconds: TILE_MAX_AGE_SECONDS,
               },
               cacheableResponse: { statuses: [0, 200] },
             },
