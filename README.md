@@ -29,6 +29,44 @@ npm run build
 npm run bundle-size    # asserts initial JS ≤ 200 KB, CSS ≤ 20 KB gzipped
 ```
 
+### Local build test (preview the production bundle)
+
+Two preview modes serve `dist/` locally. Choose by URL path you want
+to hit:
+
+```bash
+npm run preview          # http://localhost:4173/pwa_map/  (deploy-equivalent)
+npm run preview:local    # http://localhost:4173/          (root path)
+```
+
+- `npm run preview` serves the build produced by `npm run build`
+  unchanged. The bundle's asset hrefs and the PWA manifest's
+  `start_url` / `scope` / `id` are baked with the GitHub Pages
+  subpath `/pwa_map/`, so you **must** open the URL with the
+  `/pwa_map/` suffix. This is the deploy-equivalent preview — if it
+  works here, it will work on `https://swim-fish.github.io/pwa_map/`.
+- `npm run preview:local` rebuilds with `--mode local-preview`. The
+  emitted `dist/` uses `base=/`, so the bundle and manifest both
+  resolve at the root URL `http://localhost:4173/`. Use this when:
+  - you want a clean root URL for ad-hoc browser testing,
+  - a tool expects to serve the bundle from `/`, or
+  - a previously registered service worker scoped to `/` is
+    intercepting requests on the same port.
+
+Caveats for `preview:local`:
+
+- The resulting `dist/` is **not deployable**. The manifest will
+  carry `start_url: "/"`, which GitHub Pages would reject. Always
+  run `npm run build` (no flag) before `npm run deploy:check`,
+  before opening a PR, or before pushing to a branch that triggers
+  the Pages deploy workflow.
+- If you switch between `/pwa_map/` and `/` previews on the same
+  port, the browser's previously registered service worker can
+  intercept fetches with the wrong scope (e.g. a stale SW
+  registered at `/` returns the old shell at the new URL). Open
+  DevTools → Application → Service Workers → **Unregister** and
+  Application → Storage → **Clear site data** before reloading.
+
 Review loop (required before any task is considered "done" —
 Constitution Principle I + Development Workflow):
 

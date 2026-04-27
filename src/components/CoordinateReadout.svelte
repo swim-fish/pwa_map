@@ -15,6 +15,7 @@
     wgs84ToTwd67,
     wgs84ToTwd97,
   } from '$coord/index';
+  import { coordinateSegments, type CoordinateSegment } from '$coord/segments';
   import type { FormatPreferences } from '$storage/preferences';
   import { tStore } from '$i18n/index';
   import { copyReadout } from './copy';
@@ -32,52 +33,59 @@
   type Row = {
     kind: CoordinateKind;
     labelKey: string;
-    display: string;
+    /** Canonical single-string value used by the copy button. */
+    canonical: string;
+    /** Per-Go-To-layout segments rendered as separate labelled fields. */
+    segments: readonly CoordinateSegment[];
     coverage: 'ok' | 'out-of-coverage';
   };
+
+  function canonicalFor(kind: CoordinateKind, pos: WGS84DD): string {
+    switch (kind) {
+      case 'wgs84-dd':
+        return formatWGS84DD(pos);
+      case 'wgs84-dms':
+        return formatWGS84DMS(wgs84DdToDms(pos));
+      case 'twd97-tm2':
+        return formatTWD97TM2(wgs84ToTwd97(pos));
+      case 'twd67-tm2':
+        return formatTWD67TM2(wgs84ToTwd67(pos));
+      case 'mgrs':
+        return formatMGRS(wgs84ToMgrs(pos, mgrsPrecision));
+      case 'taipower': {
+        const r = wgs84ToTaipower(pos, taipowerPrecision);
+        return r.ok ? formatTaipower(r.value) : '';
+      }
+    }
+  }
 
   function rowFor(kind: CoordinateKind, pos: WGS84DD): Row {
     const cov = coverageOf(kind, pos);
     const common = { kind, labelKey: `format.labels.${kind}` };
     if (cov === 'out-of-coverage') {
-      return { ...common, display: '', coverage: 'out-of-coverage' };
+      return { ...common, canonical: '', segments: [], coverage: 'out-of-coverage' };
     }
-    switch (kind) {
-      case 'wgs84-dd':
-        return { ...common, display: formatWGS84DD(pos), coverage: 'ok' };
-      case 'wgs84-dms':
-        return { ...common, display: formatWGS84DMS(wgs84DdToDms(pos)), coverage: 'ok' };
-      case 'twd97-tm2': {
-        const tm = wgs84ToTwd97(pos);
-        return { ...common, display: formatTWD97TM2(tm), coverage: 'ok' };
-      }
-      case 'twd67-tm2': {
-        const tm = wgs84ToTwd67(pos);
-        return { ...common, display: formatTWD67TM2(tm), coverage: 'ok' };
-      }
-      case 'mgrs': {
-        const m = wgs84ToMgrs(pos, mgrsPrecision);
-        return { ...common, display: formatMGRS(m), coverage: 'ok' };
-      }
-      case 'taipower': {
-        const r = wgs84ToTaipower(pos, taipowerPrecision);
-        if (!r.ok) {
-          return { ...common, display: '', coverage: 'out-of-coverage' };
-        }
-        return { ...common, display: formatTaipower(r.value), coverage: 'ok' };
-      }
+    const seg = coordinateSegments(kind, pos, { mgrsPrecision, taipowerPrecision });
+    if (seg.coverage === 'out-of-coverage') {
+      return { ...common, canonical: '', segments: [], coverage: 'out-of-coverage' };
     }
+    return {
+      ...common,
+      canonical: canonicalFor(kind, pos),
+      segments: seg.segments,
+      coverage: 'ok',
+    };
   }
 
   $: rows = visible.map((k) => rowFor(k, position));
 
   async function onCopy(row: Row): Promise<void> {
-    if (row.coverage !== 'ok') return;
-    const r = await copyReadout(row.display);
+    if (row.coverage !== 'ok' || row.canonical === '') return;
+    const r = await copyReadout(row.canonical);
     if (r.ok) {
       dispatch('copy-success', { kind: row.kind });
     } else {
-      dispatch('copy-fallback', { text: row.display });
+      dispatch('copy-fallback', { text: row.canonical });
     }
   }
 </script>
@@ -87,7 +95,14 @@
     <div class="row" data-testid="readout-{row.kind}">
       <span class="label">{$tStore(row.labelKey)}</span>
       {#if row.coverage === 'ok'}
-        <span class="value">{row.display}</span>
+        <span class="segments">
+          {#each row.segments as seg, i (i + ':' + seg.labelKey)}
+            <span class="segment">
+              <span class="seg-label">{$tStore(seg.labelKey)}</span>
+              <span class="seg-value">{seg.value}</span>
+            </span>
+          {/each}
+        </span>
         <button
           type="button"
           class="copy"
@@ -137,6 +152,33 @@
     color: var(--color-fg-muted, #475569);
   }
 
+  .segments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2, 8px);
+    align-items: baseline;
+  }
+
+  .segment {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+  }
+
+  .seg-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-fg-muted, #475569);
+  }
+
+  .seg-value {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-numeric, monospace);
+    font-size: 13px;
+  }
+
   .value {
     font-variant-numeric: tabular-nums;
     font-family: var(--font-numeric, monospace);
@@ -148,7 +190,9 @@
   }
 
   .copy {
-    padding: 2px 6px;
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    padding: var(--space-2, 8px);
     border: 0;
     border-radius: 4px;
     background: transparent;

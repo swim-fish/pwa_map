@@ -77,10 +77,8 @@
 
 <style>
   .zoom-btn {
-    min-width: 36px;
-    min-height: 36px;
-    width: 36px;
-    height: 36px;
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
     padding: 0;
     background: var(--color-surface-elev, rgba(255, 255, 255, 0.95));
     color: var(--color-fg, #0f172a);

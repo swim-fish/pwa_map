@@ -47,7 +47,7 @@
         <li>
           <button
             type="button"
-            class="row"
+            class="row tap-target"
             data-testid="disambig-row"
             data-disambig-row-index={i}
             data-disambig-sub={cand.sub}
@@ -67,7 +67,7 @@
     <footer class="actions">
       <button
         type="button"
-        class="cancel"
+        class="cancel tap-target"
         on:click={() => dispatch('cancel')}
         data-testid="goto-disambig-cancel"
       >

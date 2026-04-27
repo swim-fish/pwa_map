@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/008-gh-pages-deploy/plan.md`
+Active feature plan: `specs/009-mobile-ui-fixes/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts

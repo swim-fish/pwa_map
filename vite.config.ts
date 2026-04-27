@@ -14,11 +14,21 @@ const TILE_MAX_AGE_SECONDS = TILE_CACHE_MAX_AGE_DAYS_CEILING * 60 * 60 * 24;
 const r = (p: string): string => fileURLToPath(new URL(p, import.meta.url));
 
 // Subpath publishing under https://swim-fish.github.io/pwa_map/.
-// `base` is conditional on Vite's `command`: production builds (which
-// `npm run build` and `npm run preview` both use) bake `/pwa_map/`
-// into asset hrefs and the PWA manifest paths; the dev server stays
-// at `/` so `npm run dev` is unchanged. Research D2 / D6 / D7.
+// `base` is conditional on Vite's `command` AND `mode`:
+// - dev server (`npm run dev`) → `/` (unchanged).
+// - production build (`npm run build`, default mode `production`) →
+//   `/pwa_map/`. Used by GH Pages deploy and every CI workflow.
+// - local-preview build (`npm run build:local` / `preview:local`,
+//   triggered by `vite build --mode local-preview`) → `/`, so the
+//   built
+//   bundle can be served from `http://localhost:4173/` without the
+//   `/pwa_map/` subpath. Local-preview builds are NOT for deploy:
+//   the manifest's start_url / scope / id will also be `/`, which
+//   GH Pages would reject. Always re-run `npm run build` before
+//   `npm run deploy:check` after using a local-preview build.
+// Research D2 / D6 / D7.
 const PROD_BASE = '/pwa_map/' as const;
+const LOCAL_PREVIEW_BASE = '/' as const;
 const DEV_BASE = '/' as const;
 
 // `manifestBase` does NOT contain start_url / scope / id — those
@@ -40,8 +50,9 @@ const manifestBase = {
   ],
 } as const;
 
-export default defineConfig(({ command }) => {
-  const base = command === 'build' ? PROD_BASE : DEV_BASE;
+export default defineConfig(({ command, mode }) => {
+  const base =
+    command === 'build' ? (mode === 'local-preview' ? LOCAL_PREVIEW_BASE : PROD_BASE) : DEV_BASE;
   const manifest = {
     ...manifestBase,
     start_url: base,

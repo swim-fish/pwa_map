@@ -13,6 +13,7 @@
   import UpdatePrompt from '$components/UpdatePrompt.svelte';
   import InstallBanner from '$components/InstallBanner.svelte';
   import InstallIosSheet from '$components/InstallIosSheet.svelte';
+  import NotificationRegion from '$components/NotificationRegion.svelte';
   import Compass from '$components/Compass.svelte';
   import ZoomControls from '$components/ZoomControls.svelte';
   import SettingsSheet from '$components/SettingsSheet.svelte';
@@ -193,6 +194,17 @@
     lat: crosshair.lat.toFixed(4),
     lon: crosshair.lon.toFixed(4),
   });
+
+  // Feature 009: notification-region anchor flips when a primary dialog
+  // is open, so transient banners do not cover the dialog's CTA row.
+  $: dialogOpen = goToOpen || settingsOpen;
+  $: if (typeof document !== 'undefined') {
+    if (dialogOpen) {
+      document.body.dataset.dialogOpen = '';
+    } else {
+      delete document.body.dataset.dialogOpen;
+    }
+  }
 
   onMount(() => {
     const onBeforeInstall = (e: Event): void => {
@@ -376,32 +388,35 @@
 
   <SettingsSheet open={settingsOpen} on:close={() => (settingsOpen = false)} />
 
-  {#if zoneHint}
-    <div class="toast" role="status" aria-live="polite" data-testid="zone-toast">
-      {$tStore('goto.zone.auto.toast', { zone: zoneHint.zone })}
-    </div>
-  {/if}
+  <NotificationRegion>
+    {#if zoneHint}
+      <div class="toast" role="status" aria-live="polite" data-testid="zone-toast">
+        {$tStore('goto.zone.auto.toast', { zone: zoneHint.zone })}
+      </div>
+    {/if}
 
-  {#if copyToast}
-    <div class="toast" role="status" aria-live="polite" data-testid="copy-toast">
-      {$tStore('copy.toast.success')}
-    </div>
-  {/if}
+    {#if copyToast}
+      <div class="toast" role="status" aria-live="polite" data-testid="copy-toast">
+        {$tStore('copy.toast.success')}
+      </div>
+    {/if}
 
-  {#if layerFailToast}
-    <div class="toast" role="status" aria-live="polite" data-testid="layer-fail-toast">
-      {$tStore(layerFailToast.messageKey)}
-    </div>
-  {/if}
+    {#if layerFailToast}
+      <div class="toast" role="status" aria-live="polite" data-testid="layer-fail-toast">
+        {$tStore(layerFailToast.messageKey)}
+      </div>
+    {/if}
 
-  {#if $offlineReadySignal.visible}
-    <div class="toast" role="status" aria-live="polite" data-testid="offline-ready-toast">
-      {$tStore('pwa.offline.ready')}
-    </div>
-  {/if}
+    {#if $offlineReadySignal.visible}
+      <div class="toast" role="status" aria-live="polite" data-testid="offline-ready-toast">
+        {$tStore('pwa.offline.ready')}
+      </div>
+    {/if}
 
-  <UpdatePrompt />
-  <InstallBanner />
+    <UpdatePrompt />
+    <InstallBanner />
+  </NotificationRegion>
+
   <InstallIosSheet />
 
   <div class="map-controls">
@@ -440,6 +455,7 @@
   }
 
   .toolbar-btn {
+    min-height: var(--tap-min);
     padding: var(--space-2, 8px) var(--space-3, 12px);
     background: var(--color-surface-elev, rgba(255, 255, 255, 0.95));
     color: var(--color-fg, #0f172a);
@@ -459,7 +475,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 36px;
+    min-width: var(--tap-min);
     padding: var(--space-2, 8px);
   }
 
@@ -474,16 +490,11 @@
   }
 
   .toast {
-    position: absolute;
-    top: var(--space-8, 32px);
-    left: 50%;
-    transform: translateX(-50%);
     padding: var(--space-2, 8px) var(--space-4, 16px);
     background: rgba(15, 23, 42, 0.92);
     color: #ffffff;
     border-radius: 6px;
     font-size: 13px;
-    z-index: 50;
   }
 
   .sr-only {

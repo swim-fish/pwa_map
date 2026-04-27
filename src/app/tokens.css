@@ -44,7 +44,24 @@
   --font-numeric:
     14px / 1.4 ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Consolas, monospace;
 
+  /* Tap-target floor (feature 009 — WCAG 2.5.5 Level AAA, iOS HIG).
+     Applied via the .tap-target utility class below or by rule directly. */
+  --tap-min: 44px;
+
+  /* Notification region zones (feature 009 — single fixed stacking host
+     for transient banners; the bottom zone activates when a dialog is
+     open via body[data-dialog-open]). */
+  --notification-zone-top: calc(var(--space-4) + env(safe-area-inset-top, 0px));
+  --readout-clearance: calc(var(--space-4) * 6);
+  --notification-zone-bottom: calc(var(--readout-clearance) + env(safe-area-inset-bottom, 0px));
+
   color-scheme: light dark;
+}
+
+.tap-target,
+.tap-target:where(:disabled) {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
 }
 
 @media (prefers-color-scheme: dark) {

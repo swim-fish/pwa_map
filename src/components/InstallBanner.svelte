@@ -42,7 +42,7 @@
     <div class="install-banner-actions">
       <button
         type="button"
-        class="install-banner-confirm"
+        class="install-banner-confirm tap-target"
         data-testid="install-banner-confirm"
         on:click={onConfirm}
         disabled={deferredPrompt === null}
@@ -51,7 +51,7 @@
       </button>
       <button
         type="button"
-        class="install-banner-dismiss"
+        class="install-banner-dismiss tap-target"
         data-testid="install-banner-dismiss"
         on:click={onDismiss}
       >
@@ -63,10 +63,6 @@
 
 <style>
   .install-banner {
-    position: fixed;
-    bottom: calc(var(--space-4, 16px) + var(--space-6, 24px));
-    right: var(--space-4, 16px);
-    z-index: 6;
     display: flex;
     flex-direction: column;
     gap: var(--space-2, 8px);
@@ -105,8 +101,6 @@
 
   .install-banner-confirm,
   .install-banner-dismiss {
-    min-width: 36px;
-    min-height: 36px;
     padding: var(--space-2, 8px) var(--space-3, 12px);
     border-radius: 6px;
     font: inherit;
