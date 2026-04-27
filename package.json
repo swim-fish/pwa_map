@@ -4,6 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Taiwan Coordinate Map — a PWA that renders a crosshair reticle with live multi-format coordinate readout.",
+  "license": "MIT",
+  "author": "Shihyu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swim-fish/pwa_map.git"
+  },
+  "homepage": "https://swim-fish.github.io/pwa_map/",
+  "bugs": {
+    "url": "https://github.com/swim-fish/pwa_map/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

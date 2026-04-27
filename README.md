@@ -106,13 +106,29 @@ docs/
 
 ## Licences & attribution
 
-- Source code: **MIT License** (add a `LICENSE` file when publishing).
-- Test vectors in `tests/unit/fixtures/test-vectors.json` are copied
-  verbatim from the reference document
-  `Taiwan Coordinate Systems Reference v2.0.0 (MIT)` — Copyright (c)
+- **Source code**: MIT License — see [`LICENSE`](./LICENSE) for the
+  full text. Copyright © 2026 Shihyu.
+- **Third-party dependencies**: catalogued in
+  [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) — runtime
+  deps are MIT / BSD-3-Clause; dev deps are MIT / Apache-2.0 /
+  0BSD. All compatible with this project's MIT licence.
+- **Test vectors** in `tests/unit/fixtures/test-vectors.json` are
+  copied verbatim from the reference document
+  `Taiwan Coordinate Systems Reference v2.0.0 (MIT)` — Copyright ©
   2026 TacMap TW contributors. The copy is checked in with its
   SHA-256 digest pinned in `tests/unit/fixtures/vectors-digest.txt`.
-- Map tiles: **© OpenStreetMap contributors** (ODbL).
+- **Map tile data** is fetched from upstream tile servers at
+  runtime; the project does NOT redistribute tile data. Each
+  source has its own licence; attribution is displayed in the
+  in-app `AttributionBar` component:
+  - **OpenStreetMap** — ODbL 1.0
+  - **NLSC (內政部國土測繪中心)** — 政府資料開放授權條款 1.0
+  - **Google Maps** — Google Maps Platform Terms of Service
+
+  The Settings sheet (feature 007) carries a permanent licence
+  notice reminding users that the local tile cache is a short-term
+  offline performance fallback only — bulk download / redistribution
+  is forbidden by these upstream licences.
 
 ## Contributing
 
