@@ -59,7 +59,7 @@ const TAIPOWER_PRECISIONS: readonly TaipowerPrecision[] = [9, 11];
 export function defaultPreferences(): FormatPreferences {
   return {
     version: PREFS_VERSION,
-    visible: ['wgs84-dd', 'wgs84-dms', 'twd97-tm2', 'mgrs'],
+    visible: ['wgs84-dd', 'wgs84-dms', 'twd97-tm2', 'mgrs', 'taipower'],
     mgrsPrecision: 5,
     taipowerPrecision: 9,
     locale: 'zh',
