@@ -4,6 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Taiwan Coordinate Map — a PWA that renders a crosshair reticle with live multi-format coordinate readout.",
+  "license": "MIT",
+  "author": "Shihyu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swim-fish/pwa_map.git"
+  },
+  "homepage": "https://swim-fish.github.io/pwa_map/",
+  "bugs": {
+    "url": "https://github.com/swim-fish/pwa_map/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,7 +26,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "bench": "vitest bench --run",
-    "bundle-size": "node scripts/check-bundle-size.js"
+    "bundle-size": "node scripts/check-bundle-size.js",
+    "deploy:check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npx vitest run tests/integration/deploy-base-alignment.spec.ts && npm run bundle-size"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",

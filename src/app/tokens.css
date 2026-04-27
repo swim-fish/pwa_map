@@ -17,6 +17,9 @@
   --color-border: #cbd5e1;
   --color-accent: #0ea5e9;
   --color-danger: #dc2626;
+  --color-danger-bg: #dc2626;
+  --color-danger-fg: #ffffff;
+  --color-scrim: rgba(15, 23, 42, 0.6);
 
   /* Crosshair tokens */
   --crosshair-outer: #0f172a;
@@ -55,6 +58,8 @@
     --readout-bg: var(--color-surface-elev);
     --attribution-bg: rgba(15, 23, 42, 0.92);
     --attribution-fg: #f1f5f9;
+    --color-danger-bg: #ef4444;
+    --color-danger-fg: #0f172a;
   }
 }
 

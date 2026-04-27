@@ -1,0 +1,57 @@
+name: CI — PR build verification
+
+# PR build verification: every PR against master runs the same gate
+# sequence as deploy.yml's `build` job, but without the publish step.
+# Per spec/008-gh-pages-deploy/spec.md FR-007, US2, SC-004 and
+# research D3, D4, D5.
+
+on:
+  pull_request:
+    branches: [master]
+
+# Per-PR concurrency: a fast sequence of force-pushes cancels the
+# in-flight build in favour of the newest head (research D4).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Read-only — this workflow CANNOT publish anywhere
+# (FR-016 / SC-005 / research D3).
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit + integration tests (build-independent)
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Verify base-path alignment in dist/
+        run: npx vitest run tests/integration/deploy-base-alignment.spec.ts
+
+      - name: Bundle-size delta gate
+        run: npm run bundle-size

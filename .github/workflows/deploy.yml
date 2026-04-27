@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+# Production deploy: master push → build + publish via Pages-from-Actions.
+# Per spec/008-gh-pages-deploy/spec.md FR-001..FR-006, FR-008, FR-009,
+# FR-012..FR-017 and research D1, D3, D4, D5.
+
+on:
+  push:
+    branches: [master]
+
+# Cancel any in-flight deploy when a newer master push arrives — the
+# most-recent commit is what should be live (FR-003 / research D4).
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+# Workflow-default least privilege; the `deploy` job below widens
+# this for its own scope only (FR-016 / research D3).
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit + integration tests (build-independent)
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Verify base-path alignment in dist/
+        run: npx vitest run tests/integration/deploy-base-alignment.spec.ts
+
+      - name: Bundle-size delta gate
+        run: npm run bundle-size
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Only this job carries the elevated permissions; the build job
+    # ran under read-only. Per FR-016 / research D3.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
