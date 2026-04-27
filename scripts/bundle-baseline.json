@@ -1,7 +1,7 @@
 {
-  "entryJsBytes": 85399,
-  "cssBytes": 12543,
-  "capturedAt": "2026-04-26T00:00:00.000Z",
-  "capturedFromCommit": "e636cae",
-  "capturedFromFeature": "004-offline-pwa-polish"
+  "entryJsBytes": 88196,
+  "cssBytes": 12931,
+  "capturedAt": "2026-04-27T00:54:47.055Z",
+  "capturedFromCommit": "e8c1efb",
+  "capturedFromFeature": "005-pwa-installable"
 }

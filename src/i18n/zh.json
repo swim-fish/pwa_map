@@ -135,5 +135,12 @@
   "pwa.install.ios.step3": "按一下「新增」即可從主畫面啟動本應用",
   "pwa.install.ios.shareIconAlt": "分享圖示",
   "pwa.install.ios.dismiss": "知道了",
-  "pwa.install.iosOther.hint": "請使用 Safari 開啟此頁面以安裝"
+  "pwa.install.iosOther.hint": "請使用 Safari 開啟此頁面以安裝",
+  "controls.compass.label": "指南針",
+  "controls.compass.reset": "重置為正北",
+  "controls.compass.bearingFmt": "目前方位 {deg}°",
+  "controls.zoom.in.label": "放大",
+  "controls.zoom.in.disabled": "已達最大縮放",
+  "controls.zoom.out.label": "縮小",
+  "controls.zoom.out.disabled": "已達最小縮放"
 }

@@ -135,5 +135,12 @@
   "pwa.install.ios.step3": "「追加」をタップしてホーム画面からアプリを起動",
   "pwa.install.ios.shareIconAlt": "共有アイコン",
   "pwa.install.ios.dismiss": "了解しました",
-  "pwa.install.iosOther.hint": "インストールするには Safari でこのページを開いてください"
+  "pwa.install.iosOther.hint": "インストールするには Safari でこのページを開いてください",
+  "controls.compass.label": "コンパス",
+  "controls.compass.reset": "北を上に戻す",
+  "controls.compass.bearingFmt": "現在の方位 {deg}°",
+  "controls.zoom.in.label": "拡大",
+  "controls.zoom.in.disabled": "最大ズームに到達",
+  "controls.zoom.out.label": "縮小",
+  "controls.zoom.out.disabled": "最小ズームに到達"
 }

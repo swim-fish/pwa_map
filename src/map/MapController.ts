@@ -21,6 +21,15 @@ export interface TileFailEvent {
 
 type Handler = (e: MapMoveEvent) => void;
 type TileFailHandler = (e: TileFailEvent) => void;
+type BearingHandler = (deg: number) => void;
+
+function normaliseBearing(deg: number): number {
+  return ((deg % 360) + 360) % 360;
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, v));
+}
 
 const FAILURE_WINDOW_MS = 5000;
 const FAILURE_THRESHOLD = 3;
@@ -37,9 +46,12 @@ export class MapController {
   private readonly moveHandlers = new Set<Handler>();
   private readonly moveEndHandlers = new Set<Handler>();
   private readonly tileFailHandlers = new Set<TileFailHandler>();
+  private readonly bearingHandlers = new Set<BearingHandler>();
   private underlying: unknown = null;
   private currentCenter: WGS84DD;
   private currentZoom: number;
+  private currentBearing = 0;
+  private wheelOverrideAttached = false;
   private currentLayer: LayerSelection = { basemap: 'osm-standard', overlay: false };
   private failureSnapshot: FailureSnapshot | null = null;
 
@@ -196,12 +208,98 @@ export class MapController {
     this.currentZoom = nextZoom;
   }
 
+  // ===== Feature 006 — bearing channel =====
+
+  getBearing(): number {
+    const map = this.underlying as { getBearing?: () => number } | null;
+    if (!map?.getBearing) return 0;
+    return normaliseBearing(map.getBearing());
+  }
+
+  onBearing(handler: BearingHandler): () => void {
+    this.bearingHandlers.add(handler);
+    handler(this.getBearing());
+    return () => this.bearingHandlers.delete(handler);
+  }
+
+  emitBearing(deg: number): void {
+    const next = normaliseBearing(deg);
+    if (Math.abs(next - this.currentBearing) < 1e-9) return;
+    this.currentBearing = next;
+    for (const h of this.bearingHandlers) h(next);
+  }
+
+  resetBearing(animated: boolean): void {
+    const map = this.underlying as {
+      easeTo: (opts: { bearing: number; duration: number }) => void;
+      setBearing: (deg: number) => void;
+      getBearing?: () => number;
+    } | null;
+    if (!map) return;
+    const current = map.getBearing ? map.getBearing() : 0;
+    const distFromZero = Math.min(Math.abs(current), Math.abs(360 - current));
+    if (distFromZero <= 0.5) return;
+    if (animated) {
+      map.easeTo({ bearing: 0, duration: 600 });
+    } else {
+      map.setBearing(0);
+    }
+  }
+
+  zoomBy(delta: number, animated: boolean): void {
+    const map = this.underlying as {
+      easeTo: (opts: {
+        zoom: number;
+        around: { lat: number; lng: number };
+        duration: number;
+      }) => void;
+      zoomTo: (
+        zoom: number,
+        opts: { around: { lat: number; lng: number }; duration: number; animate: boolean },
+      ) => void;
+      getZoom: () => number;
+      getCenter: () => { lat: number; lng: number };
+      getMinZoom: () => number;
+      getMaxZoom: () => number;
+    } | null;
+    if (!map) return;
+    const current = map.getZoom();
+    const target = clamp(current + delta, map.getMinZoom(), map.getMaxZoom());
+    if (Math.abs(target - current) < 1e-6) return;
+    const around = map.getCenter();
+    if (animated) {
+      map.easeTo({ zoom: target, around, duration: 200 });
+    } else {
+      map.zoomTo(target, { around, duration: 0, animate: false });
+    }
+  }
+
+  attachWheelOverride(): void {
+    if (this.wheelOverrideAttached) return;
+    const map = this.underlying as {
+      scrollZoom?: { disable: () => void };
+      getCanvasContainer?: () => HTMLElement;
+    } | null;
+    if (!map) return;
+    map.scrollZoom?.disable();
+    const target = map.getCanvasContainer?.() ?? null;
+    if (!target) return;
+    const onWheel = (event: WheelEvent): void => {
+      event.preventDefault();
+      const zoomDelta = clamp(-event.deltaY / 100, -1, 1);
+      this.zoomBy(zoomDelta, false);
+    };
+    target.addEventListener('wheel', onWheel, { passive: false });
+    this.wheelOverrideAttached = true;
+  }
+
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
     this.moveHandlers.clear();
     this.moveEndHandlers.clear();
     this.tileFailHandlers.clear();
+    this.bearingHandlers.clear();
     const u = this.underlying as { remove?: () => void } | null;
     u?.remove?.();
     this.underlying = null;

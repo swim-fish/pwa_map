@@ -13,6 +13,8 @@
   import UpdatePrompt from '$components/UpdatePrompt.svelte';
   import InstallBanner from '$components/InstallBanner.svelte';
   import InstallIosSheet from '$components/InstallIosSheet.svelte';
+  import Compass from '$components/Compass.svelte';
+  import ZoomControls from '$components/ZoomControls.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
   import type { LayerSelection } from '$types/map';
@@ -227,7 +229,9 @@
         formatToggleOpen = false;
       },
     };
-    (window as unknown as Record<string, unknown>).__mapTestHooks = hooks;
+    const mapHooksHost = window as unknown as Record<string, unknown>;
+    mapHooksHost.__mapTestHooks ??= {};
+    Object.assign(mapHooksHost.__mapTestHooks as Record<string, unknown>, hooks);
 
     // Test-only hook for the deterministic update-prompt E2E flow
     // (research D7). Real SW upgrade lifecycle is too slow + flaky for
@@ -385,6 +389,11 @@
   <InstallBanner />
   <InstallIosSheet />
 
+  <div class="map-controls">
+    <ZoomControls {controller} />
+    <Compass {controller} />
+  </div>
+
   <CopyFallback
     open={copyFallback !== null}
     text={copyFallback?.text ?? ''}
@@ -429,6 +438,16 @@
 
   .toolbar-btn:hover {
     background: var(--color-surface, #ffffff);
+  }
+
+  .map-controls {
+    position: fixed;
+    right: var(--space-4, 16px);
+    bottom: calc(var(--space-4, 16px) + var(--space-6, 24px));
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 8px);
   }
 
   .toast {

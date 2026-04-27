@@ -21,6 +21,7 @@ This directory holds per-change UI documentation per Constitution
 | [0003](0003-layers-and-locale.md)  | Layer + locale pickers (feature 003)      | Accepted | Toolbar, map canvas, attribution bar, failure toast                      |
 | [0004](0004-offline-pwa-polish.md) | Offline PWA + update prompt (feature 004) | Accepted | App shell (offline), update-prompt, offline-ready toast, attribution bar |
 | [0005](0005-pwa-installable.md)    | PWA install affordance (feature 005)      | Accepted | Install banner (bottom-right), iOS instructional sheet (bottom-center)   |
+| [0006](0006-compass.md)            | Compass + crosshair-zoom (feature 006)    | Accepted | Bottom-right control cluster (compass + +/− buttons), wheel-zoom anchor  |
 
 ## Adding a new UI record
 

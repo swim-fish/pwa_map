@@ -39,6 +39,7 @@ drifting.
 | [0023](0023-sw-registration-strategy.md)              | SW registration strategy — `autoUpdate` → `prompt`   | Accepted | —          |
 | [0024](0024-dev-manifest-middleware.md)               | Dev-mode manifest middleware                         | Accepted | —          |
 | [0025](0025-pwa-install-surfaces.md)                  | PWA install surfaces & dismissal-key design          | Accepted | —          |
+| [0026](0026-compass-and-crosshair-zoom.md)            | Compass + crosshair-anchored zoom + wheel override   | Accepted | —          |
 
 ## Adding a new ADR
 
