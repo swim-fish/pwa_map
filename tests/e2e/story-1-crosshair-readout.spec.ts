@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const TAIPEI_101 = { lat: 25.033611, lon: 121.564472 };
+const DEFAULT_CENTER = { lat: 24.190793, lon: 120.654919 };
 
 test.describe('Story 1 — Live coordinate readout under a fixed crosshair', () => {
-  test('AS1: opens with Taipei 101 in view, crosshair at center, DD readout within tolerance', async ({
+  test('AS1: opens at the default center, crosshair at center, DD readout within tolerance', async ({
     page,
   }) => {
     await page.goto('/');
@@ -30,8 +30,8 @@ test.describe('Story 1 — Live coordinate readout under a fixed crosshair', () 
     if (match) {
       const lat = Number.parseFloat(match[1]);
       const lon = Number.parseFloat(match[2]);
-      expect(Math.abs(lat - TAIPEI_101.lat)).toBeLessThanOrEqual(0.000002);
-      expect(Math.abs(lon - TAIPEI_101.lon)).toBeLessThanOrEqual(0.000002);
+      expect(Math.abs(lat - DEFAULT_CENTER.lat)).toBeLessThanOrEqual(0.000002);
+      expect(Math.abs(lon - DEFAULT_CENTER.lon)).toBeLessThanOrEqual(0.000002);
     }
   });
 

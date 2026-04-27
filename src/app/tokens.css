@@ -28,6 +28,12 @@
   --readout-fg: var(--color-fg);
   --readout-shadow: 0 2px 12px rgba(15, 23, 42, 0.15);
 
+  /* Attribution tokens (feature 004 — must NOT alias --color-fg /
+     --color-surface; the badge needs an independent contrast guarantee
+     held against its own background, not the underlying tile.) */
+  --attribution-bg: rgba(255, 255, 255, 0.95);
+  --attribution-fg: #0f172a;
+
   /* Typography */
   --font-ui:
     14px / 1.4 system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans TC', 'Noto Sans JP',
@@ -47,6 +53,8 @@
     --color-surface-elev: rgba(30, 41, 59, 0.95);
     --color-border: #334155;
     --readout-bg: var(--color-surface-elev);
+    --attribution-bg: rgba(15, 23, 42, 0.92);
+    --attribution-fg: #f1f5f9;
   }
 }
 

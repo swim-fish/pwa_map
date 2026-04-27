@@ -49,3 +49,39 @@ buttons.
 - **`aria-live="assertive"` readout** — floods the screen reader during
   pan; rejected.
 - **Defer a11y to v1.1** — violates Principle III; rejected.
+
+## Implementation outcome — 2026-04-26 attribution badge contrast tokens
+
+Feature 004 (`specs/004-offline-pwa-polish/`) discovered that the
+`AttributionBar` component's `.attribution` selector used
+`color: var(--color-fg)` + a hardcoded `rgba(255,255,255,0.82)`
+background. In light mode that produced near-black text on near-white,
+which is fine. In dark mode `--color-fg` resolves to `#f1f5f9` (slate-100,
+near-white), so the foreground colour collapsed against the still-near-white
+hardcoded background — the legal attribution string was effectively
+invisible.
+
+This regressed the Principle III contrast guarantee for the badge. The
+fix is a token swap:
+
+- New token pair `--attribution-bg` / `--attribution-fg` defined in
+  `src/app/tokens.css` for both `:root` and the
+  `@media (prefers-color-scheme: dark)` block.
+- `.attribution` now references `var(--attribution-bg)` /
+  `var(--attribution-fg)` instead of the global colour tokens.
+- Background opacity raised from 0.82 to 0.95 (light) / 0.92 (dark) so
+  the contrast guarantee holds against the badge's own background even
+  over a worst-case underlying tile (FR-014).
+
+**Computed contrast** (verified by `tests/unit/components/AttributionBar.spec.ts`):
+
+- Light: 15.8 : 1 (slate-900 on alpha-blended white)
+- Dark: 15.5 : 1 (slate-100 on alpha-blended dark slate)
+
+Both > 3 × the WCAG AA threshold of 4.5 : 1. The token pair is
+intentionally NOT aliased to `--color-fg` / `--color-surface` so the
+badge's contrast guarantee stays independent of any future shift in the
+global text/surface tokens.
+
+Layout, position, font-size, and DOM structure are unchanged — the fix
+is a token swap only.

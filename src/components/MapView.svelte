@@ -7,6 +7,7 @@
   import { findSource } from '$map/sources';
   import { buildStyle } from '$map/styleBuilder';
   import { MapController, type MapMoveEvent } from '$map/MapController';
+  import { attachToController as attachBearingSignal } from '$map/bearingSignal';
 
   export let initialCenter: WGS84DD;
   export let initialZoom: number = 13;
@@ -83,6 +84,13 @@
       dispatch('moveend', ev);
     });
 
+    map.on('rotate', () => {
+      controller?.emitBearing(map?.getBearing() ?? 0);
+    });
+    map.on('rotateend', () => {
+      controller?.emitBearing(map?.getBearing() ?? 0);
+    });
+
     map.on('error', (e) => {
       const ev = e as {
         sourceId?: string;
@@ -104,7 +112,29 @@
       }
     });
 
-    if (controller) controller.attachUnderlying(map);
+    if (controller) {
+      controller.attachUnderlying(map);
+      controller.attachWheelOverride();
+      attachBearingSignal(controller);
+    }
+
+    if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
+      const w = window as unknown as Record<string, unknown>;
+      w.__mapTestHooks ??= {};
+      const mapHooks = w.__mapTestHooks as Record<string, unknown>;
+      mapHooks.triggerRotate = (deg: number): void => {
+        map?.setBearing(deg);
+      };
+      mapHooks.triggerWheelZoom = (opts: { deltaY: number }): void => {
+        const evt = new WheelEvent('wheel', {
+          deltaY: opts.deltaY,
+          bubbles: true,
+          cancelable: true,
+        });
+        const target = (map?.getCanvasContainer?.() ?? container) as HTMLElement | null;
+        target?.dispatchEvent(evt);
+      };
+    }
   });
 
   onDestroy(() => {

@@ -10,6 +10,11 @@
   import CopyFallback from '$components/CopyFallback.svelte';
   import LayerPicker from '$components/LayerPicker.svelte';
   import LocalePicker from '$components/LocalePicker.svelte';
+  import UpdatePrompt from '$components/UpdatePrompt.svelte';
+  import InstallBanner from '$components/InstallBanner.svelte';
+  import InstallIosSheet from '$components/InstallIosSheet.svelte';
+  import Compass from '$components/Compass.svelte';
+  import ZoomControls from '$components/ZoomControls.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
   import type { LayerSelection } from '$types/map';
@@ -25,23 +30,38 @@
     savePreferences,
     type FormatPreferences,
   } from '$storage/preferences';
+  import { offlineReadySignal, dismissOfflineReady, fireNeedRefresh } from '$pwa/updateSignal';
+  import {
+    captureBeforeInstallPrompt,
+    markInstalled,
+    type BeforeInstallPromptEvent,
+  } from '$pwa/installSignal';
 
-  const TAIPEI_101: WGS84DD = {
+  let offlineReadyTimer: ReturnType<typeof setTimeout> | null = null;
+  $: if ($offlineReadySignal.visible) {
+    if (offlineReadyTimer) clearTimeout(offlineReadyTimer);
+    offlineReadyTimer = setTimeout(() => {
+      dismissOfflineReady();
+      offlineReadyTimer = null;
+    }, 5000);
+  }
+
+  const DEFAULT_CENTER: WGS84DD = {
     kind: 'wgs84-dd',
-    lat: 25.033611 as Lat,
-    lon: 121.564472 as Lon,
+    lat: 24.190793 as Lat,
+    lon: 120.654919 as Lon,
   };
 
   let prefs: FormatPreferences = loadPreferences();
   setLocale(prefs.locale);
 
   let layerSelection: LayerSelection = {
-    basemap: prefs.mapLayer ?? 'osm-standard',
+    basemap: prefs.mapLayer ?? 'nlsc-emap5',
     overlay: prefs.overlay ?? false,
   };
 
   const lastView = loadLastView();
-  const initialCenter: WGS84DD = lastView?.center ?? TAIPEI_101;
+  const initialCenter: WGS84DD = lastView?.center ?? DEFAULT_CENTER;
   const initialZoom = lastView?.zoom ?? 13;
 
   const controller = new MapController({
@@ -173,6 +193,16 @@
   });
 
   onMount(() => {
+    const onBeforeInstall = (e: Event): void => {
+      e.preventDefault();
+      captureBeforeInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    const onAppInstalled = (): void => {
+      markInstalled();
+    };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', onAppInstalled);
+
     const hooks = {
       setCenter(lat: number, lon: number): void {
         const map = controller.getUnderlying() as {
@@ -199,7 +229,46 @@
         formatToggleOpen = false;
       },
     };
-    (window as unknown as Record<string, unknown>).__mapTestHooks = hooks;
+    const mapHooksHost = window as unknown as Record<string, unknown>;
+    mapHooksHost.__mapTestHooks ??= {};
+    Object.assign(mapHooksHost.__mapTestHooks as Record<string, unknown>, hooks);
+
+    // Test-only hook for the deterministic update-prompt E2E flow
+    // (research D7). Real SW upgrade lifecycle is too slow + flaky for
+    // E2E; this hook produces the same `fireNeedRefresh` signal the
+    // production registerSW callback would emit. Gated to non-prod.
+    if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
+      const w = window as unknown as Record<string, unknown>;
+      w.__pwaTestHooks ??= {};
+      const pwaHooks = w.__pwaTestHooks as Record<string, unknown>;
+      pwaHooks.triggerUpdateAvailable = () => {
+        fireNeedRefresh(async () => {
+          /* test no-op — real path calls updateSW(true) */
+        });
+      };
+      pwaHooks.triggerBeforeInstallPrompt = (opts?: {
+        outcome?: 'accepted' | 'dismissed';
+      }): void => {
+        const evt = new Event('beforeinstallprompt') as unknown as BeforeInstallPromptEvent & {
+          prompt: () => Promise<void>;
+          userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+        };
+        evt.prompt = async () => undefined;
+        evt.userChoice = Promise.resolve({
+          outcome: opts?.outcome ?? 'accepted',
+          platform: 'web',
+        });
+        window.dispatchEvent(evt);
+      };
+      pwaHooks.triggerAppInstalled = (): void => {
+        window.dispatchEvent(new Event('appinstalled'));
+      };
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      window.removeEventListener('appinstalled', onAppInstalled);
+    };
   });
 </script>
 
@@ -310,6 +379,21 @@
     </div>
   {/if}
 
+  {#if $offlineReadySignal.visible}
+    <div class="toast" role="status" aria-live="polite" data-testid="offline-ready-toast">
+      {$tStore('pwa.offline.ready')}
+    </div>
+  {/if}
+
+  <UpdatePrompt />
+  <InstallBanner />
+  <InstallIosSheet />
+
+  <div class="map-controls">
+    <ZoomControls {controller} />
+    <Compass {controller} />
+  </div>
+
   <CopyFallback
     open={copyFallback !== null}
     text={copyFallback?.text ?? ''}
@@ -354,6 +438,16 @@
 
   .toolbar-btn:hover {
     background: var(--color-surface, #ffffff);
+  }
+
+  .map-controls {
+    position: fixed;
+    right: var(--space-4, 16px);
+    bottom: calc(var(--space-4, 16px) + var(--space-6, 24px));
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 8px);
   }
 
   .toast {
