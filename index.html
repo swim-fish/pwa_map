@@ -9,7 +9,11 @@
       name="description"
       content="A Taiwan-covering PWA showing a crosshair reticle with live multi-format coordinate readout."
     />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- vite-plugin-pwa injects the manifest <link> with the
+         correct `${base}manifest.webmanifest` href. Writing one
+         here statically would break under subpath publishing
+         because Vite cannot rewrite a path to an asset that
+         does not yet exist at build start. -->
     <title>Taiwan Coordinate Map</title>
   </head>
   <body>

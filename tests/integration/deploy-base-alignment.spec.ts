@@ -96,6 +96,17 @@ describe.skipIf(!distExists)('feature 008 — deploy-base alignment (built artif
     expect(indexHtml).not.toMatch(/<base[\s>]/i);
   });
 
+  it('(5b) every absolute href / src in dist/index.html starts with the base prefix', () => {
+    // Catches the regression where index.html contained a hard-coded
+    // `<link rel="manifest" href="/manifest.webmanifest">` that Vite
+    // couldn't rewrite (the file is generated post-build, so Vite did
+    // not see it as a known asset). Any absolute `/` path that does
+    // NOT start with `${base}` would 404 under subpath publishing.
+    const attrPaths = [...indexHtml.matchAll(/(?:href|src)="(\/[^"]+)"/g)].map((m) => m[1]);
+    const offending = attrPaths.filter((p) => !p.startsWith(basePrefix));
+    expect(offending).toEqual([]);
+  });
+
   it('(6) first manifest icon src resolves to a file under dist/ (relative or base-prefixed)', () => {
     expect(manifest!.icons?.length ?? 0).toBeGreaterThan(0);
     const firstIconSrc = manifest!.icons![0].src ?? '';
