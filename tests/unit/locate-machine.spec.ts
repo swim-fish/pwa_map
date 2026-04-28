@@ -24,16 +24,14 @@ function snap(
     state,
     permission,
     lastFix: null,
-    pressStartedAt: null,
   });
 }
 
 describe('locateMachine — INITIAL_SNAPSHOT shape', () => {
-  test('initial state is off, permission prompt, lastFix null, pressStartedAt null', () => {
+  test('initial state is off, permission prompt, lastFix null', () => {
     expect(INITIAL_SNAPSHOT.state).toBe<LocateState>('off');
     expect(INITIAL_SNAPSHOT.permission).toBe<LocatePermissionState>('prompt');
     expect(INITIAL_SNAPSHOT.lastFix).toBeNull();
-    expect(INITIAL_SNAPSHOT.pressStartedAt).toBeNull();
   });
 
   test('INITIAL_SNAPSHOT is frozen', () => {

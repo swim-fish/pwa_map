@@ -42,10 +42,11 @@ meaning without a watcher to consume it.
    as a short-tap (FR-014c, OS-native). Keyboard `Enter` / `Space`
    short-tap; `Shift+Enter` / `Shift+Space` reach Stop (FR-014d) —
    both shortcuts advertised via `aria-keyshortcuts`. Visual
-   feedback during the press is a radial conic-gradient fill driven
-   by a CSS custom property animated via a single
-   `requestAnimationFrame` loop scoped to the press lifetime; under
-   `prefers-reduced-motion: reduce` the fill is suppressed entirely
+   feedback during the press is a `box-shadow: 0 0 0 2px
+   var(--color-accent)` ring with a 1.5 s linear transition
+   (simplified from the original conic-gradient fill during bundle
+   trim — see Complexity Tracking + spec Addendum A1); under
+   `prefers-reduced-motion: reduce` the transition is suppressed
    and an `aria-live="polite"` element announces "按住停止…"
    (FR-014e, research §R6). All gesture transitions delegate to a
    pure state-machine module `src/map/locateMachine.ts` that has no
@@ -54,7 +55,10 @@ meaning without a watcher to consume it.
    Show / Follow) are reflected into the existing `MapController`
    via a small `recenterTo(...)` extension and into App.svelte's
    marker layer via a new `locateSignal` Svelte store (mirroring
-   the existing `bearingSignal` pattern from feature 006).
+   the existing `bearingSignal` pattern from feature 006). The
+   on-map "you are here" marker is rendered directly via
+   `maplibregl.Marker` inside `LocateButton.svelte`'s `onFix`
+   callback.
 
 4. **Update-frequency preset persisted in preferences v4** (US4, P2)
    — `src/storage/preferences.ts` gains `FormatPreferencesV4` with
@@ -523,7 +527,7 @@ is re-evaluated:
 
 | Item | Plan target | Measured | Project ceiling | Notes |
 |------|-------------|----------|-----------------|-------|
-| Entry-chunk JS delta gzipped | +3 KiB | **+4.48 KB** (true feature-013 contribution) | +6 KB | `npm run bundle-size` reports +8.75 KB against the stored baseline (96 955 bytes from 2026-04-27, predates feature 012). Subtracting feature 012's measured +4.27 KB delta yields the actual feature-013 contribution: 8.75 − 4.27 = **+4.48 KB**, within the +6 KB per-feature ceiling. The stale baseline is a missing hygiene step from feature 012's merge — it should be refreshed by running `npm run bundle-size -- --update-baseline` from master after feature 013 merges. |
+| Entry-chunk JS delta gzipped | +3 KiB | **+4.71 KB** (true feature-013 contribution, post-Addendum) | +6 KB | `npm run bundle-size` reports +8.98 KB against the stored baseline (96 955 bytes from 2026-04-27, predates feature 012). Subtracting feature 012's measured +4.27 KB delta yields the actual feature-013 contribution: 8.98 − 4.27 = **+4.71 KB**, within the +6 KB per-feature ceiling. (Adds +0.23 KB vs the prior +4.48 KB measurement: the on-map `maplibregl.Marker` import + App-level `dragstart` listener for FR-018 wiring per spec Addendum A3 + A4.) The stale baseline is a missing hygiene step from feature 012's merge — refresh via `npm run bundle-size -- --update-baseline` from master after this feature merges. |
 | Stylesheet delta gzipped | +0.3 KiB | +0.43 KB | (no separate ceiling) | LocateButton CSS (3 state visuals + box-shadow press feedback + reduced-motion override) ≈ 0.30 KB; SettingsSheet locate-section styles ≈ 0.10 KB; cluster-layout adjustments in App.svelte ≈ 0.03 KB. |
 | Permission-prompt latency | Synchronous w/ user gesture | ✓ verified | (hard requirement, not a budget) | `tests/integration/locate-button-permission.spec.ts` asserts the geolocation API is invoked inside the `pointerup`/`click` handler before any `Promise.resolve().then` boundary. |
 | Smart "promote on movement" cadence boost (research §R1) | included | **deferred** | — | Original research called for a 5 s high-accuracy burst when two consecutive Smart-preset fixes show ≥ 1 m/s motion. Dropped from the implementation to fit the +6 KB per-feature budget. The Smart preset now relies on `maximumAge: 5_000` + the browser's built-in cadence governance. Revisit if telemetry shows users notice cadence drops while moving on Smart. |

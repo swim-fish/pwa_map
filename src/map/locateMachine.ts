@@ -31,14 +31,12 @@ export interface LocateMachineSnapshot {
   readonly state: LocateState;
   readonly permission: LocatePermissionState;
   readonly lastFix: PositionFix | null;
-  readonly pressStartedAt: number | null;
 }
 
 export const INITIAL_SNAPSHOT: LocateMachineSnapshot = Object.freeze({
   state: 'off' as LocateState,
   permission: 'prompt' as LocatePermissionState,
   lastFix: null,
-  pressStartedAt: null,
 });
 
 function freeze(snapshot: LocateMachineSnapshot): LocateMachineSnapshot {

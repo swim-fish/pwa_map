@@ -70,7 +70,6 @@ export interface LocateMachineSnapshot {
   readonly state: LocateState;
   readonly permission: 'prompt' | 'granted' | 'denied' | 'unavailable';
   readonly lastFix: PositionFix | null;
-  readonly pressStartedAt: number | null;  // wall-clock ms; null when no press
 }
 
 export interface PositionFix {
@@ -81,12 +80,15 @@ export interface PositionFix {
 }
 ```
 
-`pressStartedAt` is updated by the LocateButton on `pointerdown` /
-`keydown` and cleared on press end. The radial-progress fill
-duration is `1500 - (Date.now() - pressStartedAt)` for the test
-hook; the visual itself is a CSS transition driven by a class
-toggle, so this field is informational, not load-bearing on the
-animation.
+> **Post-implementation note (Addendum 2026-04-28)**: the `pressStartedAt` field
+> originally proposed on the snapshot was dropped — press-start tracking is
+> handled entirely via component-local state in `LocateButton.svelte`
+> (the `pressTimerId !== null` predicate). Keeping it on the snapshot
+> would have required a setter that the machine doesn't naturally express.
+
+_(Historical, pre-implementation: the original design held `pressStartedAt`
+on the snapshot for diagnostic visibility; in the shipped implementation
+this responsibility is component-local.)_
 
 ## Runtime — Locate signal store
 

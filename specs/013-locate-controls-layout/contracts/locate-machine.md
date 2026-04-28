@@ -6,6 +6,12 @@ geolocation API import. Consumers are
 `src/components/LocateButton.svelte` (gesture handlers), and
 `src/map/geolocationController.ts` (lifecycle).
 
+> **Post-implementation note (Addendum 2026-04-28)**: the snapshot's
+> `pressStartedAt` field listed below was dropped in the shipped
+> implementation — press timing is component-local in
+> `LocateButton.svelte` (see data-model.md Addendum). The transition
+> table and invariants below remain authoritative.
+
 ## Public surface
 
 ```ts
@@ -35,7 +41,6 @@ export interface LocateMachineSnapshot {
   readonly state: LocateState;
   readonly permission: LocatePermissionState;
   readonly lastFix: PositionFix | null;
-  readonly pressStartedAt: number | null;
 }
 
 export const INITIAL_SNAPSHOT: LocateMachineSnapshot;

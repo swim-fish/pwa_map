@@ -1,3 +1,23 @@
+> **Post-implementation note (Addendum 2026-04-28)**: the realised
+> component diverges from the original design in three ways:
+>
+> 1. **Press visual** — the original radial conic-gradient fill driven
+>    by `--progress` was simplified to a `box-shadow: 0 0 0 2px
+>    var(--color-accent)` ring with a 1.5 s linear transition (bundle
+>    trim). Reduced-motion fallback (aria-live announcement) unchanged.
+> 2. **Press-state local fields** — the implementation does NOT keep a
+>    standalone `pressStartedAt: number | null` field; press timing is
+>    derived from `pressTimerId !== null`. The flag set listed below
+>    (`pressTimerId`, `pressing`, `activePointerId`, `reducedMotionAnnouncement`)
+>    is faithful; only the timestamp diary entry was dropped.
+> 3. **On-map marker** — the marker is rendered directly via
+>    `maplibregl.Marker` inside `LocateButton.svelte`'s `onFix`
+>    callback (CSS class `:global(.locate-marker)`); the original
+>    `MapController.attachLocateMarker` indirection was inlined.
+>
+> The behavioural contracts (gestures, a11y attrs, threshold, reduced
+> motion fallback) below remain authoritative.
+
 # Contract — `src/components/LocateButton.svelte`
 
 The visible Svelte component. Owns the gesture-detection wiring,

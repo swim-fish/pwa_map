@@ -229,3 +229,37 @@ A user opens Settings and sees a new "定位更新頻率" (Location update frequ
 - **Settings persistence reuse**. The frequency preset uses the same persistence pathway already used for last-view, locale, and tile-cache settings — no new storage layer.
 - **zh is the canonical locale identifier** for Traditional Chinese strings (Constitution v1.1.0). All accessible names, notification copy, and Settings labels follow this convention; en strings are added in parallel where the existing locale system already exposes both.
 - **The compass + zoom controls' existing behaviours are unchanged** — only their position in the cluster moves. Zoom continues to anchor on the centre crosshair (per feature 006); compass continues to reset bearing to 0° on tap (per feature 006).
+
+## Addendum 2026-04-28 (post-implementation)
+
+The following clarifications reflect the realised contract after `/speckit.implement` landed. The original FRs and SCs above remain immutable — this Addendum captures the deltas introduced by bundle-budget trade-offs and post-implementation decisions, per Constitution V's "post-implementation behavioural changes go into a spec Addendum block, NOT inline edits to the original FRs" rule.
+
+### A1. FR-014e visual feedback simplified to a `box-shadow` ring
+
+**Original (FR-014e)**: "During a press (between press-down and 1.5 s), a radial progress fill animation MUST be visible on the button under default motion preferences."
+
+**Realised contract**: A `box-shadow: 0 0 0 2px var(--color-accent)` ring is applied when the `pressing` class is set, with `transition: box-shadow 1500ms linear`. The ring grows in tandem with the long-press timer and disappears on release / cancel / threshold-fire. The original conic-gradient radial-fill design was simplified to fit the +6 KB per-feature bundle ceiling (see `plan.md` Complexity Tracking and `docs/adr/0033-locate-gesture-and-frequency.md`).
+
+**Reduced-motion fallback (unchanged)**: Under `prefers-reduced-motion: reduce`, the box-shadow transition is suppressed and an `aria-live="polite"` element announces "按住停止…" instead. The 1.5 s threshold still triggers Stop.
+
+### A2. SC-005 Smart-while-moving cadence governance
+
+**Original (SC-005)**: "A change to the update-frequency preset takes effect within one update cycle (≤ 1 s for Fast, ≤ 5 s for Smart-while-moving, ≤ 15 s for Slow)."
+
+**Realised contract**: The "≤ 5 s for Smart-while-moving" target was originally backed by an app-side "promote to high-accuracy on movement" 5 s burst (research §R1). That burst was deferred during bundle-budget trim. Smart now relies purely on `enableHighAccuracy: false` + `maximumAge: 5_000` and the browser's built-in cadence governance — observed cadence while moving is therefore device- and browser-dependent (typically 5–10 s on modern Chromium / iOS Safari, but not guaranteed). Fast (≤ 1 s) and Slow (≤ 15 s, throttled in-app) targets remain enforceable.
+
+### A3. On-map "you are here" marker
+
+**Original (US3 acceptance scenarios 1–2)**: "a marker MUST render on the map at that position…"
+
+**Realised contract**: A DOM marker (`maplibregl.Marker`) is rendered at the user's position whenever the watcher delivers a fix while the state is Show or Follow. The element has CSS class `locate-marker` (accent dot + pulsing halo under default motion; halo disabled under reduced-motion). The marker is removed on Stop (long-press / `Shift+Enter` / `Shift+Space` / permission revoke / component destroy). Implementation uses `maplibregl.Marker` directly inside `LocateButton.svelte`'s `onFix` callback; the original `MapController.attachLocateMarker` abstraction was inlined to avoid a redundant indirection.
+
+### A4. FR-018 manual-pan demote: App.svelte `dragstart` listener
+
+**Original (FR-018)**: "When the user manually pans the map while in Follow, the state MUST automatically demote to Show…"
+
+**Realised contract**: Wired in `App.svelte`'s `onMount` via a `dragstart` listener on the underlying MapLibre map. The listener checks (a) `originalEvent` is truthy (user-initiated, not a programmatic move), (b) `controller.isRecenteringForLocate` is false (excludes our own `recenterTo` calls), and (c) the locate signal's state is `follow`. When all three hold, dispatches `applyLocateEvent({ type: 'manualPan' })` which the state machine demotes to Show.
+
+### A5. Test-infrastructure follow-up (out of feature scope)
+
+While running the post-implement test gate, a pre-existing `npm test` flake in `tests/integration/deploy-base-alignment.spec.ts` cases (7) + (8) was identified — the dynamic `await import('../../vite.config.ts')` was timing out at 5 s under shared-thread-pool contention with the rest of the suite. The flake reproduces on `master` without feature 013's changes, so the fix lives in test infrastructure, not feature scope: `vite.config.ts` `test:` block now routes that single spec to Vitest's `forks` pool with `singleFork: true`. See `docs/adr/0034-vitest-pool-routing.md`. Side benefit: the full `npm test` runtime drops from ~86 s to ~17 s.

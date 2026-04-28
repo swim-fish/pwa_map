@@ -24,11 +24,15 @@ interface MockGeo {
   clearWatch: ReturnType<typeof vi.fn>;
   failNext: 'permission' | 'unavailable' | 'timeout' | null;
   successNext: GeolocationPosition | null;
+  fail: (code: 1 | 2 | 3) => void;
 }
 
 function makeMockGeolocation(opts: { failNext?: MockGeo['failNext'] } = {}): MockGeo {
+  let lastErrorCb: PositionErrorCallback | null = null;
   const watchPosition = vi.fn(
     (success: PositionCallback, error?: PositionErrorCallback | null): number => {
+      lastErrorCb = error ?? null;
+      void success;
       if (mock.failNext === 'permission') {
         mock.failNext = null;
         Promise.resolve().then(() => {
@@ -75,6 +79,15 @@ function makeMockGeolocation(opts: { failNext?: MockGeo['failNext'] } = {}): Moc
     clearWatch: vi.fn(),
     failNext: opts.failNext ?? null,
     successNext: null,
+    fail: (code: 1 | 2 | 3) => {
+      lastErrorCb?.({
+        code,
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+        message: '',
+      } as unknown as GeolocationPositionError);
+    },
   };
   return mock;
 }
@@ -273,6 +286,50 @@ describe('LocateButton — permission outcomes', () => {
     button.click();
     expect(mock.watchPosition).not.toHaveBeenCalled();
     expect(errors).toEqual([{ key: 'locate.error.permissionDenied' }]);
+  });
+
+  test('FR-029 — permission revoked mid-session: next callback error code 1 stops watcher, demotes button to Off, surfaces zh toast', async () => {
+    const mock = makeMockGeolocation();
+    stubGeolocation(mock as unknown as Geolocation);
+    stubPermissions('granted');
+    mount(makeController());
+    await tick();
+
+    const errors: Array<{ key: string }> = [];
+    cmp.$on('error', (ev) => errors.push(ev.detail as { key: string }));
+
+    // Drive state to Show with an initial fix.
+    mock.successNext = {
+      coords: {
+        latitude: 25.04,
+        longitude: 121.51,
+        accuracy: 12,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
+      } as GeolocationCoordinates,
+      timestamp: 1714000000000,
+    } as GeolocationPosition;
+    const button = host.querySelector('button[data-testid="locate"]') as HTMLButtonElement;
+    button.click();
+    await tick();
+    await Promise.resolve();
+    await tick();
+    expect(button.dataset.state).toBe('show');
+
+    // Now simulate the OS revoking permission mid-session: the next
+    // watcher callback is the error path with code 1.
+    mock.failNext = 'permission';
+    mock.successNext = null;
+    // Trigger a re-fire by causing the controller to re-engage; we can
+    // simulate by directly calling fail() since the controller's
+    // success / error callbacks are captured by the mock.
+    mock.fail(1);
+    await tick();
+
+    expect(button.dataset.state).toBe('off');
+    expect(errors.some((e) => e.key === 'locate.error.permissionDenied')).toBe(true);
   });
 
   test('navigator.geolocation absent → button renders with aria-disabled', async () => {

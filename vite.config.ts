@@ -142,6 +142,21 @@ export default defineConfig(({ command, mode }) => {
       globals: true,
       include: ['tests/unit/**/*.spec.ts', 'tests/integration/**/*.spec.ts'],
       setupFiles: ['tests/unit/helpers/setup.ts'],
+      // The deploy-base spec needs `// @vitest-environment node` and
+      // dynamically `await import('vite.config.ts')`. Under jsdom-pool
+      // contention (60+ files in the same worker pool), vite-node's
+      // esbuild transformer queues behind the rest of the suite and
+      // the dynamic import can exceed the 5 s default testTimeout.
+      // Route that spec to the `forks` pool and run it in its OWN
+      // dedicated fork (singleFork) so it never races with the rest
+      // of the suite. Single-file runs (`deploy:check` / standalone)
+      // are unaffected.
+      poolMatchGlobs: [['tests/integration/deploy-base-alignment.spec.ts', 'forks']],
+      poolOptions: {
+        forks: {
+          singleFork: true,
+        },
+      },
       benchmark: {
         include: ['bench/**/*.bench.ts'],
       },

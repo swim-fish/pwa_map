@@ -17,6 +17,8 @@
   import Compass from '$components/Compass.svelte';
   import ZoomControls from '$components/ZoomControls.svelte';
   import LocateButton from '$components/LocateButton.svelte';
+  import { applyLocateEvent, locateSignal } from '$map/locateSignal';
+  import { get } from 'svelte/store';
   import SettingsSheet from '$components/SettingsSheet.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
@@ -230,6 +232,21 @@
     };
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
     window.addEventListener('appinstalled', onAppInstalled);
+
+    // Feature 013 FR-018 — manual pan in Follow auto-demotes to Show.
+    // Listen on the underlying MapLibre map's `dragstart` event; when
+    // `originalEvent` is truthy (user-initiated) AND the locate state
+    // is Follow AND the controller is NOT mid-recenter (our own
+    // programmatic moves), dispatch the manualPan event.
+    const map = controller.getUnderlying() as {
+      on?: (event: string, handler: (ev: { originalEvent?: unknown }) => void) => void;
+    } | null;
+    map?.on?.('dragstart', (ev) => {
+      if (!ev?.originalEvent) return;
+      if (controller.isRecenteringForLocate) return;
+      if (get(locateSignal).state !== 'follow') return;
+      applyLocateEvent({ type: 'manualPan' });
+    });
 
     const hooks = {
       setCenter(lat: number, lon: number): void {

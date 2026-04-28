@@ -20,7 +20,6 @@ function snap(state: LocateState): LocateMachineSnapshot {
     state,
     permission: 'granted' as const,
     lastFix: null,
-    pressStartedAt: null,
   });
 }
 
@@ -44,7 +43,6 @@ describe('locateMachine — manualPan does not change permission or lastFix', ()
       state: 'follow' as LocateState,
       permission: 'granted' as const,
       lastFix: { lat: 25, lon: 121, accuracy: 10, timestamp: 1 },
-      pressStartedAt: null,
     });
     const next = transition(start, { type: 'manualPan' });
     expect(next.state).toBe('show');

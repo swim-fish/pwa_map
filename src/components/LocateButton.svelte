@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
+  import maplibregl from 'maplibre-gl';
   import { tStore } from '$i18n/index';
   import type { MapController } from '$map/MapController';
   import { GeolocationController } from '$map/geolocationController';
@@ -24,6 +25,35 @@
   }>();
 
   let geo: GeolocationController | null = null;
+  let marker: maplibregl.Marker | null = null;
+
+  function ensureMarker(lat: number, lon: number): void {
+    const map = controller.getUnderlying() as maplibregl.Map | null;
+    if (!map) return;
+    try {
+      if (marker === null) {
+        const el = document.createElement('div');
+        el.className = 'locate-marker';
+        el.setAttribute('aria-hidden', 'true');
+        marker = new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
+      } else {
+        marker.setLngLat([lon, lat]);
+      }
+    } catch {
+      // jsdom / mock map — no real MapLibre context. The state machine
+      // and watcher still drive the rest of the feature.
+      marker = null;
+    }
+  }
+
+  function removeMarker(): void {
+    try {
+      marker?.remove();
+    } catch {
+      /* mock map — ignore */
+    }
+    marker = null;
+  }
 
   // Press-state machine. Reset by `cleanupPress` on every release /
   // cancel / destroy path so a stale timer never produces a Stop after
@@ -44,6 +74,10 @@
         onFix: (fix) => {
           applyLocateEvent({ type: 'firstFix', fix });
           dispatch('fix', fix);
+          // Render / move the on-map "you are here" marker. Marker
+          // exists only while the watcher is running (state is Show or
+          // Follow) — `fireStop` removes it.
+          ensureMarker(fix.lat, fix.lon);
           // Follow-mode auto-recenter: when state is Follow, every new
           // fix re-centres the map on the user's reported position.
           if ($locateSignal.state === 'follow') {
@@ -56,6 +90,7 @@
         onPermissionDenied: () => {
           applyLocateEvent({ type: 'permissionDenied' });
           dispatch('error', { key: 'locate.error.permissionDenied' });
+          removeMarker();
         },
         onPositionUnavailable: () => {
           dispatch('error', { key: 'locate.error.positionUnavailable' });
@@ -138,6 +173,7 @@
     if (snap.state === 'off') return; // FR-014g
     applyLocateEvent({ type: 'longPress' });
     geo?.stop();
+    removeMarker();
     justFiredStop = true;
   }
 
@@ -229,11 +265,9 @@
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     if (event.shiftKey) {
-      // FR-014d Stop chord.
-      const snap = $locateSignal;
-      if (snap.state === 'off') return; // FR-014g
-      applyLocateEvent({ type: 'longPress' });
-      geo?.stop();
+      // FR-014d Stop chord — re-uses fireStop so marker removal +
+      // click-suppression flag stay consistent with the long-press path.
+      fireStop();
       return;
     }
     // Short-tap toggle.
@@ -244,6 +278,7 @@
     cleanupPress();
     geo?.dispose();
     geo = null;
+    removeMarker();
   });
 
   $: snapshot = $locateSignal;
@@ -367,6 +402,53 @@
     .locate.pressing {
       transition: none !important;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+  }
+
+  /* On-map "you are here" marker. The element is created via
+     `document.createElement` inside the script and attached to the
+     MapLibre map by `maplibregl.Marker`, so Svelte's scoped class
+     hash never reaches it — the rule is :global(...). The dot has a
+     pulsing halo under default motion; the halo is suppressed under
+     prefers-reduced-motion. */
+  :global(.locate-marker) {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-accent, #0ea5e9);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 0 0 1px rgba(15, 23, 42, 0.25),
+      0 1px 3px rgba(15, 23, 42, 0.3);
+    pointer-events: none;
+  }
+
+  :global(.locate-marker)::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: var(--color-accent, #0ea5e9);
+    opacity: 0.25;
+    animation: locate-marker-pulse 1800ms ease-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes locate-marker-pulse {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.45;
+    }
+    100% {
+      transform: scale(1.4);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.locate-marker)::after {
+      animation: none;
+      opacity: 0.18;
     }
   }
 </style>
