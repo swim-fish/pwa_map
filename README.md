@@ -124,6 +124,12 @@ this codebase.
   007 tile-cache-settings → 008 gh-pages-deploy →
   009 mobile-ui-fixes → 010 mobile-collapsed-readout →
   011 safe-area-install-buttons)
+- **PWA mobile / desktop pitfalls + patterns**:
+  [`docs/pwa-mobile-desktop-lessons.md`](docs/pwa-mobile-desktop-lessons.md) —
+  consolidated lessons across features 005 / 009 / 010 / 011 with
+  fix patterns. Path-scoped checkpoints auto-load via
+  [`.claude/rules/`](.claude/rules/) when editing the matching
+  source files.
 
 ## Project structure
 
