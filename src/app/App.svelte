@@ -455,8 +455,8 @@
 
   .toolbar {
     position: absolute;
-    top: var(--space-3, 12px);
-    right: var(--space-3, 12px);
+    top: calc(var(--space-3) + var(--top-stack-zone-top));
+    right: calc(var(--space-3) + var(--inline-stack-zone-right));
     display: flex;
     gap: var(--space-2, 8px);
     z-index: 10;
@@ -487,10 +487,17 @@
     padding: var(--space-2, 8px);
   }
 
+  /* Zoom + compass cluster sits on the left edge, vertically centred,
+     across every viewport. Reasons: (a) the bottom-right area is
+     reserved for the readout / attribution stack, (b) the controls
+     stay reachable for either thumb in one-handed use, (c) the left
+     edge already honours the device safe-area inset via the shared
+     --inline-stack-zone-left token. */
   .map-controls {
     position: fixed;
-    right: var(--space-4, 16px);
-    bottom: calc(var(--space-4, 16px) + var(--space-6, 24px));
+    left: calc(var(--space-3) + var(--inline-stack-zone-left));
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 6;
     display: flex;
     flex-direction: column;

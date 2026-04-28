@@ -67,22 +67,22 @@ test.describe('Feature 010 — US1 mobile collapsed readout (FR-001/002/003, SC-
 test.describe('Feature 010 — US3 tap-to-expand (FR-008/009/010)', () => {
   test.use({ viewport: PHONE });
 
-  test('tapping collapsed readout body switches to tap-expanded; copy button does not', async ({
+  test('tapping collapsed readout body switches to expanded; copy button does not', async ({
     page,
   }) => {
     await waitForApp(page);
     const panel = page.getByTestId('readout-panel');
     await expect(panel).toHaveAttribute('data-mode', 'collapsed');
 
-    // Tap the body (priority-one row label area) — switches to tap-expanded.
+    // Tap the body (priority-one row label area) — switches to expanded.
     await panel.click({ position: { x: 5, y: 5 } });
-    await expect(panel).toHaveAttribute('data-mode', 'tap-expanded');
+    await expect(panel).toHaveAttribute('data-mode', 'expanded');
 
     // Tap again on the body returns to collapsed.
     await panel.click({ position: { x: 5, y: 5 } });
     await expect(panel).toHaveAttribute('data-mode', 'collapsed');
 
-    // Tapping the copy button does NOT toggle to tap-expanded.
+    // Tapping the copy button does NOT toggle the user override.
     const copy = panel.getByTestId('copy-wgs84-dd');
     await copy.click();
     await expect(panel).toHaveAttribute('data-mode', 'collapsed');

@@ -145,6 +145,8 @@
   "controls.zoom.in.disabled": "已達最大縮放",
   "controls.zoom.out.label": "縮小",
   "controls.zoom.out.disabled": "已達最小縮放",
+  "settings.install.heading": "安裝應用程式",
+  "settings.install.alreadyInstalled": "應用程式已安裝",
   "settings.title": "設定",
   "settings.close": "關閉",
   "settings.licenceNotice": "圖磚快取僅作為短暫離線備援，不提供地圖下載功能。依 OpenStreetMap、NLSC、Google 圖磚使用條款，不得進行散布或大量預先下載。",

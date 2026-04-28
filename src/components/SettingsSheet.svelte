@@ -18,10 +18,38 @@
     loadTileMaxEntries,
     saveTileMaxEntries,
   } from '$storage/preferences';
+  import { installSignal, triggerInstall } from '$pwa/installSignal';
+  import { installSettingsSurface } from '$pwa/installSettingsSurface';
 
   export let open: boolean = false;
 
   const dispatch = createEventDispatcher<{ close: void }>();
+
+  // Feature 011 — Settings install section local state. The section is a
+  // VIEW over installSignal + installSettingsSurface; it owns no install
+  // state and only tracks two presentational flags.
+  let showIosInstructions = false;
+  let installInFlight = false;
+
+  async function onConfirmChromium(): Promise<void> {
+    if (installInFlight) return;
+    installInFlight = true;
+    try {
+      await triggerInstall();
+    } catch {
+      /* defence-in-depth: button is disabled when deferredPrompt is null */
+    } finally {
+      installInFlight = false;
+    }
+  }
+
+  function onShowIosInstructions(): void {
+    showIosInstructions = true;
+  }
+
+  function onCloseIosInstructions(): void {
+    showIosInstructions = false;
+  }
 
   type ClearTarget = { kind: 'all' } | { kind: 'one'; name: TileCacheName };
 
@@ -60,6 +88,10 @@
   $: if (!open) {
     statusMessage = '';
     confirmTarget = null;
+    // Clear iOS instructions overlay so it does not auto-pop on the
+    // next sheet open. (PR #3 review — Escape was the only cleanup
+    // path; closing via scrim / close-button left this flag stuck.)
+    showIosInstructions = false;
   }
 
   function onClose(): void {
@@ -72,6 +104,8 @@
       e.preventDefault();
       if (confirmTarget) {
         confirmTarget = null;
+      } else if (showIosInstructions) {
+        showIosInstructions = false;
       } else {
         onClose();
       }
@@ -208,6 +242,50 @@
 
     <p class="licence" data-testid="settings-licence">{$tStore('settings.licenceNotice')}</p>
 
+    {#if $installSettingsSurface !== 'unsupported'}
+      <section
+        class="install-section"
+        aria-labelledby="install-section-heading"
+        data-testid="settings-install-section"
+      >
+        <h3 id="install-section-heading" class="section-heading">
+          {$tStore('settings.install.heading')}
+        </h3>
+        {#if $installSettingsSurface === 'android-chromium' || $installSettingsSurface === 'desktop-chromium'}
+          <button
+            type="button"
+            class="install-section-confirm tap-target"
+            data-testid="settings-install-confirm"
+            on:click={onConfirmChromium}
+            disabled={$installSignal.deferredPrompt === null || installInFlight}
+          >
+            {$tStore('pwa.install.android.confirm')}
+          </button>
+        {:else if $installSettingsSurface === 'ios-safari'}
+          <button
+            type="button"
+            class="install-section-confirm tap-target"
+            data-testid="settings-install-show-ios-instructions"
+            on:click={onShowIosInstructions}
+          >
+            {$tStore('pwa.install.ios.title')}
+          </button>
+        {:else if $installSettingsSurface === 'ios-other'}
+          <p class="install-section-hint" data-testid="settings-install-ios-other-hint">
+            {$tStore('pwa.install.iosOther.hint')}
+          </p>
+        {:else if $installSettingsSurface === 'standalone'}
+          <p
+            class="install-section-status"
+            role="status"
+            data-testid="settings-install-already-installed"
+          >
+            {$tStore('settings.install.alreadyInstalled')}
+          </p>
+        {/if}
+      </section>
+    {/if}
+
     <section class="cache-list" aria-labelledby="cache-list-heading">
       <h3 id="cache-list-heading" class="section-heading">{$tStore('settings.cache.heading')}</h3>
       {#each rows as row (row.name)}
@@ -325,6 +403,53 @@
       </div>
     </div>
   {/if}
+
+  {#if showIosInstructions}
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-install-ios-instructions-title"
+      class="install-ios-instructions-dialog"
+      data-testid="settings-install-ios-instructions-dialog"
+    >
+      <h3 id="settings-install-ios-instructions-title" class="install-ios-instructions-title">
+        {$tStore('pwa.install.ios.title')}
+      </h3>
+      <ol class="install-ios-instructions-steps">
+        <li>
+          {$tStore('pwa.install.ios.step1')}
+          <span
+            class="install-ios-instructions-share-icon"
+            role="img"
+            aria-label={$tStore('pwa.install.ios.shareIconAlt')}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M8 1 L8 11 M5 4 L8 1 L11 4 M3 7 L3 14 L13 14 L13 7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+        </li>
+        <li>{$tStore('pwa.install.ios.step2')}</li>
+        <li>{$tStore('pwa.install.ios.step3')}</li>
+      </ol>
+      <div class="install-ios-instructions-actions">
+        <button
+          type="button"
+          class="install-ios-instructions-close tap-target"
+          data-testid="settings-install-ios-instructions-close"
+          on:click={onCloseIosInstructions}
+        >
+          {$tStore('pwa.install.ios.dismiss')}
+        </button>
+      </div>
+    </div>
+  {/if}
 {/if}
 
 <style>
@@ -340,15 +465,25 @@
 
   .sheet {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(440px, calc(100vw - var(--space-4, 16px) * 2));
-    max-height: calc(100vh - var(--space-4, 16px) * 2);
+    top: max(var(--space-4), var(--top-stack-zone-top));
+    bottom: max(var(--space-4), var(--bottom-stack-zone-bottom));
+    left: max(var(--space-4), var(--inline-stack-zone-left));
+    right: max(var(--space-4), var(--inline-stack-zone-right));
+    margin: auto;
+    width: min(
+      440px,
+      calc(
+        100vw - 2 *
+          max(var(--space-4), var(--inline-stack-zone-left), var(--inline-stack-zone-right))
+      )
+    );
+    max-height: calc(
+      100vh - 2 * max(var(--space-4), var(--top-stack-zone-top), var(--bottom-stack-zone-bottom))
+    );
     overflow-y: auto;
-    background: var(--color-surface-elev, #ffffff);
-    color: var(--color-fg, #0f172a);
-    border: 1px solid var(--color-border, #cbd5e1);
+    background: var(--color-surface-elev);
+    color: var(--color-fg);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
     padding: var(--space-5, 20px);
@@ -399,6 +534,92 @@
     color: var(--color-fg, #0f172a);
     opacity: 0.7;
     letter-spacing: 0.05em;
+  }
+
+  .install-section {
+    margin: 0 0 var(--space-3, 12px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 8px);
+    align-items: flex-start;
+  }
+
+  .install-section-confirm {
+    padding: var(--space-2, 8px) var(--space-3, 12px);
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    border: 1px solid var(--color-accent);
+    cursor: pointer;
+  }
+
+  .install-section-confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .install-section-hint,
+  .install-section-status {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-fg, #0f172a);
+  }
+
+  .install-ios-instructions-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(360px, calc(100vw - var(--space-4, 16px) * 2));
+    background: var(--color-surface-elev, #ffffff);
+    color: var(--color-fg, #0f172a);
+    border: 1px solid var(--color-border, #cbd5e1);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.32);
+    padding: var(--space-4, 16px);
+    z-index: 50;
+  }
+
+  .install-ios-instructions-title {
+    margin: 0 0 var(--space-2, 8px);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .install-ios-instructions-steps {
+    margin: 0 0 var(--space-3, 12px);
+    padding-left: var(--space-5, 20px);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .install-ios-instructions-share-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: var(--space-1, 4px);
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+  }
+
+  .install-ios-instructions-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .install-ios-instructions-close {
+    padding: var(--space-2, 8px) var(--space-3, 12px);
+    background: transparent;
+    color: var(--color-fg, #0f172a);
+    border: 1px solid var(--color-border, #cbd5e1);
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
   }
 
   .cache-list {

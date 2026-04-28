@@ -16,6 +16,7 @@
   --color-surface-elev: rgba(255, 255, 255, 0.95);
   --color-border: #cbd5e1;
   --color-accent: #0ea5e9;
+  --color-on-accent: #ffffff;
   --color-danger: #dc2626;
   --color-danger-bg: #dc2626;
   --color-danger-fg: #ffffff;
@@ -53,12 +54,24 @@
      reactive matchMedia subscription. */
   --readout-collapse-bp: 600px;
 
+  /* Shared safe-area components (feature 011 — generalised from feature
+     009's --notification-zone-* tokens). Every persistent UI surface
+     composes these with its own --space-* literal via calc(...) to derive
+     its positional offset. No surface MUST consume env(safe-area-inset-*)
+     directly outside this file. */
+  --top-stack-zone-top: env(safe-area-inset-top, 0px);
+  --bottom-stack-zone-bottom: env(safe-area-inset-bottom, 0px);
+  --inline-stack-zone-left: env(safe-area-inset-left, 0px);
+  --inline-stack-zone-right: env(safe-area-inset-right, 0px);
+
   /* Notification region zones (feature 009 — single fixed stacking host
      for transient banners; the bottom zone activates when a dialog is
-     open via body[data-dialog-open]). */
-  --notification-zone-top: calc(var(--space-4) + env(safe-area-inset-top, 0px));
+     open via body[data-dialog-open]). Refactored in feature 011 to
+     delegate the safe-area component to the new shared tokens; resolved
+     value MUST equal the pre-refactor declaration on every viewport. */
+  --notification-zone-top: calc(var(--space-4) + var(--top-stack-zone-top));
   --readout-clearance: calc(var(--space-4) * 6);
-  --notification-zone-bottom: calc(var(--readout-clearance) + env(safe-area-inset-bottom, 0px));
+  --notification-zone-bottom: calc(var(--readout-clearance) + var(--bottom-stack-zone-bottom));
 
   color-scheme: light dark;
 }

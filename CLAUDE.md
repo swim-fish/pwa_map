@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/010-mobile-collapsed-readout/plan.md`
+Active feature plan: `specs/011-safe-area-install-buttons/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts

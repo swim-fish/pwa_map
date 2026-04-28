@@ -145,6 +145,8 @@
   "controls.zoom.in.disabled": "最大ズームに到達",
   "controls.zoom.out.label": "縮小",
   "controls.zoom.out.disabled": "最小ズームに到達",
+  "settings.install.heading": "アプリをインストール",
+  "settings.install.alreadyInstalled": "アプリはインストール済みです",
   "settings.title": "設定",
   "settings.close": "閉じる",
   "settings.licenceNotice": "タイルキャッシュは短時間のオフラインフォールバックとしてのみ使用されます。OpenStreetMap、NLSC、Google のタイル利用規約により、地図の一括ダウンロードや再配布は禁止されています。",
