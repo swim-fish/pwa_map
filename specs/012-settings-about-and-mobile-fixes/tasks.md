@@ -143,6 +143,20 @@ Single-project Svelte + Vite PWA. Source under `src/`, tests under `tests/`, doc
 
 ---
 
+## Phase 8: Post-implementation addendum
+
+**Purpose**: Record bug fixes and UX polish that landed on the same
+feature branch after `T035` but before merge. Each addendum task
+matches an `Addendum` block in `spec.md` and a commit on the feature
+branch.
+
+- [X] T036 [Addendum A.1] Fix Compass seam-crossing rotation — `Compass.svelte` now uses an unbounded `displayedDeg` accumulator that adds the shortest signed delta on each `bearingSignal` change, so 20° → 350° rotates 30° not 330°. 4 new regression cases in `tests/integration/compass.spec.ts` "seam-crossing shortest-path"; existing case #3 re-grounded to the shortest-path expectation. Commit `619a059`.
+- [X] T037 [Addendum A.2] Reorder Settings About to follow install (per `contracts/settings-about-section.md` §1) — initial implementation had About above install, contract said below. Commit `7cb22cf` (markup-only move; no test changes).
+- [X] T038 [Addendum A.3] Style Settings About links as secondary buttons — `.about-link` class adopts the install primary button's shape (padding / radius / font-weight / 44 px tap floor) with a neutral outline fill so the install accent-filled button stays the primary CTA. Hover / focus shifts to `var(--color-accent)` via 120 ms transition (respects `prefers-reduced-motion: reduce`). Commit `7cb22cf` (same commit as the reorder; bundle delta refreshed in plan.md Complexity Tracking from +4.15 KB to +4.27 KB).
+- [X] T039 Update stale documentation — `README.md` test counts (700→764, 25→~280 e2e), `docs/ui/0012-*.md` About-position description, `specs/012-*/plan.md` measured bundle delta, `specs/012-*/contracts/settings-about-section.md` DOM example, `docs/pwa-mobile-desktop-lessons.md` §13 angle-bearing seam-crossing pattern.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

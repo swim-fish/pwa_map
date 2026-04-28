@@ -32,14 +32,26 @@ fix:
 ### A. Settings → About section
 
 A new `<section class="about-section">` appears in the Settings sheet
-**after** the Settings title / licence notice and **before** the
-Install section + Cache rows. The section renders:
+**after** the Install section and **before** the Cache rows
+(corrected in commit `7cb22cf`; the initial implementation had About
+above Install, which violated `contracts/settings-about-section.md`
+§1). The section renders:
 
 - An `<h3>` heading reading the locale-translated `About` text.
-- A `<ul>` with two list items, each a real `<a href target="_blank"
-rel="noopener noreferrer">`:
+- A `<ul>` with two list items, each a real `<a href target="_blank" rel="noopener noreferrer" class="about-link tap-target">`:
   - **Live map** — `https://swim-fish.github.io/pwa_map/`
   - **Source code** — `https://github.com/swim-fish/pwa_map`
+
+Each anchor is styled as a **secondary button** (commit `7cb22cf`)
+with the same shape as the install primary button —
+`var(--space-2) var(--space-3)` padding, `6 px` border-radius, `600`
+font-weight, 44 × 44 px minimum tap target — but with a neutral
+outline fill (`var(--color-border)` border,
+`var(--color-surface-elev)` background, `var(--color-fg)` text) so
+the install accent-filled button stays the visual primary CTA.
+Hover / focus shifts the border + text colour to
+`var(--color-accent)` with a 120 ms transition that respects
+`prefers-reduced-motion: reduce`.
 
 URLs open in a new browser tab (so the PWA standalone state is not
 disturbed). Long-press on a touch device surfaces the OS's standard

@@ -26,6 +26,7 @@ when editing the relevant source files.
 10. [matchMedia subscription pattern](#10-matchmedia-pattern)
 11. [Bundle budget reality vs plan target](#11-bundle-budget)
 12. [TDD discipline + verification gates](#12-tdd-gates)
+13. [Angle / bearing seam-crossing animation](#13-angle-bearing-seam-crossing)
 
 ---
 
@@ -588,6 +589,98 @@ PR review fix in this feature added a regression test:
 
 ---
 
+## 13. Angle / bearing seam-crossing
+
+### Symptom
+
+The compass arrow rotates the **long way round** when the underlying
+bearing crosses the 0° / 360° seam:
+
+- bearing 20° → 350°: arrow visibly spins ~330° backwards instead of
+  nudging 30° forwards.
+- bearing 350° → 20°: same kind of long backwards spin.
+- Continuous CW rotation (0° → 90° → 180° → 270° → 0°): instead of a
+  smooth full-lap CCW arrow rotation in display space, the arrow
+  reverses direction at the 360° → 0° boundary.
+
+User reports it as "compass jumps when bearing changes around 0°".
+
+### Root cause
+
+Feature 012 / commit `619a059`: `Compass.svelte` mirrored the raw
+`0..360` bearing from the `bearingSignal` store into a CSS
+`rotate()`:
+
+```svelte
+style="--compass-bearing: {-$bearingSignal.bearing}deg"
+```
+
+CSS `transition: transform` interpolates linearly between the
+_declared_ values. From `-20deg` to `-350deg` is a -330° linear
+interpolation — i.e. the long way round — even though the visual
+end state matches a +30° forward step (modulo 360°). The browser
+has no concept of "shortest arc" for raw degree-valued
+`transform: rotate(...)`.
+
+This is a generic angle-animation pitfall; any UI surface that
+rotates a SVG / icon driven by an underlying signal that lives on a
+0–360° (or -180°..180°) ring is vulnerable.
+
+### Fix
+
+Track an unbounded `displayedDeg` accumulator that adds the
+shortest signed delta on each underlying-angle change. CSS
+interpolates against the unbounded value and always picks the
+shortest arc; the displayed angle drifts past ±360° during
+continuous rotation, which CSS handles natively.
+
+```ts
+let displayedDeg = 0;
+let lastTarget: number | null = null;
+
+$: {
+  const target = -$bearingSignal.bearing;
+  if (lastTarget === null) {
+    displayedDeg = target;
+  } else if (target !== lastTarget) {
+    let delta = target - displayedDeg;
+    delta = ((((delta + 180) % 360) + 360) % 360) - 180; // → (-180, 180]
+    if (delta === -180) delta = 180; // 180° flip — pick a side deterministically
+    displayedDeg += delta;
+  }
+  lastTarget = target;
+}
+```
+
+Tests in `tests/integration/compass.spec.ts` "seam-crossing
+shortest-path" describe block:
+
+- 20° → 350° → 20° each step ≤ 30° (no 330° spin).
+- 350° → 20° one-hop with `+30°` shortest path (not `-330°`).
+- Continuous CW spin 0°→90°→180°→270°→0° accumulates monotonically;
+  after one lap displayed = `-360°`.
+- 180° flip resolves consistently (`abs(displayed) === 180`).
+
+### Pattern checkpoint
+
+Any new component that:
+
+1. Reads an angle / bearing / heading from a Svelte store, AND
+2. Renders that angle as a CSS / SVG rotation,
+
+MUST use the shortest-path accumulator pattern, not a direct
+mirror. Direct mirroring is fine only if the underlying signal is
+guaranteed never to wrap — but bearings, compass headings, gyroscope
+angles, and rotation gestures all wrap, so in practice "always use
+the accumulator".
+
+If the codebase grows a second seam-crossing surface, the
+accumulator deserves extraction to a shared utility (e.g.
+`src/util/angleAccumulator.ts`) so the wrap logic isn't duplicated.
+Until then, inlined in the component is fine.
+
+---
+
 ## Cross-references
 
 - Constitution: `.specify/memory/constitution.md`
@@ -596,4 +689,6 @@ PR review fix in this feature added a regression test:
 - Feature 010 (mobile collapsed readout): ADR 0030, UI 0010, spec 010
 - Feature 011 (safe-area + Settings install): ADR 0031, UI 0011,
   spec 011
+- Feature 012 (Settings About + 3D / Terrain lockdown + Go-To narrow
+  viewport + compass seam-crossing): ADR 0032, UI 0012, spec 012
 - Path-scoped checkpoints: `.claude/rules/`

@@ -13,14 +13,19 @@ The About section is a `<section>` placed inside the
 and before the cache rows. Its DOM structure is:
 
 ```html
-<section class="about" aria-labelledby="settings-about-heading">
-  <h3 id="settings-about-heading">{t('settings.about.heading')}</h3>
-  <ul>
+<section
+  class="about-section"
+  aria-labelledby="settings-about-heading"
+  data-testid="settings-about-section"
+>
+  <h3 id="settings-about-heading" class="section-heading">{t('settings.about.heading')}</h3>
+  <ul class="about-list">
     <li>
       <a
         href="https://swim-fish.github.io/pwa_map/"
         target="_blank"
         rel="noopener noreferrer"
+        class="about-link tap-target"
         data-testid="settings-about-live-map-link"
       >{t('settings.about.liveMap')}</a>
     </li>
@@ -29,6 +34,7 @@ and before the cache rows. Its DOM structure is:
         href="https://github.com/swim-fish/pwa_map"
         target="_blank"
         rel="noopener noreferrer"
+        class="about-link tap-target"
         data-testid="settings-about-source-code-link"
       >{t('settings.about.sourceCode')}</a>
     </li>
@@ -41,6 +47,14 @@ The two `<a>` elements MUST be real anchors with the listed
 elements with synthesised navigation, and they MUST NOT use
 JavaScript-only click handlers — long-press / share semantics on
 mobile depend on the native anchor element.
+
+Each `<a>` MUST carry the project-wide `tap-target` utility class
+(min 44 × 44 CSS px floor, declared in `tokens.css`) and the
+`about-link` class that adopts the secondary-button styling described
+in §5. The button-like styling is added by Addendum A.3 — the
+contract requires the visual prominence to communicate "this is a
+clickable surface", but DOES NOT mandate the specific shape, padding,
+or border-radius beyond the 44 px tap floor.
 
 ## §2. i18n key contract
 

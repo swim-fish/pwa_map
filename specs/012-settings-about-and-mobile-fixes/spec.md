@@ -509,6 +509,78 @@ keys) to the Settings sheet, and (d) edits a documentation file.
   `hillshade`) and that each class has a corresponding runtime
   assertion in the test suite. No silent additions or removals.
 
+## Addendum
+
+> Post-`/speckit.implement` behavioural changes per Constitution
+> Principle V — original FRs above are frozen historical record; the
+> entries below extend / amend them.
+
+### A.1 Compass takes shortest-path arc across the 0° / 360° seam (commit `619a059`)
+
+**Defect**: `Compass.svelte` mirrored the raw `0..360` bearing from
+`bearingSignal` directly into a CSS `rotate()`, so a bearing change
+from 20° to 350° (or any seam-crossing step) made the browser
+interpolate the long way round — a 330° backwards spin instead of a
+30° forward nudge. User-reported as "compass jumps when bearing
+changes around 0°".
+
+**Fix**: Compass tracks an unbounded `displayedDeg` accumulator that
+adds the shortest signed delta on each `bearingSignal` change. CSS
+interpolates against the unbounded angle and always picks the
+shortest arc. End state matches the canonical engine bearing modulo
+360°; the only observable difference is the smooth rotation path.
+
+**Tests**: 4 new regression cases under
+`tests/integration/compass.spec.ts` "seam-crossing shortest-path"
+describe block; one existing case (#3 — `emit 270` from 0)
+re-grounded to the shortest-path expectation `90deg`.
+
+**FR amendment**: amends ADR 0026 (Compass + crosshair-anchored zoom).
+Bearing rotation behaviour described in spec FR-009 ("rotate / zoom /
+pan / crosshair / coordinate readout / Go-To behaviour MUST be
+unchanged") is preserved — the user-visible end state still matches
+the engine bearing, only the visual transition path changed.
+
+### A.2 Settings About section reordered to match contract (commit `7cb22cf`)
+
+**Defect**: The initial implementation placed the About section
+**before** the install section, violating
+`contracts/settings-about-section.md` §1 which mandates "after the
+existing install section and before the cache rows". The contract
+order was the right call — install (primary CTA) above the fold,
+About (secondary discovery) below.
+
+**Fix**: Moved the `<section class="about-section">` block in
+`SettingsSheet.svelte` to immediately follow the install `{#if}` and
+precede the cache rows.
+
+**FR amendment**: spec FR-015 acceptance scenario 1 ("user scrolls or
+navigates to the About area") is unchanged in semantics; the area is
+just reachable in a different scroll position now.
+
+### A.3 Settings About links use secondary-button styling (commit `7cb22cf`)
+
+**UX gap**: Initially the About anchors were styled as plain
+underlined inline text. Side-by-side with the accent-filled
+`.install-section-confirm` primary button, the About links read as
+recessive text and were easy to skim past — the user reported them
+as "not obviously interactive".
+
+**Fix**: Promoted both `<a>` elements to a clear secondary-button
+visual using the new `.about-link` class plus the project-wide
+`.tap-target` utility. Same shape as `.install-section-confirm`
+(padding / border-radius / font-weight / 44 px tap target floor)
+but with a neutral outline fill so the install button retains
+visual primacy. Hover / focus shifts border + text to
+`var(--color-accent)`.
+
+**FR amendment**: extends FR-019 (keyboard accessibility) — the
+focus ring on each link is now visible against both the neutral
+default fill and the accent hover fill; the WCAG-AA contrast on
+both states is inherited from the existing token vocabulary, so
+`tests/integration/settings-contrast.spec.ts` continues to pass
+without modification.
+
 ## Assumptions
 
 - **About area is a section inside the existing Settings sheet,
