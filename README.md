@@ -8,6 +8,8 @@ location is rendered live in six coordinate formats — **WGS84 DD**,
 coordinate. All conversion math runs client-side; after the first load
 the app works offline.
 
+**Live demo**: <https://swim-fish.github.io/pwa_map/>
+
 ## Quickstart
 
 ```bash

@@ -242,6 +242,38 @@
 
     <p class="licence" data-testid="settings-licence">{$tStore('settings.licenceNotice')}</p>
 
+    <section
+      class="about-section"
+      aria-labelledby="settings-about-heading"
+      data-testid="settings-about-section"
+    >
+      <h3 id="settings-about-heading" class="section-heading">
+        {$tStore('settings.about.heading')}
+      </h3>
+      <ul class="about-list">
+        <li>
+          <a
+            href="https://swim-fish.github.io/pwa_map/"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="settings-about-live-map-link"
+          >
+            {$tStore('settings.about.liveMap')}
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://github.com/swim-fish/pwa_map"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="settings-about-source-code-link"
+          >
+            {$tStore('settings.about.sourceCode')}
+          </a>
+        </li>
+      </ul>
+    </section>
+
     {#if $installSettingsSurface !== 'unsupported'}
       <section
         class="install-section"
@@ -542,6 +574,37 @@
     flex-direction: column;
     gap: var(--space-2, 8px);
     align-items: flex-start;
+  }
+
+  /* Feature 012 — Settings About section. Token-only colours; no
+     hard-coded values per .claude/rules/pwa-tokens-and-contrast.md. */
+  .about-section {
+    margin: 0 0 var(--space-3, 12px);
+  }
+
+  .about-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1, 4px);
+  }
+
+  .about-list li {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .about-list a {
+    color: var(--color-fg, #0f172a);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .about-list a:hover,
+  .about-list a:focus-visible {
+    color: var(--color-accent, #0ea5e9);
   }
 
   .install-section-confirm {

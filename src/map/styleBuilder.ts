@@ -1,5 +1,6 @@
 import type { StyleSpecification } from 'maplibre-gl';
 import type { MapLayerOption } from '$map/sources';
+import { LOCKDOWN_REGISTER } from '$map/threeDLockdown';
 
 const SUBDOMAIN_PATTERN = /\{a-c\}/;
 
@@ -54,9 +55,33 @@ export function buildStyle(
       maxzoom: overlay.maxZoom,
     });
   }
-  return {
+  const style: StyleSpecification = {
     version: 8,
     sources: sources as unknown as StyleSpecification['sources'],
     layers,
   };
+  applyLockdown(style);
+  return style;
 }
+
+// Feature 012 — 3D / Terrain lockdown. Strip any disallowed style
+// entries per the threeDLockdown register. See ADR-0032.
+function applyLockdown(style: StyleSpecification): void {
+  if (!LOCKDOWN_REGISTER.sky.lockedValue) {
+    delete (style as { sky?: unknown }).sky;
+  }
+  const blockedTypes = new Set<string>();
+  if (!LOCKDOWN_REGISTER.fillExtrusion.lockedValue) blockedTypes.add('fill-extrusion');
+  if (!LOCKDOWN_REGISTER.hillshade.lockedValue) blockedTypes.add('hillshade');
+  if (blockedTypes.size > 0) {
+    style.layers = style.layers.filter((l) => !blockedTypes.has(l.type));
+  }
+}
+
+/**
+ * Test-only export — allows specs to drive `applyLockdown` against
+ * synthetic styles. Mirrors the project's existing
+ * `__resetForTests` test-hook pattern. Do NOT call from production
+ * code paths.
+ */
+export const __test_applyLockdown = applyLockdown;

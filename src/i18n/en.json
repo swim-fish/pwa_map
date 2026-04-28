@@ -173,5 +173,8 @@
   "settings.status.purged.ttl": "TTL updated to {days} days; {count} expired entries removed",
   "settings.status.trimmed.maxEntries": "Per-source limit updated to {cap}; {count} entries trimmed",
   "settings.status.error": "Action failed; please try again",
-  "settings.toolbar.button": "Settings"
+  "settings.toolbar.button": "Settings",
+  "settings.about.heading": "About",
+  "settings.about.liveMap": "Live map",
+  "settings.about.sourceCode": "Source code"
 }

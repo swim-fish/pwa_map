@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/011-safe-area-install-buttons/plan.md`
+Active feature plan: `specs/012-settings-about-and-mobile-fixes/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts

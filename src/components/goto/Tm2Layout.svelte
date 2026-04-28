@@ -91,6 +91,13 @@
     gap: var(--space-2, 8px);
   }
 
+  /* Feature 012 — narrow-phone collapse (FR-010..FR-014). */
+  @media (max-width: calc(360px - 0.02px)) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .field {
     display: flex;
     flex-direction: column;

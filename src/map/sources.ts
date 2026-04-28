@@ -1,3 +1,23 @@
+/**
+ * Feature 012 — 3D / Terrain lockdown anchor. While
+ * `LOCKDOWN_REGISTER.terrain.lockedValue === null` (per
+ * `threeDLockdown.ts` and ADR-0032), a terrain RGB DEM source MUST
+ * NOT be registered in this catalogue. Adding one would either be a
+ * dead source (since `setTerrain(...)` is never called) or, worse,
+ * accidentally enable terrain rendering when a future caller assumes
+ * "if a terrain source is in the catalogue, terrain is on".
+ *
+ * Re-enabling terrain is a deliberate joint change: flip
+ * `LOCKDOWN_REGISTER.terrain.lockedValue` to a real config object,
+ * register the DEM source here, and call `map.setTerrain(...)` from
+ * `MapView.svelte`'s post-style hook.
+ */
+import type { LockdownClass as _LockdownClassDocAnchor } from '$map/threeDLockdown';
+// The type-only import keeps the cross-reference machine-checkable
+// (IDE jump-to-symbol follows the link). Re-exported as a no-op type
+// alias so the unused-import linter stays quiet.
+export type _LockdownAnchor = _LockdownClassDocAnchor;
+
 export type MapGroup = 'nlsc' | 'google' | 'other';
 
 export interface MapLayerOption {

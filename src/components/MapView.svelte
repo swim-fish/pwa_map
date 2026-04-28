@@ -8,6 +8,7 @@
   import { buildStyle } from '$map/styleBuilder';
   import { MapController, type MapMoveEvent } from '$map/MapController';
   import { attachToController as attachBearingSignal } from '$map/bearingSignal';
+  import { LOCKDOWN_REGISTER } from '$map/threeDLockdown';
 
   export let initialCenter: WGS84DD;
   export let initialZoom: number = 13;
@@ -58,14 +59,28 @@
   onMount(() => {
     if (!container) return;
 
-    map = new maplibregl.Map({
+    // 3D / Terrain lockdown — see threeDLockdown.ts and ADR-0032.
+    // The `projection` option is recognised by MapLibre v4+; on v3 the
+    // engine ignores unknown keys at runtime, so the explicit literal
+    // remains valuable as forward-compatible defence against a future
+    // default flip to `'globe'`. Cast widens the options type only to
+    // accept the optional `projection` literal.
+    type MapLibreOpts = ConstructorParameters<typeof maplibregl.Map>[0];
+    type MapOptsWithLockdown = MapLibreOpts & {
+      projection?: 'mercator' | 'globe';
+    };
+    const opts: MapOptsWithLockdown = {
       container,
       style: styleFor(layer),
       center: [initialCenter.lon, initialCenter.lat],
       zoom: initialZoom,
       attributionControl: false,
       hash: false,
-    });
+      maxPitch: LOCKDOWN_REGISTER.pitch.lockedValue,
+      touchPitch: false,
+      projection: LOCKDOWN_REGISTER.globe.lockedValue,
+    };
+    map = new maplibregl.Map(opts as MapLibreOpts);
     lastApplied = { ...layer };
 
     map.on('move', () => {
