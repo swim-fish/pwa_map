@@ -13,6 +13,37 @@
   function onClick(): void {
     controller.resetBearing(!reducedMotion);
   }
+
+  // Shortest-path bearing accumulator. The raw bearing is normalised to
+  // a 0–360 ring; mirroring it directly to a CSS rotate() makes the
+  // browser interpolate the long way round whenever the bearing
+  // crosses the 0°/360° seam (e.g. 20° → 350° spins three quarters of
+  // the way back instead of nudging 30° forward). We track an
+  // unbounded `displayedDeg` that always moves by the shortest signed
+  // delta and let CSS interpolate against it.
+  let displayedDeg = 0;
+  let lastTarget: number | null = null;
+
+  $: {
+    const target = -$bearingSignal.bearing;
+    if (lastTarget === null) {
+      displayedDeg = target;
+    } else if (target !== lastTarget) {
+      let delta = target - displayedDeg;
+      // Bring delta into (-180, 180] so the rotation always picks the
+      // shortest arc. The double-mod handles JavaScript's signed `%`
+      // for negative dividends.
+      delta = (((delta + 180) % 360) + 360) % 360;
+      delta = delta - 180;
+      // Map the half-open interval (-180, 180] correctly: a raw delta
+      // that wrapped exactly to 0 (i.e. no real change) stays at 0;
+      // a 180° flip resolves to -180 here, which is fine — both arcs
+      // are equal-length and CSS picks one consistently.
+      if (delta === -180) delta = 180;
+      displayedDeg += delta;
+    }
+    lastTarget = target;
+  }
 </script>
 
 <button
@@ -21,7 +52,7 @@
   data-testid="compass"
   aria-label={$tStore('controls.compass.reset')}
   on:click={onClick}
-  style="--compass-bearing: {-$bearingSignal.bearing}deg"
+  style="--compass-bearing: {displayedDeg}deg"
 >
   <svg width="24" height="24" viewBox="0 0 48 48" aria-hidden="true">
     <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="1.5" />
