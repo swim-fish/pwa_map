@@ -9,8 +9,9 @@ import {
 // Feature 013 US3 — manual pan demotes Follow → Show without explicit
 // gesture (FR-018). The demotion is dispatched into the locate machine
 // via `applyLocateEvent({ type: 'manualPan' })` from App.svelte's
-// `move` listener. App.svelte's listener filters by `originalEvent`
-// truthiness and `controller.isRecenteringForLocate` falsiness.
+// `dragstart` listener (registered on the underlying MapLibre map in
+// `onMount`). The listener filters by `originalEvent` truthiness and
+// `controller.isRecenteringForLocate` falsiness.
 //
 // This spec verifies the machine's transition surface for manualPan:
 // the App-level wiring is exercised by the e2e suite.

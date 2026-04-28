@@ -146,3 +146,42 @@ describe('GeolocationController — Slow preset min-dispatch throttle (10 s)', (
 // but dropped from the implementation to fit the +6 KB per-feature bundle
 // budget (see plan.md Complexity Tracking). The Smart preset now relies on
 // the browser's built-in cadence governance + maximumAge: 5_000.
+
+describe('GeolocationController — watchPosition synchronous throw guard (PR#5/C-2)', () => {
+  let originalGeolocation: typeof navigator.geolocation;
+
+  afterEach(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: originalGeolocation,
+    });
+  });
+
+  test('synchronous throw inside watchPosition routes to onPositionUnavailable', () => {
+    originalGeolocation = navigator.geolocation;
+    const onPositionUnavailable = vi.fn();
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        watchPosition: (): number => {
+          throw new Error('Permissions-Policy: geolocation disallowed');
+        },
+        clearWatch: vi.fn(),
+      } as unknown as Geolocation,
+    });
+    const controller = new GeolocationController({
+      onFix: vi.fn(),
+      onPermissionDenied: vi.fn(),
+      onPositionUnavailable,
+      onTimeout: vi.fn(),
+    });
+    // The synchronous throw inside `watchPosition` MUST be caught — if
+    // it escapes, it would propagate out of the user-gesture handler in
+    // LocateButton, breaking the iOS Safari coupling AND leaving the
+    // locate machine in an inconsistent state.
+    expect(() => controller.start('smart')).not.toThrow();
+    expect(onPositionUnavailable).toHaveBeenCalledTimes(1);
+    expect(controller.isRunning).toBe(false);
+    controller.dispose();
+  });
+});

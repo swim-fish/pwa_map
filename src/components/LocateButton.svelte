@@ -168,13 +168,21 @@
 
   let justFiredStop = false;
 
-  function fireStop(): void {
+  /** Performs the Stop transition (state → Off, watcher stop, marker
+   *  removal). The `suppressNextClick` flag must ONLY be set when a
+   *  click event will follow this Stop (the pointer long-press path);
+   *  the keyboard Shift+chord path has no follow-up click and setting
+   *  the flag there leaves it sticky, so the user's next real click
+   *  is incorrectly swallowed (PR #5 review Co-3). */
+  function fireStop(suppressNextClick: boolean): void {
     const snap = $locateSignal;
     if (snap.state === 'off') return; // FR-014g
     applyLocateEvent({ type: 'longPress' });
     geo?.stop();
     removeMarker();
-    justFiredStop = true;
+    if (suppressNextClick) {
+      justFiredStop = true;
+    }
   }
 
   function clearPressTimer(): void {
@@ -224,9 +232,10 @@
       reducedMotionAnnouncement = $tStore('locate.button.aria.holdToStop');
     }
     pressTimerId = setTimeout(() => {
-      // Threshold reached — the next pointerup must NOT toggle.
+      // Threshold reached — the bubbling click after pointerup MUST be
+      // suppressed (would otherwise re-enter Show immediately).
       pressTimerId = null;
-      fireStop();
+      fireStop(true);
       cleanupPress();
     }, LONG_PRESS_MS);
   }
@@ -265,9 +274,12 @@
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     if (event.shiftKey) {
-      // FR-014d Stop chord — re-uses fireStop so marker removal +
-      // click-suppression flag stay consistent with the long-press path.
-      fireStop();
+      // FR-014d Stop chord. The keyboard path has no follow-up click
+      // event to swallow (Enter on a button fires `click` only when
+      // the press WITHOUT a modifier completes), so do NOT set the
+      // click-suppression flag — otherwise it stays sticky and
+      // swallows the user's next real click (PR #5 review Co-3).
+      fireStop(false);
       return;
     }
     // Short-tap toggle.

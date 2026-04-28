@@ -3,9 +3,12 @@ import type { LocateFrequencyPreset, LocatePermissionState, PositionFix } from '
 /**
  * Geolocation watcher wrapper for the my-location feature (013).
  *
- * - Translates frequency presets → `PositionOptions`.
+ * - Translates frequency presets → `PositionOptions`. Smart relies on
+ *   the browser's built-in cadence governance + `maximumAge: 5_000`
+ *   (the originally proposed Smart-promote-on-movement burst was
+ *   deferred during bundle trim — see plan.md Complexity Tracking
+ *   and spec Addendum A2).
  * - Enforces a 10 s min-dispatch throttle on the Slow preset.
- * - Promotes Smart to a 5 s high-accuracy burst on detected motion.
  * - Normalises native `PositionError` codes into discrete callbacks.
  * - Debounces repeated `POSITION_UNAVAILABLE` / `TIMEOUT` to once per 5 s.
  *
@@ -73,11 +76,24 @@ export class GeolocationController {
       this.baseWatchId = null;
     }
     this.preset = preset;
-    this.baseWatchId = navigator.geolocation.watchPosition(
-      (pos) => this.handlePosition(pos),
-      (err) => this.handleError(err),
-      frequencyToWatchOptions(preset),
-    );
+    try {
+      this.baseWatchId = navigator.geolocation.watchPosition(
+        (pos) => this.handlePosition(pos),
+        (err) => this.handleError(err),
+        frequencyToWatchOptions(preset),
+      );
+    } catch {
+      // Some environments expose `navigator.geolocation` but block
+      // `watchPosition` synchronously (e.g., a Permissions-Policy
+      // disallow on the embedding frame, or a Brave-shield-style
+      // privacy override). Without this guard, the throw escapes the
+      // user-gesture handler and leaves the locate machine in an
+      // inconsistent state. Route to onPositionUnavailable so the
+      // existing zh toast path surfaces. PR #5 review C-2 (Codex P2).
+      this.preset = null;
+      this.baseWatchId = null;
+      this.options.onPositionUnavailable();
+    }
   }
 
   stop(): void {

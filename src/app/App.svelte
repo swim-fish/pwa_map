@@ -60,6 +60,17 @@
   let prefs: FormatPreferences = loadPreferences();
   setLocale(prefs.locale);
 
+  // Read-modify-write to avoid stale-snapshot regressions: any partial
+  // patch is merged onto the latest persisted record. Without this,
+  // a user setting (e.g. locateFrequency from SettingsSheet, written
+  // directly via saveLocateFrequency) can be silently overwritten the
+  // next time App.svelte saves an unrelated field — see PR #5 review
+  // C-1 (Codex P1).
+  function persistPrefs(patch: Partial<FormatPreferences>): void {
+    prefs = { ...loadPreferences(), ...patch };
+    savePreferences(prefs);
+  }
+
   let layerSelection: LayerSelection = {
     basemap: prefs.mapLayer ?? 'nlsc-emap5',
     overlay: prefs.overlay ?? false,
@@ -109,8 +120,7 @@
           ? 'map.failure.google'
           : 'map.failure.other';
     layerSelection = controller.layerSelection;
-    prefs = { ...prefs, mapLayer: layerSelection.basemap, overlay: layerSelection.overlay };
-    savePreferences(prefs);
+    persistPrefs({ mapLayer: layerSelection.basemap, overlay: layerSelection.overlay });
     layerFailToast = { messageKey: groupKey, ts: Date.now() };
     setTimeout(() => {
       if (layerFailToast && Date.now() - layerFailToast.ts >= 4900) layerFailToast = null;
@@ -137,13 +147,11 @@
   }
 
   function onFormatChange(ev: CustomEvent<{ visible: readonly CoordinateKind[] }>): void {
-    prefs = { ...prefs, visible: ev.detail.visible };
-    savePreferences(prefs);
+    persistPrefs({ visible: ev.detail.visible });
   }
 
   function onFormatReorder(ev: CustomEvent<{ formatOrder: readonly CoordinateKind[] }>): void {
-    prefs = { ...prefs, formatOrder: ev.detail.formatOrder };
-    savePreferences(prefs);
+    persistPrefs({ formatOrder: ev.detail.formatOrder });
   }
 
   function onLayerChange(ev: CustomEvent<LayerSelection>): void {
@@ -151,8 +159,7 @@
     const overlayToggleOnly = next.basemap === layerSelection.basemap;
     layerSelection = next;
     controller.setBasemap(next.basemap, next.overlay);
-    prefs = { ...prefs, mapLayer: next.basemap, overlay: next.overlay };
-    savePreferences(prefs);
+    persistPrefs({ mapLayer: next.basemap, overlay: next.overlay });
     // A pure overlay toggle keeps the picker open per `contracts/layer-picker.md` §3;
     // a basemap pick closes it.
     if (!overlayToggleOnly) {
@@ -163,8 +170,7 @@
   function onLocaleChange(ev: CustomEvent<Locale>): void {
     const next = ev.detail;
     setLocale(next);
-    prefs = { ...prefs, locale: next };
-    savePreferences(prefs);
+    persistPrefs({ locale: next });
     localePickerOpen = false;
   }
 

@@ -139,6 +139,29 @@ describe('LocateButton US3 — keyboard Stop (Shift+Enter / Shift+Space)', () =>
     await tick();
     expect(getButton().dataset.state).toBe('off');
   });
+
+  test('after Shift+Enter Stop, the very next click activates again (no sticky click suppression)', async () => {
+    // Regression for PR #5 review Co-3: fireStop() previously always set
+    // justFiredStop=true. The keyboard Stop chord has no follow-up click
+    // event (Shift+Enter on a button does not synth `click`), so the
+    // flag was sticky and the user's NEXT real click was swallowed,
+    // forcing them to click twice to re-activate.
+    mount();
+    await tick();
+    fireKey('Enter'); // Off → Show
+    await tick();
+    expect(getButton().dataset.state).toBe('show');
+
+    fireKey('Enter', true); // Stop → Off
+    await tick();
+    expect(getButton().dataset.state).toBe('off');
+
+    // Single click should activate. With the stale-flag bug it would
+    // swallow this click and stay Off; user would need a second click.
+    getButton().click();
+    await tick();
+    expect(getButton().dataset.state).toBe('show');
+  });
 });
 
 describe('LocateButton US3 — aria-keyshortcuts attribute', () => {

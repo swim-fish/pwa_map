@@ -7,7 +7,9 @@ import {
   loadPreferences,
   savePreferences,
   __TESTING__,
+  type FormatPreferences,
 } from '../../src/storage/preferences';
+import type { Locale } from '../../src/types/coord';
 import { setLocale } from '../../src/i18n/index';
 
 const { PREFS_KEY } = __TESTING__;
@@ -122,6 +124,44 @@ describe('SettingsSheet — Locate frequency section (US4)', () => {
     const prefs = loadPreferences();
     savePreferences({ ...prefs, locale: 'en' });
     expect(loadLocateFrequency()).toBe('fast');
+  });
+
+  test('regression PR#5/C-1 — App.svelte persistPrefs pattern preserves locateFrequency', async () => {
+    // App.svelte previously held a long-lived `prefs` snapshot loaded
+    // at startup. Any later `savePreferences({ ...prefs, <field>: ... })`
+    // would overwrite locateFrequency with the stale startup value,
+    // silently reverting a user's Settings choice.
+    //
+    // The fix is App.svelte's `persistPrefs(patch)` helper — it re-loads
+    // from storage immediately before merging the patch. This test
+    // simulates that helper at the call-site level and asserts the
+    // user's locateFrequency choice survives subsequent unrelated saves.
+
+    function persistPrefs(patch: Partial<FormatPreferences>): void {
+      savePreferences({ ...loadPreferences(), ...patch });
+    }
+
+    // 1. User opens Settings, switches to Fast.
+    mount();
+    await tick();
+    const fast = getRadio('fast');
+    fast.checked = true;
+    fast.dispatchEvent(new Event('change', { bubbles: true }));
+    await tick();
+    expect(loadLocateFrequency()).toBe('fast');
+
+    // 2. Some unrelated UI (locale picker, layer picker, format
+    //    toggle, …) commits via persistPrefs.
+    persistPrefs({ locale: 'ja' as Locale });
+    persistPrefs({ overlay: true });
+    persistPrefs({ visible: ['wgs84-dd'] as never });
+
+    // 3. locateFrequency is still 'fast'. Without the helper (using
+    //    a stale snapshot), step 2 would have reverted it to 'smart'.
+    expect(loadLocateFrequency()).toBe('fast');
+    // Other unrelated fields were applied as expected.
+    expect(loadPreferences().locale).toBe('ja');
+    expect(loadPreferences().overlay).toBe(true);
   });
 
   test('section uses zh i18n labels (Constitution v1.1.0)', async () => {
