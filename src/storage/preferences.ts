@@ -19,7 +19,16 @@ import {
 
 const PREFS_KEY = 'pwa_map:prefs';
 const LAST_VIEW_KEY = 'pwa_map:lastView';
-const PREFS_VERSION = 3 as const;
+const PREFS_VERSION = 4 as const;
+
+export type LocateFrequencyPreset = 'smart' | 'fast' | 'slow';
+
+const LOCATE_FREQUENCIES: readonly LocateFrequencyPreset[] = ['smart', 'fast', 'slow'] as const;
+const LOCATE_FREQUENCY_DEFAULT: LocateFrequencyPreset = 'smart';
+
+function isLocateFrequency(v: unknown): v is LocateFrequencyPreset {
+  return typeof v === 'string' && (LOCATE_FREQUENCIES as readonly string[]).includes(v);
+}
 
 /** v1 shape — kept for the migration path; not exported. */
 interface FormatPreferencesV1 {
@@ -44,8 +53,13 @@ export interface FormatPreferencesV2 {
   readonly tileMaxEntries: TileMaxEntries;
 }
 
-export interface FormatPreferencesV3 {
-  readonly version: 3;
+// v3 records are validated and migrated via the `version === 3` branch
+// in `validatePreferences`; no separate type alias is required for the
+// migration path because `validatePreferences` reads the raw record as
+// `unknown`. The v1/v2 prior shapes remain referenced for documentation.
+
+export interface FormatPreferencesV4 {
+  readonly version: 4;
   readonly visible: readonly CoordinateKind[];
   readonly mgrsPrecision: MGRSPrecision;
   readonly taipowerPrecision: TaipowerPrecision;
@@ -55,9 +69,10 @@ export interface FormatPreferencesV3 {
   readonly tileTtlDays: TtlDays;
   readonly tileMaxEntries: TileMaxEntries;
   readonly formatOrder: readonly CoordinateKind[];
+  readonly locateFrequency: LocateFrequencyPreset;
 }
 
-export type FormatPreferences = FormatPreferencesV3;
+export type FormatPreferences = FormatPreferencesV4;
 
 export interface MapViewState {
   readonly center: WGS84DD;
@@ -90,6 +105,7 @@ export function defaultPreferences(): FormatPreferences {
     tileTtlDays: DEFAULT_TILE_TTL_DAYS,
     tileMaxEntries: DEFAULT_TILE_MAX_ENTRIES,
     formatOrder: DEFAULT_FORMAT_ORDER,
+    locateFrequency: LOCATE_FREQUENCY_DEFAULT,
   };
 }
 
@@ -163,14 +179,14 @@ function validatePreferences(raw: unknown): FormatPreferences | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
 
-  if (o.version !== 1 && o.version !== 2 && o.version !== 3) return null;
+  if (o.version !== 1 && o.version !== 2 && o.version !== 3 && o.version !== 4) return null;
 
   const common = validateCommonFields(o);
   if (!common) return null;
 
   // v2+ fields: substitute defaults if missing or invalid (additive
   // migration; never reject the whole record over a v2-only field).
-  const versionAllowsTileFields = o.version === 2 || o.version === 3;
+  const versionAllowsTileFields = o.version === 2 || o.version === 3 || o.version === 4;
   const tileTtlDays: TtlDays =
     versionAllowsTileFields && isTtlDays(o.tileTtlDays) ? o.tileTtlDays : DEFAULT_TILE_TTL_DAYS;
   const tileMaxEntries: TileMaxEntries =
@@ -178,10 +194,20 @@ function validatePreferences(raw: unknown): FormatPreferences | null {
       ? o.tileMaxEntries
       : DEFAULT_TILE_MAX_ENTRIES;
 
-  // v3 field: formatOrder. v1 / v2 records, or a v3 record with a
+  // v3+ field: formatOrder. v1 / v2 records, or a v3+ record with a
   // malformed array, fall back to the documented default order.
+  const versionAllowsFormatOrder = o.version === 3 || o.version === 4;
   const formatOrder: readonly CoordinateKind[] =
-    o.version === 3 && isValidFormatOrder(o.formatOrder) ? o.formatOrder : DEFAULT_FORMAT_ORDER;
+    versionAllowsFormatOrder && isValidFormatOrder(o.formatOrder)
+      ? o.formatOrder
+      : DEFAULT_FORMAT_ORDER;
+
+  // v4 field: locateFrequency. v1 / v2 / v3 records, or a v4 record
+  // with a missing / invalid value, fall back to the documented default.
+  const locateFrequency: LocateFrequencyPreset =
+    o.version === 4 && isLocateFrequency(o.locateFrequency)
+      ? o.locateFrequency
+      : LOCATE_FREQUENCY_DEFAULT;
 
   return {
     version: PREFS_VERSION,
@@ -194,6 +220,7 @@ function validatePreferences(raw: unknown): FormatPreferences | null {
     tileTtlDays,
     tileMaxEntries,
     formatOrder,
+    locateFrequency,
   };
 }
 
@@ -248,6 +275,15 @@ export function saveTileMaxEntries(value: TileMaxEntries): void {
   savePreferences({ ...current, tileMaxEntries: value });
 }
 
+export function loadLocateFrequency(): LocateFrequencyPreset {
+  return loadPreferences().locateFrequency;
+}
+
+export function saveLocateFrequency(value: LocateFrequencyPreset): void {
+  const current = loadPreferences();
+  savePreferences({ ...current, locateFrequency: value });
+}
+
 function validateMapViewState(raw: unknown): MapViewState | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
@@ -291,7 +327,13 @@ export function saveLastView(view: MapViewState): void {
   }
 }
 
-export const __TESTING__ = { PREFS_KEY, LAST_VIEW_KEY, PREFS_VERSION };
+export const __TESTING__ = {
+  PREFS_KEY,
+  LAST_VIEW_KEY,
+  PREFS_VERSION,
+  LOCATE_FREQUENCIES,
+  LOCATE_FREQUENCY_DEFAULT,
+};
 
 // Type retained for migration-path callers (currently none). Exporting
 // as a side-effect-free re-export keeps the declaration tree-shakeable.

@@ -16,6 +16,7 @@
   import NotificationRegion from '$components/NotificationRegion.svelte';
   import Compass from '$components/Compass.svelte';
   import ZoomControls from '$components/ZoomControls.svelte';
+  import LocateButton from '$components/LocateButton.svelte';
   import SettingsSheet from '$components/SettingsSheet.svelte';
   import type { GoToRequestOk } from '$coord/index';
   import type { CoordinateKind as CoordinateKindType, Locale } from '$types/coord';
@@ -82,6 +83,14 @@
   let copyToast: { ts: number } | null = null;
   let copyFallback: { text: string; ts: number } | null = null;
   let layerFailToast: { messageKey: string; ts: number } | null = null;
+  let locateErrorToast: { key: string; ts: number } | null = null;
+
+  function showLocateError(detail: { key: string }): void {
+    locateErrorToast = { key: detail.key, ts: Date.now() };
+    setTimeout(() => {
+      if (locateErrorToast && Date.now() - locateErrorToast.ts >= 4900) locateErrorToast = null;
+    }, 5000);
+  }
   let destinationIndicator: {
     start: () => void;
     stop: () => void;
@@ -415,6 +424,12 @@
       </div>
     {/if}
 
+    {#if locateErrorToast}
+      <div class="toast" role="alert" aria-live="assertive" data-testid="locate-error-toast">
+        {$tStore(locateErrorToast.key)}
+      </div>
+    {/if}
+
     {#if $offlineReadySignal.visible}
       <div class="toast" role="status" aria-live="polite" data-testid="offline-ready-toast">
         {$tStore('pwa.offline.ready')}
@@ -428,8 +443,9 @@
   <InstallIosSheet />
 
   <div class="map-controls">
-    <ZoomControls {controller} />
     <Compass {controller} />
+    <LocateButton {controller} on:error={(ev) => showLocateError(ev.detail)} />
+    <ZoomControls {controller} />
   </div>
 
   <CopyFallback
@@ -487,17 +503,20 @@
     padding: var(--space-2, 8px);
   }
 
-  /* Zoom + compass cluster sits on the left edge, vertically centred,
-     across every viewport. Reasons: (a) the bottom-right area is
-     reserved for the readout / attribution stack, (b) the controls
-     stay reachable for either thumb in one-handed use, (c) the left
-     edge already honours the device safe-area inset via the shared
-     --inline-stack-zone-left token. */
+  /* Cluster anchored at the upper-left corner (feature 013, supersedes
+     the left-center placement from feature 011). DOM order is compass
+     → my-location → zoom-in → zoom-out, top-to-bottom. Reasons: (a) a
+     fixed top-left anchor leaves the entire vertical centre of the
+     viewport free for map gestures (most users two-finger pan from
+     mid-screen), (b) the my-location button sits directly under the
+     compass so orientation + position controls form one visual unit,
+     (c) the top + left edges already honour the device safe-area
+     inset via the shared --top-stack-zone-top / --inline-stack-zone-left
+     tokens. */
   .map-controls {
     position: fixed;
+    top: calc(var(--space-3) + var(--top-stack-zone-top));
     left: calc(var(--space-3) + var(--inline-stack-zone-left));
-    top: 50%;
-    transform: translateY(-50%);
     z-index: 6;
     display: flex;
     flex-direction: column;

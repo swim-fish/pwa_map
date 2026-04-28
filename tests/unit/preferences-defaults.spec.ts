@@ -31,7 +31,7 @@ describe('feature 010 — preferences defaults & taipowerPrecision migration', (
     };
     localStorage.setItem(PREFS_KEY, JSON.stringify(v2));
     const p = loadPreferences();
-    expect(p.version).toBe(3);
+    expect(p.version).toBe(4);
     expect(p.taipowerPrecision).toBe(9);
   });
 
@@ -53,6 +53,6 @@ describe('feature 010 — preferences defaults & taipowerPrecision migration', (
   test('(d) loadPreferences with empty storage returns the new default (11)', () => {
     const p = loadPreferences();
     expect(p.taipowerPrecision).toBe(11);
-    expect(p.version).toBe(3);
+    expect(p.version).toBe(4);
   });
 });

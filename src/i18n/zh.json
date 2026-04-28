@@ -176,5 +176,18 @@
   "settings.toolbar.button": "設定",
   "settings.about.heading": "關於",
   "settings.about.liveMap": "地圖網址",
-  "settings.about.sourceCode": "原始碼"
+  "settings.about.sourceCode": "原始碼",
+  "locate.error.permissionDenied": "定位權限被拒絕，請至裝置設定開啟。",
+  "locate.error.positionUnavailable": "無法取得位置，可能是訊號不足或裝置 GPS 未就緒。",
+  "locate.error.timeout": "定位逾時，仍未取得位置。",
+  "locate.error.unavailable": "此環境不支援定位。",
+  "locate.button.aria.off": "啟用定位",
+  "locate.button.aria.show": "定位中（顯示）",
+  "locate.button.aria.follow": "定位中（跟隨）",
+  "locate.button.aria.disabled": "定位不可用",
+  "locate.button.aria.holdToStop": "按住停止…",
+  "settings.locate.heading": "定位更新頻率",
+  "settings.locate.preset.smart": "智慧模式",
+  "settings.locate.preset.fast": "快速更新",
+  "settings.locate.preset.slow": "慢更新"
 }

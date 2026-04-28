@@ -176,5 +176,18 @@
   "settings.toolbar.button": "Settings",
   "settings.about.heading": "About",
   "settings.about.liveMap": "Live map",
-  "settings.about.sourceCode": "Source code"
+  "settings.about.sourceCode": "Source code",
+  "locate.error.permissionDenied": "Location permission was denied. Open device settings to allow it.",
+  "locate.error.positionUnavailable": "Unable to get a position fix. Signal may be weak or GPS not ready.",
+  "locate.error.timeout": "Locating timed out without a position fix.",
+  "locate.error.unavailable": "Location is not supported in this environment.",
+  "locate.button.aria.off": "Enable my location",
+  "locate.button.aria.show": "Locating (showing position)",
+  "locate.button.aria.follow": "Locating (following position)",
+  "locate.button.aria.disabled": "Location unavailable",
+  "locate.button.aria.holdToStop": "Hold to stop…",
+  "settings.locate.heading": "Location update frequency",
+  "settings.locate.preset.smart": "Smart",
+  "settings.locate.preset.fast": "Fast",
+  "settings.locate.preset.slow": "Slow"
 }

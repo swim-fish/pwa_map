@@ -274,6 +274,50 @@ export class MapController {
     }
   }
 
+  // ===== Feature 013 — locate marker + recenter =====
+  //
+  // The `isRecentering` guard distinguishes our own programmatic
+  // `recenterTo` from user-initiated `dragstart`. App.svelte reads
+  // `isRecenteringForLocate` while subscribed to the underlying map's
+  // `move` events: when truthy, the move is ours, not the user's.
+
+  private recenteringForLocate = false;
+
+  get isRecenteringForLocate(): boolean {
+    return this.recenteringForLocate;
+  }
+
+  recenterTo(target: WGS84DD, animated: boolean): void {
+    const map = this.underlying as {
+      easeTo?: (opts: { center: [number, number]; duration: number; essential: boolean }) => void;
+      setCenter?: (c: [number, number]) => void;
+      once?: (event: string, handler: () => void) => void;
+    } | null;
+    if (!map) {
+      this.currentCenter = target;
+      return;
+    }
+    this.recenteringForLocate = true;
+    const lngLat: [number, number] = [target.lon as number, target.lat as number];
+    const release = (): void => {
+      this.recenteringForLocate = false;
+    };
+    if (animated && map.easeTo) {
+      map.easeTo({ center: lngLat, duration: 400, essential: true });
+      // Release the guard on the next moveend; if the engine does not
+      // fire one (no-op recenter), release on a microtask fallback.
+      if (map.once) {
+        map.once('moveend', release);
+      } else {
+        Promise.resolve().then(release);
+      }
+    } else {
+      map.setCenter?.(lngLat);
+      Promise.resolve().then(release);
+    }
+    this.currentCenter = target;
+  }
+
   attachWheelOverride(): void {
     if (this.wheelOverrideAttached) return;
     const map = this.underlying as {
