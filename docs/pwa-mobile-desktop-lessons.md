@@ -681,6 +681,144 @@ Until then, inlined in the component is fine.
 
 ---
 
+## 13. iOS Safari geolocation user-gesture coupling (feature 013)
+
+iOS Safari requires `navigator.geolocation.watchPosition` /
+`getCurrentPosition` to be invoked **synchronously** inside the
+same microtask as the user-gesture event handler. Any `await` /
+`Promise.then()` boundary between the gesture and the geolocation
+API call invalidates the gesture coupling — the API silently
+no-ops with no error and no permission prompt.
+
+```ts
+// CORRECT — synchronous inside the click handler
+function onClick(): void {
+  applyLocateEvent({ type: 'shortTap' });
+  geo.start(loadLocateFrequency()); // synchronous — gesture still alive
+}
+
+// WRONG — even one `await` between the gesture and watchPosition kills it
+async function onClick(): Promise<void> {
+  const preset = await loadLocateFrequencyAsync(); // gesture lost
+  geo.start(preset); // silently no-ops on iOS Safari
+}
+```
+
+The integration test `tests/integration/locate-button-permission.spec.ts`
+asserts this invariant by spying on `navigator.geolocation.watchPosition`
+and recording its call against a `Promise.resolve().then(() =>
+calls.push('microtask'))` boundary. If `watchPosition` is recorded
+before the microtask, the gesture coupling held; otherwise it
+broke. This is the single load-bearing test for iOS Safari
+compatibility — keep it green at all costs.
+
+The same rule applies to clipboard, fullscreen, and other
+gesture-gated APIs. When in doubt, audit the call chain from the
+event handler down to the platform API for any async hops.
+
+---
+
+## 14. Long-press detection: `PointerEvent` + `setTimeout` (feature 013)
+
+Long-press detection on a button uses the modern `PointerEvent`
+family rather than `TouchEvent` + `MouseEvent` dual handling:
+
+```ts
+function onPointerDown(event: PointerEvent): void {
+  pressTimerId = setTimeout(() => {
+    pressTimerId = null;
+    fireStop();
+    cleanupPress();
+  }, 1500);
+  buttonEl?.setPointerCapture(event.pointerId); // robust vs finger drift
+  pressing = true; // CSS class drives the visual feedback ring
+}
+
+function onPointerUp(): void {
+  // Cleanup ALWAYS — even if the timer already fired, idempotent.
+  // The bubbling `click` event handles the short-tap toggle in real
+  // browsers; jsdom tests call `.click()` explicitly to mimic that.
+  cleanupPress();
+}
+
+function onPointerCancel(): void {
+  cleanupPress();
+}
+function onPointerLeave(): void {
+  cleanupPress();
+}
+function onLostPointerCapture(): void {
+  cleanupPress();
+}
+```
+
+Invariants:
+
+- **Always** clean up the timer on every release path —
+  `pointerup` / `pointercancel` / `pointerleave` /
+  `lostpointercapture` / component destroy. A stale timer fires
+  Stop after the user already released, breaking OS-native
+  long-press semantics ("released before the threshold means
+  cancel").
+- **`setPointerCapture(event.pointerId)`** keeps the press alive
+  across small finger drift on touch devices. Without it, finger
+  micro-movement triggers `pointerleave` and cancels the press.
+- **Suppress the bubbling click after long-press fires** with a
+  one-shot flag (`justFiredStop = true`). Otherwise the
+  long-press → Stop transition is followed by a `click` event
+  that re-enters the Show state.
+- **Keyboard equivalent** is an explicit chord (`Shift+Enter`),
+  NOT held-Enter via `KeyboardEvent.repeat`. Repeat timing
+  varies across browsers and breaks during IME composition.
+- **`prefers-reduced-motion: reduce`** disables the visual
+  progress feedback; replace with a polite `aria-live`
+  announcement so the long-press is still discoverable for
+  assistive-tech users.
+- **jsdom doesn't synth `click` from `pointerdown`+`pointerup`** —
+  tests dispatching `pointerup` must also call `.click()`
+  explicitly, OR the component must drive the toggle from
+  `pointerup` itself (which then needs a flag to suppress the
+  real-browser click that follows). The current implementation
+  chooses the click-as-source-of-truth approach: pointerdown /
+  pointerup only manage the timer; the click event drives the
+  toggle.
+
+---
+
+## 15. jsdom MapLibre worker shim (feature 013)
+
+`maplibre-gl@3.x` calls `window.URL.createObjectURL(new Blob(...))`
+once at module-init time to register a worker URL. jsdom does NOT
+implement `URL.createObjectURL`, so any test that imports a
+component which transitively pulls in `maplibre-gl` (e.g. a
+`maplibregl.Marker` reference) crashes at module-load with
+`TypeError: window.URL.createObjectURL is not a function`.
+
+The shim lives in `tests/unit/helpers/setup.ts` (the global vitest
+setup file, configured in `vite.config.ts`'s `test:` block):
+
+```ts
+if (typeof window !== 'undefined' && typeof window.URL?.createObjectURL !== 'function') {
+  Object.defineProperty(window.URL, 'createObjectURL', {
+    configurable: true,
+    writable: true,
+    value: () => 'blob:jsdom-noop',
+  });
+}
+```
+
+The worker is never actually spun up in jsdom — MapLibre's
+worker code path is only entered for real WebGL rendering, which
+jsdom doesn't provide. The shim returns an inert `blob:` URL just
+to satisfy the synchronous module-init check. Real-browser
+behaviour is unaffected.
+
+If a future MapLibre version moves more init work behind
+`createObjectURL`, the shim may need to return a real (but unused)
+blob URL. For now the noop string is sufficient.
+
+---
+
 ## Cross-references
 
 - Constitution: `.specify/memory/constitution.md`
@@ -691,4 +829,6 @@ Until then, inlined in the component is fine.
   spec 011
 - Feature 012 (Settings About + 3D / Terrain lockdown + Go-To narrow
   viewport + compass seam-crossing): ADR 0032, UI 0012, spec 012
+- Feature 013 (top-left controls + my-location button + frequency
+  preset): ADR 0033 + ADR 0034, UI 0013, spec 013
 - Path-scoped checkpoints: `.claude/rules/`

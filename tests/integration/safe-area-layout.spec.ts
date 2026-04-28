@@ -55,20 +55,24 @@ describe('feature 011 — top toolbar safe-area composition (FR-001 / FR-003)', 
   });
 });
 
-describe('feature 011 — left-center map controls safe-area composition (FR-003)', () => {
+describe('feature 013 — top-left map controls safe-area composition (supersedes feature 011 left-center placement)', () => {
   const css = styleBlockOf(read(APP));
   const body = selectorBody(css, '.map-controls');
 
-  test('.map-controls left offset composes --inline-stack-zone-left with --space-3 (universal)', () => {
+  test('.map-controls left offset composes --inline-stack-zone-left with --space-3', () => {
     expect(body).toMatch(/left:\s*calc\(var\(--space-3\)\s*\+\s*var\(--inline-stack-zone-left\)\)/);
   });
 
-  test('.map-controls vertically centres via top:50% + translateY(-50%) (universal)', () => {
-    expect(body).toMatch(/top:\s*50%/);
-    expect(body).toMatch(/transform:\s*translateY\(-50%\)/);
+  test('.map-controls top offset composes --top-stack-zone-top with --space-3', () => {
+    expect(body).toMatch(/top:\s*calc\(var\(--space-3\)\s*\+\s*var\(--top-stack-zone-top\)\)/);
   });
 
-  test('.map-controls no longer carries right / bottom anchoring (post-tweak: left-center is universal)', () => {
+  test('.map-controls no longer vertically centres (top:50% / transform: translateY(-50%) removed)', () => {
+    expect(body).not.toMatch(/top:\s*50%/);
+    expect(body).not.toMatch(/transform:\s*translateY/);
+  });
+
+  test('.map-controls carries no right / bottom anchoring', () => {
     expect(body).not.toMatch(/^\s*right:\s*/m);
     expect(body).not.toMatch(/^\s*bottom:\s*/m);
   });

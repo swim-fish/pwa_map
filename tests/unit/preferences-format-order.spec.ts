@@ -31,7 +31,7 @@ describe('feature 010 — preferences v3 formatOrder migration', () => {
     };
     localStorage.setItem(PREFS_KEY, JSON.stringify(v1Record));
     const p = loadPreferences();
-    expect(p.version).toBe(3);
+    expect(p.version).toBe(4);
     expect(p.formatOrder).toEqual(DEFAULT_FORMAT_ORDER);
   });
 
@@ -47,7 +47,7 @@ describe('feature 010 — preferences v3 formatOrder migration', () => {
     };
     localStorage.setItem(PREFS_KEY, JSON.stringify(v2Record));
     const p = loadPreferences();
-    expect(p.version).toBe(3);
+    expect(p.version).toBe(4);
     expect(p.formatOrder).toEqual(DEFAULT_FORMAT_ORDER);
   });
 

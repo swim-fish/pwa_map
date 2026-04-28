@@ -176,5 +176,18 @@
   "settings.toolbar.button": "設定",
   "settings.about.heading": "アプリについて",
   "settings.about.liveMap": "マップ URL",
-  "settings.about.sourceCode": "ソースコード"
+  "settings.about.sourceCode": "ソースコード",
+  "locate.error.permissionDenied": "位置情報の権限が拒否されました。デバイスの設定で許可してください。",
+  "locate.error.positionUnavailable": "現在地を取得できません。信号が弱いか、GPS が準備できていない可能性があります。",
+  "locate.error.timeout": "位置情報の取得がタイムアウトしました。",
+  "locate.error.unavailable": "この環境では位置情報を利用できません。",
+  "locate.button.aria.off": "現在地を有効にする",
+  "locate.button.aria.show": "位置取得中（表示）",
+  "locate.button.aria.follow": "位置取得中（追従）",
+  "locate.button.aria.disabled": "位置情報を利用できません",
+  "locate.button.aria.holdToStop": "押し続けて停止…",
+  "settings.locate.heading": "位置情報の更新頻度",
+  "settings.locate.preset.smart": "スマート",
+  "settings.locate.preset.fast": "高速更新",
+  "settings.locate.preset.slow": "低速更新"
 }

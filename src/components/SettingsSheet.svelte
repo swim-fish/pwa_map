@@ -17,7 +17,10 @@
     saveTileTtlDays,
     loadTileMaxEntries,
     saveTileMaxEntries,
+    loadLocateFrequency,
+    type LocateFrequencyPreset,
   } from '$storage/preferences';
+  import { setLocateFrequency } from '$storage/locateFrequencyStore';
   import { installSignal, triggerInstall } from '$pwa/installSignal';
   import { installSettingsSurface } from '$pwa/installSettingsSurface';
 
@@ -67,6 +70,11 @@
   let quotaUsageMb: number | null = null;
   let ttlDays: TtlDays = loadTileTtlDays();
   let maxEntries: TileMaxEntries = loadTileMaxEntries();
+  let locateFrequency: LocateFrequencyPreset = loadLocateFrequency();
+
+  function onChangeLocateFrequency(): void {
+    setLocateFrequency(locateFrequency);
+  }
   let confirmTarget: ClearTarget | null = null;
   let busy = false;
   let statusMessage: string = '';
@@ -316,6 +324,64 @@
           >
             {$tStore('settings.about.sourceCode')}
           </a>
+        </li>
+      </ul>
+    </section>
+
+    <section
+      class="locate-section"
+      aria-labelledby="settings-locate-heading"
+      data-testid="settings-locate-section"
+    >
+      <h3
+        id="settings-locate-heading"
+        class="section-heading"
+        data-testid="settings-locate-heading"
+      >
+        {$tStore('settings.locate.heading')}
+      </h3>
+      <ul class="locate-list">
+        <li class="locate-item">
+          <label class="locate-label">
+            <input
+              type="radio"
+              name="settings-locate-frequency"
+              value="smart"
+              bind:group={locateFrequency}
+              on:change={onChangeLocateFrequency}
+            />
+            <span class="locate-text" data-testid="settings-locate-preset-smart">
+              {$tStore('settings.locate.preset.smart')}
+            </span>
+          </label>
+        </li>
+        <li class="locate-item">
+          <label class="locate-label">
+            <input
+              type="radio"
+              name="settings-locate-frequency"
+              value="fast"
+              bind:group={locateFrequency}
+              on:change={onChangeLocateFrequency}
+            />
+            <span class="locate-text" data-testid="settings-locate-preset-fast">
+              {$tStore('settings.locate.preset.fast')}
+            </span>
+          </label>
+        </li>
+        <li class="locate-item">
+          <label class="locate-label">
+            <input
+              type="radio"
+              name="settings-locate-frequency"
+              value="slow"
+              bind:group={locateFrequency}
+              on:change={onChangeLocateFrequency}
+            />
+            <span class="locate-text" data-testid="settings-locate-preset-slow">
+              {$tStore('settings.locate.preset.slow')}
+            </span>
+          </label>
         </li>
       </ul>
     </section>
@@ -576,6 +642,43 @@
     flex-direction: column;
     gap: var(--space-2, 8px);
     align-items: flex-start;
+  }
+
+  /* Feature 013 — Settings Locate frequency section. Three radios for
+     Smart / Fast / Slow + a hint per option. Token-only colours per
+     .claude/rules/pwa-tokens-and-contrast.md. */
+  .locate-section {
+    margin: 0 0 var(--space-3, 12px);
+  }
+
+  .locate-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 8px);
+  }
+
+  .locate-label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2, 8px);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-fg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-elev);
+  }
+
+  .locate-label:hover {
+    background: var(--color-surface);
+  }
+
+  .locate-text {
+    line-height: 1.4;
+    font-weight: 600;
   }
 
   /* Feature 012 — Settings About section. Token-only colours; no

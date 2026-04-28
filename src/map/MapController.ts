@@ -274,6 +274,57 @@ export class MapController {
     }
   }
 
+  // ===== Feature 013 — locate marker + recenter =====
+  //
+  // The `isRecentering` guard distinguishes our own programmatic
+  // `recenterTo` from user-initiated `dragstart`. App.svelte reads
+  // `isRecenteringForLocate` while subscribed to the underlying map's
+  // `move` events: when truthy, the move is ours, not the user's.
+
+  private recenteringForLocate = false;
+
+  get isRecenteringForLocate(): boolean {
+    return this.recenteringForLocate;
+  }
+
+  recenterTo(target: WGS84DD, animated: boolean): void {
+    const map = this.underlying as {
+      easeTo?: (opts: { center: [number, number]; duration: number; essential: boolean }) => void;
+      setCenter?: (c: [number, number]) => void;
+      once?: (event: string, handler: () => void) => void;
+    } | null;
+    if (!map) {
+      this.currentCenter = target;
+      return;
+    }
+    this.recenteringForLocate = true;
+    const lngLat: [number, number] = [target.lon as number, target.lat as number];
+    let released = false;
+    const release = (): void => {
+      if (released) return;
+      released = true;
+      this.recenteringForLocate = false;
+    };
+    if (animated && map.easeTo) {
+      map.easeTo({ center: lngLat, duration: 400, essential: true });
+      // Prefer moveend (fires when the animation actually completes).
+      if (map.once) {
+        map.once('moveend', release);
+      }
+      // Defensive fallback: a no-op easeTo (target equals current
+      // centre) does NOT emit moveend in MapLibre, leaving the guard
+      // stuck true and breaking subsequent Follow → Show demote on
+      // user pans. Always release after the animation duration plus
+      // a small margin even if moveend never fires. Idempotent via
+      // the `released` flag. PR #5 review C-3 / Co-1.
+      setTimeout(release, 700);
+    } else {
+      map.setCenter?.(lngLat);
+      Promise.resolve().then(release);
+    }
+    this.currentCenter = target;
+  }
+
   attachWheelOverride(): void {
     if (this.wheelOverrideAttached) return;
     const map = this.underlying as {
