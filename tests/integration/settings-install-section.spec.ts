@@ -260,6 +260,35 @@ describe('feature 011 — Settings install section render contract', () => {
   });
 });
 
+describe('feature 011 — Settings install section cleanup (PR #3 review)', () => {
+  test('iOS instructions dialog is dismissed when the Settings sheet closes via scrim/close', async () => {
+    stubEnv(UA_IOS_SAFARI, false);
+    __resetForTests();
+    // Mount with `open: true`, open the iOS dialog, then flip `open` to false
+    // (mirrors what App.svelte does when the user taps the scrim or close
+    // button). Re-opening MUST start with the dialog dismissed — without the
+    // cleanup the stale flag re-shows the dialog automatically (caught in
+    // PR #3 review).
+    const Component = SettingsSheet as unknown as new (args: {
+      target: HTMLElement;
+      props: Record<string, unknown>;
+    }) => { $destroy: () => void; $set: (props: Record<string, unknown>) => void };
+    const c = new Component({ target: host, props: { open: true } });
+    cmp = c as unknown as { $destroy: () => void };
+    await flush();
+    ($('settings-install-show-ios-instructions') as HTMLElement).click();
+    await flush();
+    expect($('settings-install-ios-instructions-dialog')).not.toBeNull();
+    c.$set({ open: false });
+    await flush();
+    c.$set({ open: true });
+    await flush();
+    expect($('settings-install-ios-instructions-dialog')).toBeNull();
+    // The trigger button is still there for an explicit re-open.
+    expect($('settings-install-show-ios-instructions')).not.toBeNull();
+  });
+});
+
 describe('feature 011 — Settings install section reactive transitions (FR-018)', () => {
   test('11. markInstalled while sheet is open updates section to "already installed" (data-model C3)', async () => {
     stubEnv(UA_ANDROID);

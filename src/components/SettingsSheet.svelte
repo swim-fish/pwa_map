@@ -88,6 +88,10 @@
   $: if (!open) {
     statusMessage = '';
     confirmTarget = null;
+    // Clear iOS instructions overlay so it does not auto-pop on the
+    // next sheet open. (PR #3 review — Escape was the only cleanup
+    // path; closing via scrim / close-button left this flag stuck.)
+    showIosInstructions = false;
   }
 
   function onClose(): void {

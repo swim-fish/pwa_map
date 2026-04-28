@@ -115,13 +115,13 @@ describe('feature 011 — installSettingsSurface (derived store)', () => {
     expect(get(installSettingsSurface)).toBe('desktop-chromium');
   });
 
-  test('S7 — Desktop Firefox without captured prompt ⇒ "unsupported"', () => {
+  test('S7a — Desktop Firefox without captured prompt ⇒ "unsupported"', () => {
     stubNavigator(UA_DESKTOP_FIREFOX);
     __resetForTests();
     expect(get(installSettingsSurface)).toBe('unsupported');
   });
 
-  test('S7 — Desktop Chrome without captured prompt ⇒ "unsupported"', () => {
+  test('S7b — Desktop Chrome without captured prompt ⇒ "unsupported"', () => {
     stubNavigator(UA_DESKTOP_CHROME);
     __resetForTests();
     expect(get(installSettingsSurface)).toBe('unsupported');

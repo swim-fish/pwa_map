@@ -82,21 +82,26 @@
   // (≥ 2 enabled formats) AND the viewport is narrow OR short.
   $: defaultCollapsed = enabled.length >= 2 && (isNarrow || isShort);
 
-  // Reset user toggle on a default-state change (viewport threshold
-  // crossing or enabled-set change), so the user always sees the
-  // viewport's natural state on a fresh entry.
+  // Surface "this row is interactively toggleable" to CSS + ARIA.
+  $: toggleable = enabled.length >= 2;
+
+  // Reset user toggle whenever the viewport-derived default flips OR
+  // when the toggleable threshold is crossed (≥ 2 ↔ < 2 enabled
+  // formats). Without the toggleable check, a stale `userToggled`
+  // could carry across an enabled-set edit that crossed the 2-format
+  // threshold and force the readout into the non-default mode after
+  // the user re-enabled formats. (Found in PR #3 review.)
   let lastDefaultCollapsed = defaultCollapsed;
-  $: if (defaultCollapsed !== lastDefaultCollapsed) {
+  let lastToggleable = toggleable;
+  $: if (defaultCollapsed !== lastDefaultCollapsed || toggleable !== lastToggleable) {
     lastDefaultCollapsed = defaultCollapsed;
+    lastToggleable = toggleable;
     userToggled = false;
   }
 
   // XOR: collapsed iff default differs from user toggle. With < 2
   // formats there's nothing to collapse, so always expanded.
   $: viewMode = enabled.length >= 2 && defaultCollapsed !== userToggled ? 'collapsed' : 'expanded';
-
-  // Surface "this row is interactively toggleable" to CSS + ARIA.
-  $: toggleable = enabled.length >= 2;
 
   type Row = {
     kind: CoordinateKind;
@@ -183,6 +188,12 @@
 
   function onBodyKeydown(ev: KeyboardEvent): void {
     if (!toggleable) return;
+    // Only the section's own Enter/Space activation toggles. Keydowns
+    // bubbling from interactive descendants (e.g. the copy button)
+    // must keep their native behaviour. (PR #3 review — a11y
+    // regression: nested copy-button activation was collapsing the
+    // panel on every Enter press.)
+    if (ev.target !== ev.currentTarget) return;
     if (ev.key === 'Enter' || ev.key === ' ') {
       ev.preventDefault();
       onBodyTap();
