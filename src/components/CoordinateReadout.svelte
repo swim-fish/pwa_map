@@ -31,41 +31,72 @@
     'copy-fallback': { text: string };
   }>();
 
-  // The matchMedia query mirrors the --readout-collapse-bp token so the
-  // CSS @media rule and the Svelte reactivity stay in lockstep
-  // (research.md §R6 — 0.02px half-pixel adjustment).
+  // Two matchMedia subscriptions decide the DEFAULT collapse state:
+  // narrow viewport (< 600 CSS px wide) OR short viewport (< 800 CSS px
+  // tall) defaults to `collapsed`; wide+tall viewports default to
+  // `expanded`. The user can toggle either way; the toggle resets when
+  // the viewport crosses a threshold.
   const NARROW_QUERY = '(max-width: calc(600px - 0.02px))';
+  const SHORT_QUERY = '(max-height: calc(800px - 0.02px))';
   let isNarrow = false;
-  let mql: MediaQueryList | null = null;
-  let mqlListener: ((e: MediaQueryListEvent | MediaQueryList) => void) | null = null;
+  let isShort = false;
+  let narrowMql: MediaQueryList | null = null;
+  let shortMql: MediaQueryList | null = null;
+  let narrowListener: ((e: MediaQueryListEvent | MediaQueryList) => void) | null = null;
+  let shortListener: ((e: MediaQueryListEvent | MediaQueryList) => void) | null = null;
 
   if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-    mql = window.matchMedia(NARROW_QUERY);
-    isNarrow = mql.matches;
-    mqlListener = (e: MediaQueryListEvent | MediaQueryList): void => {
+    narrowMql = window.matchMedia(NARROW_QUERY);
+    isNarrow = narrowMql.matches;
+    narrowListener = (e: MediaQueryListEvent | MediaQueryList): void => {
       isNarrow = e.matches;
     };
-    mql.addEventListener('change', mqlListener as (e: MediaQueryListEvent) => void);
+    narrowMql.addEventListener('change', narrowListener as (e: MediaQueryListEvent) => void);
+
+    shortMql = window.matchMedia(SHORT_QUERY);
+    isShort = shortMql.matches;
+    shortListener = (e: MediaQueryListEvent | MediaQueryList): void => {
+      isShort = e.matches;
+    };
+    shortMql.addEventListener('change', shortListener as (e: MediaQueryListEvent) => void);
   }
 
   onDestroy(() => {
-    if (mql && mqlListener) {
-      mql.removeEventListener('change', mqlListener as (e: MediaQueryListEvent) => void);
+    if (narrowMql && narrowListener) {
+      narrowMql.removeEventListener('change', narrowListener as (e: MediaQueryListEvent) => void);
+    }
+    if (shortMql && shortListener) {
+      shortMql.removeEventListener('change', shortListener as (e: MediaQueryListEvent) => void);
     }
   });
 
-  let tapExpanded = false;
+  // `userToggled` is the user's explicit override of the viewport-derived
+  // default. It is component-local (never persisted) and clears whenever
+  // the default flips so the user always sees the viewport's natural
+  // state on a fresh threshold crossing.
+  let userToggled = false;
 
   $: enabled = formatOrder.filter((k) => visible.includes(k));
 
-  $: viewMode =
-    isNarrow && enabled.length >= 2 ? (tapExpanded ? 'tap-expanded' : 'collapsed') : 'expanded';
+  // Default collapse only applies when there is something to collapse
+  // (≥ 2 enabled formats) AND the viewport is narrow OR short.
+  $: defaultCollapsed = enabled.length >= 2 && (isNarrow || isShort);
 
-  // Resize past the breakpoint clears any transient tap-expanded state
-  // (Invariant 5 — `tapExpanded` is component-local, never persisted).
-  $: if (!isNarrow && tapExpanded) {
-    tapExpanded = false;
+  // Reset user toggle on a default-state change (viewport threshold
+  // crossing or enabled-set change), so the user always sees the
+  // viewport's natural state on a fresh entry.
+  let lastDefaultCollapsed = defaultCollapsed;
+  $: if (defaultCollapsed !== lastDefaultCollapsed) {
+    lastDefaultCollapsed = defaultCollapsed;
+    userToggled = false;
   }
+
+  // XOR: collapsed iff default differs from user toggle. With < 2
+  // formats there's nothing to collapse, so always expanded.
+  $: viewMode = enabled.length >= 2 && defaultCollapsed !== userToggled ? 'collapsed' : 'expanded';
+
+  // Surface "this row is interactively toggleable" to CSS + ARIA.
+  $: toggleable = enabled.length >= 2;
 
   type Row = {
     kind: CoordinateKind;
@@ -76,6 +107,15 @@
     segments: readonly CoordinateSegment[];
     coverage: 'ok' | 'out-of-coverage';
   };
+
+  // Presentation-only: these segment label keys carry parameters that
+  // are configured in Settings (TM2 zone, Taipower precision) rather
+  // than primary coordinate values. Hiding them in the readout reduces
+  // visual noise without changing the canonical copy string (the copy
+  // button still emits the full kind-specific format) and without
+  // changing the `coordinateSegments()` contract used by Go To
+  // (feature 009).
+  const HIDDEN_SEGMENT_LABEL_KEYS = new Set<string>(['goto.fields.zone', 'goto.fields.precision']);
 
   function canonicalFor(kind: CoordinateKind, pos: WGS84DD): string {
     switch (kind) {
@@ -109,7 +149,7 @@
     return {
       ...common,
       canonical: canonicalFor(kind, pos),
-      segments: seg.segments,
+      segments: seg.segments.filter((s) => !HIDDEN_SEGMENT_LABEL_KEYS.has(s.labelKey)),
       coverage: 'ok',
     };
   }
@@ -136,15 +176,13 @@
   }
 
   function onBodyTap(): void {
-    if (viewMode === 'collapsed') {
-      tapExpanded = true;
-    } else if (viewMode === 'tap-expanded') {
-      tapExpanded = false;
+    if (toggleable) {
+      userToggled = !userToggled;
     }
   }
 
   function onBodyKeydown(ev: KeyboardEvent): void {
-    if (viewMode === 'expanded') return;
+    if (!toggleable) return;
     if (ev.key === 'Enter' || ev.key === ' ') {
       ev.preventDefault();
       onBodyTap();
@@ -156,11 +194,12 @@
 <section
   class="readout"
   data-mode={viewMode}
+  data-toggleable={toggleable}
   data-testid="readout-panel"
   aria-live="polite"
-  role={viewMode === 'expanded' ? undefined : 'button'}
-  aria-expanded={viewMode === 'expanded' ? undefined : viewMode === 'tap-expanded'}
-  tabindex={viewMode === 'expanded' ? undefined : 0}
+  role={toggleable ? 'button' : undefined}
+  aria-expanded={toggleable ? viewMode === 'expanded' : undefined}
+  tabindex={toggleable ? 0 : undefined}
   on:click={onBodyTap}
   on:keydown={onBodyKeydown}
 >
@@ -203,8 +242,10 @@
 <style>
   .readout {
     position: absolute;
-    left: var(--space-3, 12px);
-    bottom: var(--space-3, 12px);
+    left: calc(var(--space-3) + var(--inline-stack-zone-left));
+    /* +var(--space-5) lifts the panel above the bottom-right attribution
+       badge so the badge stays readable on every viewport. */
+    bottom: calc(var(--space-3) + var(--space-5) + var(--bottom-stack-zone-bottom));
     padding: var(--space-3, 12px) var(--space-4, 16px);
     background: var(--readout-bg, rgba(255, 255, 255, 0.95));
     color: var(--readout-fg, #0f172a);
@@ -225,19 +266,25 @@
     gap: var(--space-2, 8px);
   }
 
-  /* Collapse: only the priority-one row stays visible on narrow viewports
-     when ≥ 2 formats are enabled (FR-001 / FR-002). The breakpoint
-     mirrors the --readout-collapse-bp token. */
+  /* Collapse: only the priority-one row stays visible whenever the
+     view-mode is `collapsed` (regardless of viewport — narrow / short
+     viewports trigger it by default; on wider viewports the user can
+     toggle into it). */
+  .readout[data-mode='collapsed'] .row:not(.row--priority-one) {
+    display: none;
+  }
+
+  /* Whenever the body is interactively toggleable (≥ 2 enabled formats)
+     the cursor reflects clickability in either direction. */
+  .readout[data-toggleable='true'] {
+    cursor: pointer;
+  }
+
+  /* On narrow viewports, when collapsed, cap the panel width so the
+     priority-one row never wraps past the right side of the viewport. */
   @media (max-width: calc(var(--readout-collapse-bp) - 0.02px)) {
-    .readout[data-mode='collapsed'] .row:not(.row--priority-one) {
-      display: none;
-    }
     .readout[data-mode='collapsed'] {
-      cursor: pointer;
       max-width: min(360px, calc(100vw - 24px));
-    }
-    .readout[data-mode='tap-expanded'] {
-      cursor: pointer;
     }
   }
 

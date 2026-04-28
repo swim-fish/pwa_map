@@ -77,8 +77,8 @@ afterEach(() => {
   cmp = null;
 });
 
-describe('feature 010 — CoordinateReadout tap-to-expand (US3, FR-008/009/010)', () => {
-  test('tap on body in collapsed → tap-expanded; tap again → collapsed', async () => {
+describe('feature 011 — CoordinateReadout tap-to-toggle (extends feature 010 US3)', () => {
+  test('tap on body in collapsed → expanded; tap again → collapsed', async () => {
     mount({
       position: TAICHUNG_LAKE,
       visible: ['wgs84-dd', 'wgs84-dms', 'mgrs'],
@@ -92,7 +92,7 @@ describe('feature 010 — CoordinateReadout tap-to-expand (US3, FR-008/009/010)'
 
     rootEl().click();
     await tick();
-    expect(rootEl().getAttribute('data-mode')).toBe('tap-expanded');
+    expect(rootEl().getAttribute('data-mode')).toBe('expanded');
     expect(rootEl().getAttribute('aria-expanded')).toBe('true');
 
     rootEl().click();
@@ -101,7 +101,7 @@ describe('feature 010 — CoordinateReadout tap-to-expand (US3, FR-008/009/010)'
     expect(rootEl().getAttribute('aria-expanded')).toBe('false');
   });
 
-  test('(3) tap on copy button does NOT toggle tap-expanded', async () => {
+  test('(3) tap on copy button does NOT toggle the user override', async () => {
     mount({
       position: TAICHUNG_LAKE,
       visible: ['wgs84-dd', 'wgs84-dms', 'mgrs'],
@@ -126,7 +126,7 @@ describe('feature 010 — CoordinateReadout tap-to-expand (US3, FR-008/009/010)'
     expect(rootEl().getAttribute('data-mode')).toBe('collapsed');
   });
 
-  test('(5) resize past breakpoint clears tapExpanded synchronously', async () => {
+  test('(5) viewport threshold crossing clears the user toggle synchronously', async () => {
     mount({
       position: TAICHUNG_LAKE,
       visible: ['wgs84-dd', 'wgs84-dms', 'mgrs'],
@@ -135,20 +135,69 @@ describe('feature 010 — CoordinateReadout tap-to-expand (US3, FR-008/009/010)'
       taipowerPrecision: 11,
     });
     await tick();
+    // Default-collapsed (narrow viewport via stub matches=true) — user
+    // taps to override → 'expanded'.
     rootEl().click();
     await tick();
-    expect(rootEl().getAttribute('data-mode')).toBe('tap-expanded');
+    expect(rootEl().getAttribute('data-mode')).toBe('expanded');
 
-    // Simulate viewport widen.
+    // Simulate viewport widen+tall (mql.matches=false applies to BOTH
+    // narrow and short queries because the test stub returns a single
+    // shared MQL object). defaultCollapsed flips false → user toggle
+    // resets → viewMode = 'expanded' (default-expanded, no override).
     mql.matches = false;
     for (const l of mql.listeners) l({ matches: false });
     await tick();
     expect(rootEl().getAttribute('data-mode')).toBe('expanded');
 
-    // Now narrow again — tapExpanded should be cleared (start at collapsed).
+    // Narrow again → defaultCollapsed flips true → user toggle reset →
+    // viewMode = 'collapsed' (default-collapsed, no override).
     mql.matches = true;
     for (const l of mql.listeners) l({ matches: true });
     await tick();
     expect(rootEl().getAttribute('data-mode')).toBe('collapsed');
+  });
+
+  test('feature 011 — wide+tall viewport defaults to expanded; tap collapses', async () => {
+    installMatchMedia(false); // wide AND tall
+    mount({
+      position: TAICHUNG_LAKE,
+      visible: ['wgs84-dd', 'wgs84-dms', 'mgrs'],
+      formatOrder: FULL_FORMAT_ORDER,
+      mgrsPrecision: 5,
+      taipowerPrecision: 11,
+    });
+    await tick();
+    expect(rootEl().getAttribute('data-mode')).toBe('expanded');
+    // Toggleable on every viewport with ≥ 2 formats — even when default-expanded.
+    expect(rootEl().getAttribute('data-toggleable')).toBe('true');
+    expect(rootEl().getAttribute('role')).toBe('button');
+
+    // User taps to collapse.
+    rootEl().click();
+    await tick();
+    expect(rootEl().getAttribute('data-mode')).toBe('collapsed');
+    expect(rootEl().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  test('feature 011 — < 2 enabled formats is NOT toggleable on any viewport', async () => {
+    installMatchMedia(false);
+    mount({
+      position: TAICHUNG_LAKE,
+      visible: ['wgs84-dd'],
+      formatOrder: FULL_FORMAT_ORDER,
+      mgrsPrecision: 5,
+      taipowerPrecision: 11,
+    });
+    await tick();
+    expect(rootEl().getAttribute('data-mode')).toBe('expanded');
+    expect(rootEl().getAttribute('data-toggleable')).toBe('false');
+    expect(rootEl().getAttribute('role')).toBeNull();
+    expect(rootEl().getAttribute('tabindex')).toBeNull();
+
+    // Tap should be a no-op.
+    rootEl().click();
+    await tick();
+    expect(rootEl().getAttribute('data-mode')).toBe('expanded');
   });
 });

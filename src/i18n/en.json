@@ -145,6 +145,8 @@
   "controls.zoom.in.disabled": "Maximum zoom reached",
   "controls.zoom.out.label": "Zoom out",
   "controls.zoom.out.disabled": "Minimum zoom reached",
+  "settings.install.heading": "Install app",
+  "settings.install.alreadyInstalled": "App is already installed",
   "settings.title": "Settings",
   "settings.close": "Close",
   "settings.licenceNotice": "The tile cache exists solely as a short-term offline fallback. Bulk map downloading is forbidden by the OpenStreetMap, NLSC, and Google tile-source licences.",

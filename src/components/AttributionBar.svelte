@@ -28,8 +28,8 @@
 <style>
   .attribution {
     position: absolute;
-    right: var(--space-2, 8px);
-    bottom: var(--space-2, 8px);
+    right: calc(var(--space-2) + var(--inline-stack-zone-right));
+    bottom: calc(var(--space-2) + var(--bottom-stack-zone-bottom));
     padding: 2px var(--space-2, 8px);
     background: var(--attribution-bg);
     color: var(--attribution-fg);

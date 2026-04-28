@@ -18,8 +18,8 @@ npm run dev            # http://localhost:5173
 Run tests:
 
 ```bash
-npm test               # vitest — unit + contract (~119 tests)
-npm run test:e2e       # playwright — story-1/2/3/4 (~15 tests)
+npm test               # vitest — unit + integration (~700 tests across features 001–011)
+npm run test:e2e       # playwright — story specs + feature-005/010/011 mobile + install (~25 tests)
 ```
 
 Production build + verification:
@@ -114,32 +114,42 @@ this codebase.
 
 ## Feature records
 
-- Active feature: [`specs/001-coord-map-pwa/plan.md`](specs/001-coord-map-pwa/plan.md)
-- Task list: [`specs/001-coord-map-pwa/tasks.md`](specs/001-coord-map-pwa/tasks.md)
-- Design records: [`docs/ui/`](docs/ui/)
-- Decisions: [`docs/adr/`](docs/adr/)
+- Active feature: [`specs/011-safe-area-install-buttons/plan.md`](specs/011-safe-area-install-buttons/plan.md)
+- Task list: [`specs/011-safe-area-install-buttons/tasks.md`](specs/011-safe-area-install-buttons/tasks.md)
+- Design records: [`docs/ui/`](docs/ui/) (0001 → 0011)
+- Decisions: [`docs/adr/`](docs/adr/) (0001 → 0031)
+- All shipped features: [`specs/`](specs/) (001 coord-map-pwa →
+  002 goto-split-input → 003 i18n-and-map-layers →
+  004 offline-pwa-polish → 005 pwa-installable → 006 compass →
+  007 tile-cache-settings → 008 gh-pages-deploy →
+  009 mobile-ui-fixes → 010 mobile-collapsed-readout →
+  011 safe-area-install-buttons)
 
 ## Project structure
 
 ```text
 src/
-  app/                PWA entry + shell
-  components/         Svelte components
-  coord/              Pure coordinate math (the only module that imports proj4/mgrs)
-  map/                MapLibre controller + tile source
+  app/                PWA entry + shell + design tokens (tokens.css)
+  components/         Svelte components — readout, toolbar, GoTo, settings, install affordances
+  coord/              Pure coordinate math (the only module that imports proj4/mgrs) + segments helper
+  map/                MapLibre controller + tile source catalogue + bearing signal
   i18n/               Svelte store + zh/en/ja JSON catalogues
-  storage/            localStorage read/write + schema guard
-  pwa/                Service-worker registration
+  storage/            localStorage read/write + schema guard (prefs v3 + last-view + install-dismissed)
+  pwa/                Service-worker registration + install signal + cache policy + derived install surface
   types/              Branded types + Result / Rejection
 
 tests/
+  unit/               Per-converter / per-component / per-store specs (~600 tests)
   unit/coord/         Per-converter specs driven by test-vectors.json
   unit/fixtures/      Pinned test-vectors.json + SHA-256 digest
-  e2e/                Playwright story specs (story-1/2/3/4)
+  unit/pwa/           install signal + platform detection
+  unit/storage/       prefs schema + offline-ready signal
+  integration/        DOM-level cross-component specs (~100 tests)
+  e2e/                Playwright story + mobile + install specs
 
 docs/
-  adr/                Architectural Decision Records (0001–0015)
-  ui/                 UI design records (0001-coord-map-layout.md)
+  adr/                Architectural Decision Records (0001 → 0031)
+  ui/                 UI design records (0001 → 0011)
 ```
 
 ## Licences & attribution
