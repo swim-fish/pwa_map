@@ -1,4 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { tick } from 'svelte';
 import SettingsSheet from '../../src/components/SettingsSheet.svelte';
 import { setLocale } from '../../src/i18n/index';
@@ -121,12 +123,7 @@ describe('feature 012 — Settings About section render contract (FR-015..FR-019
     'locale %s — heading + link labels are translated, URLs remain literal',
     async (locale) => {
       const cat = JSON.parse(
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('node:fs').readFileSync(
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          require('node:path').resolve(process.cwd(), `src/i18n/${locale}.json`),
-          'utf8',
-        ),
+        readFileSync(resolve(process.cwd(), `src/i18n/${locale}.json`), 'utf8'),
       ) as Record<string, string>;
       setLocale(locale);
       mount();

@@ -11,12 +11,13 @@
  * `LOCKDOWN_REGISTER.terrain.lockedValue` to a real config object,
  * register the DEM source here, and call `map.setTerrain(...)` from
  * `MapView.svelte`'s post-style hook.
+ *
+ * No runtime / typed cross-import is needed — the JSDoc above
+ * names `threeDLockdown.ts` explicitly so IDE jump-to-file works,
+ * and the lockdown-runtime integration test greps this file for the
+ * `threeDLockdown` and `ADR-0032` substrings (Copilot review on
+ * PR #4 — keeps the catalogue's public API surface clean).
  */
-import type { LockdownClass as _LockdownClassDocAnchor } from '$map/threeDLockdown';
-// The type-only import keeps the cross-reference machine-checkable
-// (IDE jump-to-symbol follows the link). Re-exported as a no-op type
-// alias so the unused-import linter stays quiet.
-export type _LockdownAnchor = _LockdownClassDocAnchor;
 
 export type MapGroup = 'nlsc' | 'google' | 'other';
 

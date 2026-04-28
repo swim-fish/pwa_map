@@ -19,8 +19,11 @@ describe('README live demo link — feature 012 / FR-020 / SC-005', () => {
     const text = readFileSync(README, 'utf8');
     const head = text.split('\n').slice(0, ABOVE_THE_FOLD_LINES).join('\n');
     // Autolink form `<https://...>` survives both rendered and plain-text
-    // viewers per research.md §R7.
-    expect(head).toMatch(new RegExp(`<${LIVE_URL.replace(/\//g, '\\/')}>`));
+    // viewers per research.md §R7. Use a literal `includes` rather than
+    // a `RegExp(LIVE_URL)` — the URL contains regex metacharacters
+    // (notably `.`) that an unescaped pattern would match more loosely
+    // than intended (Copilot review on PR #4).
+    expect(head.includes(`<${LIVE_URL}>`)).toBe(true);
   });
 
   test('the live link aligns with the deploy-base in vite.config.ts', () => {
