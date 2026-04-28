@@ -104,13 +104,20 @@ describe('Compass — feature 006 US1', () => {
     expect($compass()!.style.getPropertyValue('--compass-bearing').trim()).toBe('-90deg');
   });
 
-  test('3. emitBearing(270) → --compass-bearing -270deg', async () => {
+  test('3. emitBearing(270) from 0 → --compass-bearing 90deg (shortest-path: 90° CCW, not 270° CW)', async () => {
+    // Bug fix 2026-04-28: arrow takes the shortest-arc path on every
+    // bearing change to avoid a long-way-around spin when crossing the
+    // 0° / 360° seam. From bearing 0, an emit of 270° in MapLibre's
+    // CW-positive convention is closer the OTHER way; the displayed
+    // (negated) angle therefore moves +90° (forward CCW), not -270°
+    // (long way back). Visually identical end state, but the CSS
+    // transition no longer spins three-quarters of the way round.
     const controller = makeController();
     mount(controller);
     await tick();
     controller.emitBearing(270);
     await tick();
-    expect($compass()!.style.getPropertyValue('--compass-bearing').trim()).toBe('-270deg');
+    expect($compass()!.style.getPropertyValue('--compass-bearing').trim()).toBe('90deg');
   });
 
   test('4. click fires controller.resetBearing(true) under normal motion', async () => {
@@ -153,6 +160,99 @@ describe('Compass — feature 006 US1', () => {
     expect(btn.tagName).toBe('BUTTON');
     expect(btn.getAttribute('type')).toBe('button');
     expect(btn.classList.contains('compass')).toBe(true);
+  });
+
+  // Bug fix 2026-04-28 — seam-crossing shortest-path accumulator.
+  // Reproduces the user-reported "20° → 350° → 20°" jump.
+  describe('seam-crossing shortest-path (regression — no long-way-around spin at the 0° / 360° seam)', () => {
+    function compassBearingDeg(): number {
+      const raw = $compass()!.style.getPropertyValue('--compass-bearing').trim();
+      const m = raw.match(/^(-?[\d.]+)deg$/);
+      return m ? parseFloat(m[1]) : NaN;
+    }
+
+    test('20° → 350° → 20° each step rotates ≤ 30° (no 330° spin)', async () => {
+      const controller = makeController();
+      mount(controller);
+      await tick();
+
+      controller.emitBearing(20);
+      await tick();
+      const a = compassBearingDeg();
+
+      controller.emitBearing(350);
+      await tick();
+      const b = compassBearingDeg();
+      expect(
+        Math.abs(b - a),
+        `step 20→350 rotated ${Math.abs(b - a)}°; expected ≤ 30°`,
+      ).toBeLessThanOrEqual(30 + 1e-6);
+
+      controller.emitBearing(20);
+      await tick();
+      const c = compassBearingDeg();
+      expect(
+        Math.abs(c - b),
+        `step 350→20 rotated ${Math.abs(c - b)}°; expected ≤ 30°`,
+      ).toBeLessThanOrEqual(30 + 1e-6);
+    });
+
+    test('350° → 20° single hop crosses the seam via the +30° shortest path', async () => {
+      const controller = makeController();
+      mount(controller);
+      await tick();
+
+      controller.emitBearing(350);
+      await tick();
+      const start = compassBearingDeg();
+      // Shortest-path negation of 350 from 0 is +10 (going +10 CCW), not -350.
+      expect(start).toBeCloseTo(10, 6);
+
+      controller.emitBearing(20);
+      await tick();
+      const end = compassBearingDeg();
+      // Then 350→20 is a +30° CW step, so the negated arrow goes -30°.
+      expect(end - start).toBeCloseTo(-30, 6);
+    });
+
+    test('continuous CW spin 0→90→180→270→0 accumulates monotonically (no mid-spin reversal)', async () => {
+      const controller = makeController();
+      mount(controller);
+      await tick();
+
+      const samples: number[] = [];
+      for (const deg of [90, 180, 270, 0]) {
+        controller.emitBearing(deg);
+        await tick();
+        samples.push(compassBearingDeg());
+      }
+      // Each step should be a -90° (CCW) rotation in display space, since
+      // the map's CW spin is mirrored by the arrow's CCW spin. Differences
+      // between consecutive samples are all ≈ -90.
+      const previous = [0, ...samples.slice(0, -1)];
+      for (let i = 0; i < samples.length; i++) {
+        expect(
+          samples[i] - previous[i],
+          `step ${i} (bearing → ${[90, 180, 270, 0][i]}): displayed delta ${samples[i] - previous[i]}, expected ≈ -90`,
+        ).toBeCloseTo(-90, 6);
+      }
+      // After one full CW lap the accumulated displayed value is -360.
+      expect(samples[samples.length - 1]).toBeCloseTo(-360, 6);
+    });
+
+    test('exact 180° flip resolves consistently (degenerate shortest-path edge)', async () => {
+      const controller = makeController();
+      mount(controller);
+      await tick();
+
+      controller.emitBearing(180);
+      await tick();
+      // Either +180 or -180 is technically shortest. The accumulator must
+      // pick one deterministically and stick with it. We don't constrain
+      // which sign — just that the magnitude is exactly 180.
+      const v = compassBearingDeg();
+      expect(Math.abs(v)).toBeCloseTo(180, 6);
+    });
   });
 
   test('8. setLocale switches aria-label across zh / en / ja', async () => {

@@ -173,5 +173,8 @@
   "settings.status.purged.ttl": "TTL 已更新為 {days} 天，已清除 {count} 筆過期項目",
   "settings.status.trimmed.maxEntries": "每來源上限已更新為 {cap}，已清除 {count} 筆",
   "settings.status.error": "操作失敗，請稍後重試",
-  "settings.toolbar.button": "設定"
+  "settings.toolbar.button": "設定",
+  "settings.about.heading": "關於",
+  "settings.about.liveMap": "地圖網址",
+  "settings.about.sourceCode": "原始碼"
 }

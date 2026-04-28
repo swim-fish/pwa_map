@@ -173,5 +173,8 @@
   "settings.status.purged.ttl": "TTL を {days} 日に変更し、期限切れの {count} 件を削除しました",
   "settings.status.trimmed.maxEntries": "ソースごとの上限を {cap} に変更し、{count} 件をトリミングしました",
   "settings.status.error": "操作に失敗しました。しばらくしてから再試行してください。",
-  "settings.toolbar.button": "設定"
+  "settings.toolbar.button": "設定",
+  "settings.about.heading": "アプリについて",
+  "settings.about.liveMap": "マップ URL",
+  "settings.about.sourceCode": "ソースコード"
 }

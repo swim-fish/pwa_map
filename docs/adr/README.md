@@ -45,6 +45,7 @@ drifting.
 | [0029](0029-mobile-touch-target-and-notification-region.md) | Mobile touch-target floor + notification-region pattern                         | Accepted | —          |
 | [0030](0030-format-priority-and-collapse.md)                | Format priority + responsive collapse + Taipower auto-precision + TWD zone tags | Accepted | —          |
 | [0031](0031-safe-area-and-on-demand-install.md)             | Safe-area zone tokens generalised + on-demand install entry inside Settings     | Accepted | —          |
+| [0032](0032-three-d-lockdown-register.md)                   | 3D / Terrain lockdown register (single source of truth)                         | Accepted | —          |
 
 ## Adding a new ADR
 

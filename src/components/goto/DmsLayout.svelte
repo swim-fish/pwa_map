@@ -116,6 +116,14 @@
     align-items: end;
   }
 
+  /* Feature 012 — narrow-phone collapse (FR-010..FR-014). The 3-cell
+     numeric row + hemisphere stacks vertically below 360 px. */
+  @media (max-width: calc(360px - 0.02px)) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .field {
     display: flex;
     flex-direction: column;

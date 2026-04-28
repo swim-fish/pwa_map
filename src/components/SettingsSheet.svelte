@@ -286,6 +286,40 @@
       </section>
     {/if}
 
+    <section
+      class="about-section"
+      aria-labelledby="settings-about-heading"
+      data-testid="settings-about-section"
+    >
+      <h3 id="settings-about-heading" class="section-heading">
+        {$tStore('settings.about.heading')}
+      </h3>
+      <ul class="about-list">
+        <li>
+          <a
+            href="https://swim-fish.github.io/pwa_map/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="about-link tap-target"
+            data-testid="settings-about-live-map-link"
+          >
+            {$tStore('settings.about.liveMap')}
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://github.com/swim-fish/pwa_map"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="about-link tap-target"
+            data-testid="settings-about-source-code-link"
+          >
+            {$tStore('settings.about.sourceCode')}
+          </a>
+        </li>
+      </ul>
+    </section>
+
     <section class="cache-list" aria-labelledby="cache-list-heading">
       <h3 id="cache-list-heading" class="section-heading">{$tStore('settings.cache.heading')}</h3>
       {#each rows as row (row.name)}
@@ -542,6 +576,61 @@
     flex-direction: column;
     gap: var(--space-2, 8px);
     align-items: flex-start;
+  }
+
+  /* Feature 012 — Settings About section. Token-only colours; no
+     hard-coded values per .claude/rules/pwa-tokens-and-contrast.md.
+     Secondary-button styling: parallels the .install-section-confirm
+     primary-button shape (padding / radius / font-weight) so both
+     sections read as button rows; About uses a neutral outline fill
+     so the accent-filled install button stays the visual primary. */
+  .about-section {
+    margin: 0 0 var(--space-3, 12px);
+  }
+
+  .about-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 8px);
+    align-items: flex-start;
+  }
+
+  .about-list li {
+    line-height: 1.5;
+  }
+
+  .about-link {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-2, 8px) var(--space-3, 12px);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-elev);
+    color: var(--color-fg);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      border-color 120ms ease-out,
+      color 120ms ease-out,
+      background-color 120ms ease-out;
+  }
+
+  .about-link:hover,
+  .about-link:focus-visible {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-link {
+      transition: none;
+    }
   }
 
   .install-section-confirm {

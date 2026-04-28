@@ -8,6 +8,8 @@ location is rendered live in six coordinate formats — **WGS84 DD**,
 coordinate. All conversion math runs client-side; after the first load
 the app works offline.
 
+**Live demo**: <https://swim-fish.github.io/pwa_map/>
+
 ## Quickstart
 
 ```bash
@@ -18,8 +20,8 @@ npm run dev            # http://localhost:5173
 Run tests:
 
 ```bash
-npm test               # vitest — unit + integration (~700 tests across features 001–011)
-npm run test:e2e       # playwright — story specs + feature-005/010/011 mobile + install (~25 tests)
+npm test               # vitest — unit + integration (~764 tests across features 001–012)
+npm run test:e2e       # playwright — story / mobile / install / Go-To narrow viewport (~280 cases across chromium/firefox/webkit profiles)
 ```
 
 Production build + verification:
