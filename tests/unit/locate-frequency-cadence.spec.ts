@@ -5,6 +5,10 @@ import { frequencyToWatchOptions, GeolocationController } from '$map/geolocation
 // (contracts/geolocation-controller.md, research §R1).
 
 describe('frequencyToWatchOptions', () => {
+  // Feature 014 introduced an internal high-accuracy burst on the Smart
+  // preset, but the *published* mapping below MUST stay non-burst — the
+  // burst's options live as a private const inside GeolocationController.
+  // Burst lifecycle is covered by tests/unit/geolocation-controller-promote.spec.ts.
   test('"smart" → enableHighAccuracy false, maximumAge 5000, timeout 30000', () => {
     expect(frequencyToWatchOptions('smart')).toEqual({
       enableHighAccuracy: false,
@@ -139,27 +143,6 @@ describe('GeolocationController — Slow preset min-dispatch throttle (10 s)', (
     mock.deliver(25.0001, 121.0001, 10, 1_000_500);
     mock.deliver(25.0002, 121.0002, 10, 1_001_000);
     expect(onFix).toHaveBeenCalledTimes(3);
-  });
-});
-
-// Feature 014 restored the Smart promote-on-movement burst originally
-// specified in feature 013 research §R1 (see specs/014-smart-promote-cadence/
-// plan.md). The burst's lifecycle is covered by
-// tests/unit/geolocation-controller-promote.spec.ts; this file's role is to
-// assert that the *published* preset → PositionOptions mapping remains
-// non-burst (i.e., the burst's `{ enableHighAccuracy: true }` options do not
-// bleed into `frequencyToWatchOptions('smart')`).
-
-describe('frequencyToWatchOptions — burst isolation (014)', () => {
-  test('Smart base options remain non-burst after feature 014', () => {
-    // The burst uses high-accuracy options internally inside
-    // GeolocationController, but the published mapping for the Smart
-    // preset MUST continue to return the documented non-burst triple.
-    expect(frequencyToWatchOptions('smart')).toEqual({
-      enableHighAccuracy: false,
-      maximumAge: 5_000,
-      timeout: 30_000,
-    });
   });
 });
 

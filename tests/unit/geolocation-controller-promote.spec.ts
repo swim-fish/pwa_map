@@ -234,6 +234,44 @@ describe('GeolocationController — Smart promote-on-movement burst (014)', () =
     expect(mock.clearWatch).toHaveBeenCalledWith(burstWatchId);
   });
 
+  test('preset switch resets movement baseline (PR#7 Codex P2)', () => {
+    // Without resetting `previousFix` on start(), a smart → fast → smart
+    // toggle leaks the prior baseline. The next Smart fix would compare
+    // against a stale coordinate, so the SECOND Smart fix could trigger
+    // a burst after only one in-session moving pair — violating the
+    // "two consecutive moving pairs" guard (research §R1) and the
+    // "first fix is baseline" contract (geolocationController.ts:201).
+    controller.start('smart');
+    mock.deliverLatest(STATIONARY_LAT, STATIONARY_LON, 10, 1_000_000);
+    mock.deliverLatest(STATIONARY_LAT + MOVING_LAT_STEP, STATIONARY_LON, 10, 1_005_000);
+    // One moving pair so far on Smart — no burst yet.
+    expect(mock.watchPosition).toHaveBeenCalledTimes(1);
+
+    // Toggle Smart → Fast → Smart while the user keeps moving north.
+    controller.start('fast');
+    controller.start('smart');
+    expect(mock.watchPosition).toHaveBeenCalledTimes(3); // 1 smart + 1 fast + 1 smart
+
+    // After re-entering Smart, the next fix MUST be a fresh baseline.
+    // Two further moving fixes form a single moving pair from that
+    // baseline — that alone must not start a burst. The burst would
+    // only be allowed on a THIRD moving fix (two consecutive moving
+    // pairs from the fresh baseline).
+    mock.deliverLatest(STATIONARY_LAT + 2 * MOVING_LAT_STEP, STATIONARY_LON, 10, 1_010_000);
+    mock.deliverLatest(STATIONARY_LAT + 3 * MOVING_LAT_STEP, STATIONARY_LON, 10, 1_015_000);
+    expect(mock.watchPosition).toHaveBeenCalledTimes(3);
+
+    // A third moving fix from the fresh baseline does start a burst,
+    // confirming the rule still works after the toggle.
+    mock.deliverLatest(STATIONARY_LAT + 4 * MOVING_LAT_STEP, STATIONARY_LON, 10, 1_020_000);
+    expect(mock.watchPosition).toHaveBeenCalledTimes(4);
+    expect(mock.calls[3].options).toEqual({
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10_000,
+    });
+  });
+
   test('preset switch tears down burst before re-subscribing base (FR-008)', () => {
     controller.start('smart');
     mock.deliverLatest(STATIONARY_LAT, STATIONARY_LON, 10, 1_000_000);

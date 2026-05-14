@@ -87,7 +87,12 @@ export class GeolocationController {
     }
     // Preset switch (or re-subscribe on the same preset): tear down any
     // active burst before swapping the base subscription's options.
+    // Also drop the prior `previousFix` so the next fix is treated as a
+    // fresh baseline — without this, a smart → fast → smart toggle would
+    // leak motion history across subscriptions and let a burst trigger
+    // after only one in-session moving pair. PR #7 review (Codex P2).
     this.endBurst();
+    this.previousFix = null;
     if (this.baseWatchId !== null) {
       navigator.geolocation.clearWatch(this.baseWatchId);
       this.baseWatchId = null;
