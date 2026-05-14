@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Active feature plan: `specs/013-locate-controls-layout/plan.md`
+Active feature plan: `specs/014-smart-promote-cadence/plan.md`
 
 For technologies, project structure, shell commands, and other
 implementation-relevant context, read that plan and its companion artifacts

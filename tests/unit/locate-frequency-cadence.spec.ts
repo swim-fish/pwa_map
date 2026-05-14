@@ -142,10 +142,26 @@ describe('GeolocationController — Slow preset min-dispatch throttle (10 s)', (
   });
 });
 
-// Smart promote-on-movement burst was originally specified in research §R1
-// but dropped from the implementation to fit the +6 KB per-feature bundle
-// budget (see plan.md Complexity Tracking). The Smart preset now relies on
-// the browser's built-in cadence governance + maximumAge: 5_000.
+// Feature 014 restored the Smart promote-on-movement burst originally
+// specified in feature 013 research §R1 (see specs/014-smart-promote-cadence/
+// plan.md). The burst's lifecycle is covered by
+// tests/unit/geolocation-controller-promote.spec.ts; this file's role is to
+// assert that the *published* preset → PositionOptions mapping remains
+// non-burst (i.e., the burst's `{ enableHighAccuracy: true }` options do not
+// bleed into `frequencyToWatchOptions('smart')`).
+
+describe('frequencyToWatchOptions — burst isolation (014)', () => {
+  test('Smart base options remain non-burst after feature 014', () => {
+    // The burst uses high-accuracy options internally inside
+    // GeolocationController, but the published mapping for the Smart
+    // preset MUST continue to return the documented non-burst triple.
+    expect(frequencyToWatchOptions('smart')).toEqual({
+      enableHighAccuracy: false,
+      maximumAge: 5_000,
+      timeout: 30_000,
+    });
+  });
+});
 
 describe('GeolocationController — watchPosition synchronous throw guard (PR#5/C-2)', () => {
   let originalGeolocation: typeof navigator.geolocation;
