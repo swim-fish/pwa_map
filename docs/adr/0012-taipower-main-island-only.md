@@ -1,7 +1,11 @@
 # ADR 0012 — Taipower grid: main-island letters A–X only (Y/Z deferred)
 
-**Status**: Accepted
+**Status**: Superseded by 0036
 **Date**: 2026-04-24
+**Superseded**: 2026-05-23 — see [ADR 0036](0036-taipower-grid-anchor-and-letter-table-fix.md)
+for the corrected anchor (90 km) and sparse 8 × 4 letter table.
+The "main-island A–X" framing here is wrong: the ground-truth grid
+omits `I`/`S`/`X` (underwater / Matsu / Penghu).
 
 ## Context
 

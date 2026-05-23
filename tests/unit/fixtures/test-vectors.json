@@ -565,14 +565,14 @@
         "form": "9"
       },
       "expected": {
-        "code": "P0703 CC43"
+        "code": "Q0703 CC43"
       },
       "tolerance": {
         "value": 10.0,
         "unit": "m"
       },
       "provenance": "calculated",
-      "notes": "Kaohsiung 85 Sky Tower. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+      "notes": "Kaohsiung 85 Sky Tower. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid. Corrected from P→Q after issue #8 (REGION_LETTERS table was 8×3 with anchor 170 km; ground truth is 8×4 anchored at 90 km, so row 5 col 1 = Q)."
     },
     {
       "id": "taipower-9char-003",
@@ -630,6 +630,101 @@
       },
       "provenance": "calculated",
       "notes": "Hualien railway station. Encoded from TWD67 (4-param) into the Taiwan Power main-island grid."
+    },
+    {
+      "id": "taipower-9char-issue8-001",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 23.9217588,
+        "lon": 121.0492519,
+        "form": "9"
+      },
+      "expected": {
+        "code": "L0593 BA86"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Issue #8 regression: a real Hualien-inland Taipower pole in the Central Mountain Range. Pre-fix REGION_LETTERS labelled this cell 'K' and decoded 'L0593 BA86' into the Pacific Ocean east of Taiwan."
+    },
+    {
+      "id": "taipower-9char-issue8-002",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 24.6902755,
+        "lon": 121.7865682,
+        "form": "9"
+      },
+      "expected": {
+        "code": "E9863 DE60"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Issue #8 regression: row 1 col 2 (Yilan / Suao). Cell centroid for round-trip stability."
+    },
+    {
+      "id": "taipower-9char-issue8-003",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 24.6480634,
+        "lon": 120.8136260,
+        "form": "9"
+      },
+      "expected": {
+        "code": "D7554 DA01"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Issue #8 regression: row 1 col 1 (Miaoli). Cell centroid for round-trip stability."
+    },
+    {
+      "id": "taipower-9char-issue8-004",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 23.3216038,
+        "lon": 121.2505561,
+        "form": "9"
+      },
+      "expected": {
+        "code": "O3060 HB92"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Issue #8 regression: row 4 col 2 (Taitung). Cell centroid for round-trip stability."
+    },
+    {
+      "id": "taipower-9char-issue8-005",
+      "system": "Taipower",
+      "direction": "WGS84_TO_TAIPOWER",
+      "input": {
+        "lat": 22.5914114,
+        "lon": 120.5955246,
+        "form": "9"
+      },
+      "expected": {
+        "code": "T4698 HD80"
+      },
+      "tolerance": {
+        "value": 10.0,
+        "unit": "m"
+      },
+      "provenance": "calculated",
+      "notes": "Issue #8 regression: row 6 col 1 (Pingtung). Cell centroid for round-trip stability."
     }
   ]
 }

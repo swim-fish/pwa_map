@@ -1,8 +1,13 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import vectorsFile from '../fixtures/test-vectors.json';
 import { initCoord } from '../../../src/coord';
-import { wgs84ToTaipower, taipowerToWgs84, formatTaipower } from '../../../src/coord/taipower';
-import type { Lat, Lon, TaipowerPrecision, WGS84DD } from '../../../src/types/coord';
+import {
+  wgs84ToTaipower,
+  taipowerToWgs84,
+  taipowerToTwd67,
+  formatTaipower,
+} from '../../../src/coord/taipower';
+import type { Lat, Lon, TaipowerCode, TaipowerPrecision, WGS84DD } from '../../../src/types/coord';
 
 type Vector = {
   id: string;
@@ -65,6 +70,47 @@ describe('Taipower round-trip', () => {
         expect(Math.abs(back.value.lat - inp.lat)).toBeLessThanOrEqual(deg);
         expect(Math.abs(back.value.lon - inp.lon)).toBeLessThanOrEqual(deg);
       }
+    }
+  });
+});
+
+describe('Taipower issue #8 regression', () => {
+  test('L0593 BA86 decodes to inland Hualien (Central Mountain Range), not the Pacific Ocean', () => {
+    // Pre-fix REGION_LETTERS was an 8x3 table anchored at TWD67 easting 170 km.
+    // The ground-truth Taipower mainland grid is 8x4 anchored at 90 km, with
+    // the westernmost column populated only for rows 3-5 (J, M, P). Dropping
+    // that western column shifted every letter in rows 3-7 east by one cell,
+    // so L's anchor moved from easting 250 km (correct, inland Hualien) to
+    // 330 km (Pacific east of Taiwan).
+    const code: TaipowerCode = {
+      kind: 'taipower',
+      region: 'L',
+      subRegion: '0593',
+      hundredMeter: 'BA',
+      tenMeter: '86',
+      oneMeter: null,
+      precision: 9,
+    };
+    const r = taipowerToTwd67(code);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.easting).toBeGreaterThan(250_000);
+      expect(r.value.easting).toBeLessThan(260_000);
+      expect(r.value.northing).toBeGreaterThan(2_640_000);
+      expect(r.value.northing).toBeLessThan(2_650_000);
+    }
+  });
+
+  test('Kaohsiung 85 (22.61225, 120.2867) forward-encodes to Q (not P) row 5 col 1', () => {
+    const dd: WGS84DD = {
+      kind: 'wgs84-dd',
+      lat: 22.61225 as Lat,
+      lon: 120.2867 as Lon,
+    };
+    const r = wgs84ToTaipower(dd, 9);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.region).toBe('Q');
     }
   });
 });
