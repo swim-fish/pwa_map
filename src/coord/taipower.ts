@@ -12,24 +12,56 @@ import type { Rejection } from '$types/result';
 import { err, ok, reject, type Result } from '$types/result';
 import { wgs84ToTwd67, twd67ToWgs84 } from './twd67';
 
-// Reference §8 — Taipower main-island grid over TWD67 TM2 zone 121.
-// Letters are assigned top (north) → bottom (south), west → east:
-//   row_idx 0 (north, Y=2,750,000):  A  B  C
-//   row_idx 1           (Y=2,700,000): D  E  F
-//   row_idx 2           (Y=2,650,000): G  H  I
-//   row_idx 3           (Y=2,600,000): J  K  L
-//   row_idx 4           (Y=2,550,000): M  N  O
-//   row_idx 5           (Y=2,500,000): P  Q  R
-//   row_idx 6           (Y=2,450,000): S  T  U
-//   row_idx 7 (south, Y=2,400,000):  V  W  X
-// Y / Z are reserved for outer islands and rejected as out-of-coverage.
+// Taiwan Power Company mainland grid over TWD67 TM2 zone 121.
+// 8 rows × 4 columns anchored at TWD67 easting 90 000 m, northing
+// 2 400 000 m (southernmost). Letters are sparse: the westernmost column
+// is populated only for rows 3-5 (J, M, P); the easternmost column only
+// for rows 0-1 (C, F); row 2 col 3 (I) is underwater; row 6 col 0 (S)
+// is reserved for Matsu and row 7 col 0 (X) for Penghu — both with
+// separate offshore anchors not modelled here. Y / Z are also reserved
+// for outer islands. All blanks → out-of-coverage.
+//
+//   row_idx 0 (north, Y=2,750,000):  _  A  B  C
+//   row_idx 1           (Y=2,700,000): _  D  E  F
+//   row_idx 2           (Y=2,650,000): _  G  H  _    (I underwater)
+//   row_idx 3           (Y=2,600,000): J  K  L  _
+//   row_idx 4           (Y=2,550,000): M  N  O  _
+//   row_idx 5           (Y=2,500,000): P  Q  R  _
+//   row_idx 6           (Y=2,450,000): _  T  U  _    (S = Matsu, separate anchor)
+//   row_idx 7 (south, Y=2,400,000):  _  V  W  _    (X = Penghu, separate anchor)
+//
+// See ADR 0012 (and issue #8 for the v2 anchor fix).
 
-const ANCHOR_E_WEST = 170_000; // X_base of column 0
+const REGION_LETTERS: readonly (readonly (string | null)[])[] = [
+  [null, 'A', 'B', 'C'],
+  [null, 'D', 'E', 'F'],
+  [null, 'G', 'H', null],
+  ['J', 'K', 'L', null],
+  ['M', 'N', 'O', null],
+  ['P', 'Q', 'R', null],
+  [null, 'T', 'U', null],
+  [null, 'V', 'W', null],
+];
+
+const ANCHOR_E_WEST = 90_000; // X_base of column 0
 const ANCHOR_N_SOUTH = 2_400_000; // Y_base of geographic southernmost row
 const REGION_WIDTH = 80_000; // metres (E direction, per region)
 const REGION_HEIGHT = 50_000; // metres (N direction, per region)
-const ROWS = 8; // 8 letter rows
-const COLS = 3; // 3 letter columns
+const ROWS = REGION_LETTERS.length; // 8 letter rows
+const COLS = 4; // 4 letter columns (sparsely populated; see REGION_LETTERS)
+
+const LETTER_TO_RC: ReadonlyMap<string, { readonly rowIdx: number; readonly colIdx: number }> =
+  (() => {
+    const m = new Map<string, { rowIdx: number; colIdx: number }>();
+    for (let r = 0; r < REGION_LETTERS.length; r++) {
+      const row = REGION_LETTERS[r];
+      for (let c = 0; c < row.length; c++) {
+        const ch = row[c];
+        if (ch !== null) m.set(ch, { rowIdx: r, colIdx: c });
+      }
+    }
+    return m;
+  })();
 
 // Sub-region step sizes per reference §8 table.
 const SUBREGION_STEP_E = 800; // chars 1-2 × 800 m
@@ -45,26 +77,20 @@ interface RegionAnchor {
   readonly rowIdx: number; // 0 (north) .. 7 (south)  — i.e., letter-table row
 }
 
-function letterIndex(rowIdx: number, colIdx: number): number {
-  return rowIdx * COLS + colIdx;
-}
-
 function regionLetter(rowIdx: number, colIdx: number): string | null {
   if (rowIdx < 0 || rowIdx >= ROWS) return null;
   if (colIdx < 0 || colIdx >= COLS) return null;
-  return String.fromCharCode('A'.charCodeAt(0) + letterIndex(rowIdx, colIdx));
+  return REGION_LETTERS[rowIdx][colIdx];
 }
 
 function anchorForLetter(letter: string): RegionAnchor | null {
   const up = letter.toUpperCase();
-  const code = up.charCodeAt(0) - 'A'.charCodeAt(0);
-  if (code < 0 || code >= ROWS * COLS) return null;
-  const rowIdx = Math.floor(code / COLS);
-  const colIdx = code % COLS;
-  const xBase = ANCHOR_E_WEST + colIdx * REGION_WIDTH;
+  const rc = LETTER_TO_RC.get(up);
+  if (!rc) return null;
+  const xBase = ANCHOR_E_WEST + rc.colIdx * REGION_WIDTH;
   // rowIdx 0 = northernmost (highest Y_base), rowIdx 7 = southernmost.
-  const yBase = ANCHOR_N_SOUTH + (ROWS - 1 - rowIdx) * REGION_HEIGHT;
-  return { xBase, yBase, rowIdx, colIdx };
+  const yBase = ANCHOR_N_SOUTH + (ROWS - 1 - rc.rowIdx) * REGION_HEIGHT;
+  return { xBase, yBase, rowIdx: rc.rowIdx, colIdx: rc.colIdx };
 }
 
 function outOfCoverage(raw: string): Rejection {
